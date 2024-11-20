@@ -6,14 +6,14 @@ import config
 from utils import RepoManager, ProcessSpinner
 
 class Designite:
+    jar_path = os.path.join(config.EXECUTABLES_PATH, "DesigniteJava.jar")
+    output_dir = os.path.join(config.OUTPUT_PATH, "Designite_OP")
+
     def __init__(self) -> None:
-        self.jar_path = os.path.join(config.EXECUTABLES_PATH, "DesigniteJava.jar")
-        self.output_dir = os.path.join(config.OUTPUT_PATH, "Designite_OP")
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
         
     def analyze_commits(self, repo_path: Path, branch: str):
-        
         with ProcessSpinner("Calculating code smells with Designite for repo " + RepoManager.get_repo_name(repo_path)): 
             try:
                 result = subprocess.run([

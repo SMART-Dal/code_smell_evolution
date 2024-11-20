@@ -1,7 +1,8 @@
-from runners import Designite, RefMiner
-from utils import get_git_branches
 import os
 import config
+from runners import Designite, RefMiner
+from data_analyzer import RepoDataAnalyzer
+from utils import RepoManager, load_json_file
 
 repos = [
     "AgriCraft",
@@ -11,16 +12,42 @@ repos = [
 if __name__ == "__main__":
     CURR_DIR = os.path.dirname(os.path.realpath(__file__))
     TARGET_REPO_PATH = os.path.join(config.REPOS_PATH, repos[1])
+    REPOS_LIST: dict = load_json_file(config.REPO_LIST_PATH)
+    REPOS_DATA: dict = {}
     
-    branches = get_git_branches(TARGET_REPO_PATH)
+    # try:
+    #     for repo in REPOS_DATA.get("items")[:1]:
+    #         username, repo_name = repo.get("name").split("/")
+    #         RepoManager.clone_repo(
+    #             repo_full_name=repo.get("name"),
+    #             repo_path=os.path.join(config.REPOS_PATH, username, repo_name)
+    #         )
+                
+    # except Exception as e:
+    #     print(e)
+        
+    branches = RepoManager.get_git_branches(TARGET_REPO_PATH)
     default_branch = branches[0]
     
+    # try:
+    #     designite_runner = Designite()
+    #     designite_runner.analyze_commits(repo_path = TARGET_REPO_PATH, branch = default_branch)
+    # except Exception as e:
+    #     print(e)
+        
     try:
-        Designite().analyze_commits(repo_path = TARGET_REPO_PATH, branch = default_branch)
+        repo_data_analyzer = RepoDataAnalyzer(
+            repo_name=repos[1],
+            repo_path =TARGET_REPO_PATH,
+            branch = default_branch
+        )
+        repo_data_analyzer.calculate_smells_lifespan()
+        
     except Exception as e:
         print(e)
     
-    try:
-        ref_miner_runner = RefMiner().analyze(repo_path = TARGET_REPO_PATH, output_path = config.OUTPUT_PATH)
-    except Exception as e:
-        print(e)
+    
+    # try:
+    #     ref_miner_runner = RefMiner().analyze(repo_path = TARGET_REPO_PATH, output_path = config.OUTPUT_PATH)
+    # except Exception as e:
+    #     print(e)

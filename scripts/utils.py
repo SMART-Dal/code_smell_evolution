@@ -4,6 +4,7 @@ import itertools
 import time
 import threading
 import json
+import csv
 from git import Repo
 
 def load_json_file(file_path):
@@ -16,6 +17,29 @@ def load_json_file(file_path):
     with open(file_path, 'r') as file:
         data = json.load(file)
     return data
+
+def load_csv_file(file_path):
+    """
+    Load a CSV file and return its contents as a list of dictionaries.
+
+    :param file_path: Path to the CSV file.
+    :return: List of dictionaries containing the CSV data.
+    """
+    with open(file_path, 'r') as file:
+        reader = csv.DictReader(file)
+        data = [row for row in reader]
+    return data
+
+def traverse_directory(dir_path):
+    """
+    Traverse a directory and yield all files and subdirectories.
+    
+    :param dir_path: Path to the directory.
+    :yield: Paths of files and subdirectories.
+    """
+    for root, dirs, _ in os.walk(dir_path):
+        for name in dirs:
+            yield os.path.join(root, name)
 
 class RepoManager:
     BASE_URL = "https://github.com/"
@@ -61,6 +85,19 @@ class RepoManager:
         except Exception as e:
             print(f"An error occurred: {e}")
         return branches
+    
+    @staticmethod
+    def get_all_commits(repo_path, branch):
+        """
+        Get all commits in a Git repository.
+
+        :param repo_path: Path to the local Git repository.
+        :param branch: Branch name.
+        :return: A list of commit objects.
+        """
+        repo = Repo(repo_path)
+        commits = list(repo.iter_commits(branch))
+        return [(commit.hexsha, commit.committed_datetime) for commit in commits]
     
 class ProcessSpinner:
     def __init__(self, message):
