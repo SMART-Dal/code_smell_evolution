@@ -1,27 +1,99 @@
 import os
+import sys
+import itertools
+import time
+import threading
+import json
+from git import Repo
 
-def get_repo_name(repo_path):
+def load_json_file(file_path):
     """
-    Get the name of the repository folder.
+    Load a JSON file.
 
-    :param repo_path: Path to the local Git repository.
-    :return: The name of the repository folder.
+    :param file_path: Path to the JSON file.
+    :return: The JSON data.
     """
-    return os.path.basename(os.path.normpath(repo_path))
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+    return data
 
-def get_git_branches(repo_path):
-    """
-    Get a list of branches in a Git repository.
+class RepoManager:
+    BASE_URL = "https://github.com/"
+    
+    @staticmethod
+    def clone_repo(repo_full_name, repo_path):
+        """
+        Clone a Git repository.
 
-    :param repo_path: Path to the local Git repository.
-    :return: A list of branch names.
-    """
-    branches = []
-    try:
-        # Run git branch command and capture the output
-        output = os.popen(f'cd {repo_path} && git branch').read()
-        # Process the output to get branch names
-        branches = [line.strip().lstrip('* ') for line in output.split('\n') if line]
-    except Exception as e:
-        print(f"An error occurred: {e}")
-    return branches
+        :param repo_full_name: The full name of the repository in the format "username/repo_name".
+        :param repo_path: Path to the local Git repository.
+        """
+        repo_url = RepoManager.BASE_URL + repo_full_name + ".git"
+        with ProcessSpinner(f"Cloning repository {repo_full_name}"):
+            try:
+                Repo.clone_from(repo_url, repo_path)
+            except Exception as e:
+                print(f"An error occurred while cloning repo: {repo_full_name}")
+                print(f"Error: {e}")
+            
+    @staticmethod
+    def get_repo_name(repo_path):
+        """
+        Get the name of the repository folder.
+
+        :param repo_path: Path to the local Git repository.
+        :return: The name of the repository folder.
+        """
+        return os.path.basename(os.path.normpath(repo_path))
+
+    @staticmethod
+    def get_git_branches(repo_path):
+        """
+        Get a list of branches in a Git repository.
+
+        :param repo_path: Path to the local Git repository.
+        :return: A list of branch names.
+        """
+        branches = []
+        try:
+            repo = Repo(repo_path)
+            branches = [head.name for head in repo.heads]
+        except Exception as e:
+            print(f"An error occurred: {e}")
+        return branches
+    
+class ProcessSpinner:
+    def __init__(self, message):
+        self.message = message
+        self.spinner = itertools.cycle(['-', '/', '|', '\\'])
+        self.stop_running = False
+        self.success = None
+
+    def spinner_task(self):
+        while not self.stop_running:
+            sys.stdout.write(f"\r{next(self.spinner)} {self.message}")
+            sys.stdout.flush()
+            time.sleep(0.1)
+
+    def start(self):
+        self.stop_running = False
+        threading.Thread(target=self.spinner_task, daemon=True).start()
+
+    def stop(self, success=True):
+        self.stop_running = True
+        self.success = success
+        sys.stdout.write('\r')
+        sys.stdout.flush()
+        if self.success:
+            sys.stdout.write(f"\r✔ {self.message} - Completed\n")
+        else:
+            sys.stdout.write(f"\r✖ {self.message} - Failed\n")
+        sys.stdout.flush()
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.stop(success=(exc_type is None))
+        return False

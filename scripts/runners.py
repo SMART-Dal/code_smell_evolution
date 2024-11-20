@@ -3,7 +3,7 @@ import subprocess
 import os
 import sys
 import config
-from utils import get_repo_name
+from utils import RepoManager, ProcessSpinner
 
 class Designite:
     def __init__(self) -> None:
@@ -14,12 +14,19 @@ class Designite:
         
     def analyze_commits(self, repo_path: Path, branch: str):
         
-        subprocess.run([
-            "java", "-jar", self.jar_path, 
-            "-i", repo_path, 
-            "-o", os.path.join(self.output_dir, get_repo_name(repo_path)), 
-            "-ac", branch
-        ])
+        with ProcessSpinner("Calculating code smells with Designite for repo " + RepoManager.get_repo_name(repo_path)): 
+            try:
+                result = subprocess.run([
+                    "java", "-jar", self.jar_path, 
+                    "-i", repo_path, 
+                    "-o", os.path.join(self.output_dir, RepoManager.get_repo_name(repo_path)), 
+                    "-ac", branch
+                ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                error = result.stderr.decode() if result.stderr else "No error message"
+            except subprocess.CalledProcessError as e:
+                output = e.stdout.decode()
+                error = e.stderr.decode() if e.stderr else "No error message"
+        
         
 class RefMiner:
     def __init__(self) -> None:
@@ -33,7 +40,7 @@ class RefMiner:
             if not os.path.exists(output_path):
                 os.mkdir(output_path)
 
-            output_path = os.path.join(self.output_dir, get_repo_name(repo_path)+".json")
+            output_path = os.path.join(self.output_dir, RepoManager.get_repo_name(repo_path)+".json")
 
             try:
                 java_proc = subprocess.run(["java","-version"], capture_output=True, shell=False)
@@ -47,22 +54,21 @@ class RefMiner:
             if sys.platform == 'linux':
                 shell = False
             
-            ref_exec = subprocess.run([
-                "sh","RefactoringMiner",
-                "-a", repo_path,
-                "-json", output_path
-            ], capture_output=True, shell=shell)
-            ref_exec.check_returncode()
+            with ProcessSpinner("Analyzing repository with RefactoringMiner for repo " + RepoManager.get_repo_name(repo_path)):
+                try:
+                    result = subprocess.run([
+                    "sh","RefactoringMiner",
+                    "-a", repo_path,
+                    "-json", output_path
+                ], check=True, capture_output=True, shell=shell)
+                    output = result.stdout.decode()
+                    error = result.stderr.decode()
+                except subprocess.CalledProcessError as e:
+                    output = e.stdout.decode()
+                    error = e.stderr.decode()
+                    print(f"Error: {error}")
             
             os.chdir(config.ROOT_PATH)
-            
-
-        except subprocess.CalledProcessError as error:
-            print(ref_exec.stdout)
-            print(error)
-            os.chdir(config.ROOT_PATH)
-            raise Exception("Error running RefactoringMiner in repository (CSP) - "+repo_path)
         except Exception as e:
-            print(e)
-            os.chdir(config.ROOT_PATH)
-            raise Exception("Error running RefactoringMiner in repository - "+repo_path)
+            print(f"An error occurred: {e}")
+            return None
