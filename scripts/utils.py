@@ -18,6 +18,16 @@ def load_json_file(file_path):
         data = json.load(file)
     return data
 
+def save_json_file(file_path, data):
+    """
+    Save data to a JSON file.
+
+    :param file_path: Path to the JSON file.
+    :param data: Data to be saved.
+    """
+    with open(file_path, 'w') as file:
+        json.dump(data, file, indent=4)
+
 def load_csv_file(file_path):
     """
     Load a CSV file and return its contents as a list of dictionaries.

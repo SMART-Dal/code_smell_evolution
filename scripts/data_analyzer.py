@@ -1,8 +1,8 @@
 import os
 from datetime import datetime
 from runners import Designite
-from config import SmellCols
-from utils import RepoManager, load_csv_file, traverse_directory
+import config
+from utils import RepoManager, load_csv_file, traverse_directory, save_json_file
 
 class RepoDataAnalyzer:
     def __init__(self, repo_name:str, repo_path: str, branch: str):
@@ -72,3 +72,19 @@ class RepoDataAnalyzer:
                             self.smells_lifespan[smell] = {"introduced": commit_datetime, "removed": None}
             
             previous_commit = commit_hash
+            
+    def calculate_lifespan_gap(self):
+        for smell, data in self.smells_lifespan.items():
+            if data["introduced"] and data["removed"]:
+                data["span"] = (data["removed"] - data["introduced"]).days
+            
+    def save_lifespan_to_json(self):
+        serializable_lifespan = {
+            smell: {
+                "introduced": data["introduced"].isoformat() if data["introduced"] else None,
+                "removed": data["removed"].isoformat() if data["removed"] else None,
+                "span": data["span"] if "span" in data else None
+            }
+            for smell, data in self.smells_lifespan.items()
+        }
+        save_json_file(os.path.join(config.OUTPUT_PATH, "SmellsLifespan.json"), serializable_lifespan)
