@@ -29,9 +29,10 @@ class Designite:
         
         
 class RefMiner:
+    bin_path = os.path.join(config.EXECUTABLES_PATH, "RefactoringMiner-3.0.9", "bin")
+    output_dir = os.path.join(config.OUTPUT_PATH, "RefMiner_OP")
+    
     def __init__(self) -> None:
-        self.bin_path = os.path.join(config.EXECUTABLES_PATH, "RefactoringMiner-3.0.9", "bin")
-        self.output_dir = os.path.join(config.OUTPUT_PATH, "RefMiner_OP")
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
         
@@ -57,14 +58,12 @@ class RefMiner:
             with ProcessSpinner("Analyzing repository with RefactoringMiner for repo " + GitManager.get_repo_name(repo_path)):
                 try:
                     result = subprocess.run([
-                    "sh","RefactoringMiner",
-                    "-a", repo_path,
-                    "-json", output_path
-                ], check=True, capture_output=True, shell=shell)
-                    output = result.stdout.decode()
+                        "sh","RefactoringMiner",
+                        "-a", repo_path,
+                        "-json", output_path
+                    ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                     error = result.stderr.decode()
                 except subprocess.CalledProcessError as e:
-                    output = e.stdout.decode()
                     error = e.stderr.decode()
                     print(f"Error: {error}")
             

@@ -115,21 +115,21 @@ class ProcessSpinner:
     def __init__(self, message):
         self.message = message
         self.spinner = itertools.cycle(['-', '/', '|', '\\'])
-        self.stop_running = False
+        self.stop_running = threading.Event()
         self.success = None
 
     def spinner_task(self):
-        while not self.stop_running:
+        while not self.stop_running.is_set():
             sys.stdout.write(f"\r{next(self.spinner)} {self.message}")
             sys.stdout.flush()
             time.sleep(0.1)
 
     def start(self):
-        self.stop_running = False
+        self.stop_running.clear()
         threading.Thread(target=self.spinner_task, daemon=True).start()
 
     def stop(self, success=True):
-        self.stop_running = True
+        self.stop_running.set()
         self.success = success
         sys.stdout.write('\r')
         sys.stdout.flush()

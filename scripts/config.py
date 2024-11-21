@@ -17,4 +17,4 @@ OUTPUT_PATH = os.path.join(ROOT_PATH, "output")
 
 
 
-SMELL_SKIP_COLS = ["Package Name", "Cause of the Smell"]
+SMELL_SKIP_COLS = ["Project Name"]
