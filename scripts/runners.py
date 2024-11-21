@@ -3,7 +3,7 @@ import subprocess
 import os
 import sys
 import config
-from utils import RepoManager, ProcessSpinner
+from utils import GitManager, ProcessSpinner
 
 class Designite:
     jar_path = os.path.join(config.EXECUTABLES_PATH, "DesigniteJava.jar")
@@ -14,12 +14,12 @@ class Designite:
             os.makedirs(self.output_dir)
         
     def analyze_commits(self, repo_path: Path, branch: str):
-        with ProcessSpinner("Calculating code smells with Designite for repo " + RepoManager.get_repo_name(repo_path)): 
+        with ProcessSpinner("Calculating code smells with Designite for repo " + GitManager.get_repo_name(repo_path)): 
             try:
                 result = subprocess.run([
                     "java", "-jar", self.jar_path, 
                     "-i", repo_path, 
-                    "-o", os.path.join(self.output_dir, RepoManager.get_repo_name(repo_path)), 
+                    "-o", os.path.join(self.output_dir, GitManager.get_repo_name(repo_path)), 
                     "-ac", branch
                 ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 error = result.stderr.decode() if result.stderr else "No error message"
@@ -40,7 +40,7 @@ class RefMiner:
             if not os.path.exists(output_path):
                 os.mkdir(output_path)
 
-            output_path = os.path.join(self.output_dir, RepoManager.get_repo_name(repo_path)+".json")
+            output_path = os.path.join(self.output_dir, GitManager.get_repo_name(repo_path)+".json")
 
             try:
                 java_proc = subprocess.run(["java","-version"], capture_output=True, shell=False)
@@ -54,7 +54,7 @@ class RefMiner:
             if sys.platform == 'linux':
                 shell = False
             
-            with ProcessSpinner("Analyzing repository with RefactoringMiner for repo " + RepoManager.get_repo_name(repo_path)):
+            with ProcessSpinner("Analyzing repository with RefactoringMiner for repo " + GitManager.get_repo_name(repo_path)):
                 try:
                     result = subprocess.run([
                     "sh","RefactoringMiner",

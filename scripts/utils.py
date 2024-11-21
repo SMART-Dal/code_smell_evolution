@@ -20,24 +20,26 @@ def load_json_file(file_path):
 
 def save_json_file(file_path, data):
     """
-    Save data to a JSON file.
+    Save data to a JSON file. If the directory does not exist, create it.
 
     :param file_path: Path to the JSON file.
     :param data: Data to be saved.
     """
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, 'w') as file:
         json.dump(data, file, indent=4)
 
-def load_csv_file(file_path):
+def load_csv_file(file_path, skipCols=[]):
     """
-    Load a CSV file and return its contents as a list of dictionaries.
+    Load a CSV file and return its contents as a list of dictionaries, skipping specified columns.
 
     :param file_path: Path to the CSV file.
+    :param skipCols: List of column names to skip.
     :return: List of dictionaries containing the CSV data.
     """
     with open(file_path, 'r') as file:
         reader = csv.DictReader(file)
-        data = [row for row in reader]
+        data = [{k: v for k, v in row.items() if k not in skipCols} for row in reader]
     return data
 
 def traverse_directory(dir_path):
@@ -51,18 +53,18 @@ def traverse_directory(dir_path):
         for name in dirs:
             yield os.path.join(root, name)
 
-class RepoManager:
+class GitManager:
     BASE_URL = "https://github.com/"
     
     @staticmethod
-    def clone_repo(repo_full_name, repo_path):
+    def clone_repo(repo_path, repo_full_name):
         """
         Clone a Git repository.
 
         :param repo_full_name: The full name of the repository in the format "username/repo_name".
         :param repo_path: Path to the local Git repository.
         """
-        repo_url = RepoManager.BASE_URL + repo_full_name + ".git"
+        repo_url = GitManager.BASE_URL + repo_full_name + ".git"
         with ProcessSpinner(f"Cloning repository {repo_full_name}"):
             try:
                 Repo.clone_from(repo_url, repo_path)
