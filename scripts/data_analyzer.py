@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from runners import Designite
 import config
-from utils import RepoManager, load_csv_file, traverse_directory, save_json_file
+from utils import GitManager, load_csv_file, traverse_directory, save_json_file
 
 class RepoDataAnalyzer:
     def __init__(self, repo_name:str, repo_path: str, branch: str):
@@ -10,14 +10,14 @@ class RepoDataAnalyzer:
         self.repo_output_path = os.path.join(Designite.output_dir, repo_name)
         self.branch = branch
         self.active_commits: list[tuple[str, datetime]] = []
-        self.all_commits: list[tuple[str, datetime]] = RepoManager.get_all_commits(repo_path, branch)
+        self.all_commits: list[tuple[str, datetime]] = GitManager.get_all_commits(repo_path, branch)
         
         self.arch_smells = {}
         self.design_smells = {}
         self.impl_smells = {}
         self.testability_smells = {}
         self.test_smells = {}
-        self.smells_lifespan = {}
+        self.smells_lifespan_history = []
         self.load_smells()
 
     def load_smells(self):
@@ -38,14 +38,16 @@ class RepoDataAnalyzer:
             for csv_file, smell_dict in csv_files:
                 csv_path = os.path.join(commit_path, csv_file)
                 if os.path.exists(csv_path):
-                    smell_dict[commit_hash] = load_csv_file(csv_path)
+                    smell_dict[commit_hash] = load_csv_file(csv_path, skipCols=config.SMELL_SKIP_COLS)
                     
     def calculate_smells_lifespan(self):
         sorted_active_commits = sorted(self.active_commits, key=lambda x: x[1])
+        smells_lifespan = {}
+        
         previous_commit = None
         for commit_hash, commit_datetime in sorted_active_commits:
             if previous_commit:
-                for smell_dict in [self.arch_smells, self.design_smells, self.impl_smells, self.testability_smells, self.test_smells ]:
+                for smell_dict in [self.arch_smells, self.design_smells, self.impl_smells, self.testability_smells, self.test_smells]:
                     
                     added_smells = set()
                     removed_smells = set()
@@ -59,22 +61,30 @@ class RepoDataAnalyzer:
                         added_smells = set(map(str, current_smells))
                         
                     for smell in added_smells:
-                        self.smells_lifespan[smell] = {"introduced": commit_datetime, "removed": None}
+                        smells_lifespan[smell] = {"introduced": commit_datetime, "removed": None}
                     for smell in removed_smells:
-                        if smell in self.smells_lifespan:
-                            self.smells_lifespan[smell]["removed"] = commit_datetime
+                        if smell in smells_lifespan:
+                            smells_lifespan[smell]["removed"] = commit_datetime
+                            self.smells_lifespan_history.append((smell, smells_lifespan[smell]))
+                            del smells_lifespan[smell]
             else:
                 for smell_dict in [self.arch_smells, self.design_smells, self.impl_smells, self.testability_smells, self.test_smells]:
                     current_smells = smell_dict.get(commit_hash)
                     
                     if current_smells:
                         for smell in map(str, current_smells):
-                            self.smells_lifespan[smell] = {"introduced": commit_datetime, "removed": None}
+                            smells_lifespan[smell] = {"introduced": commit_datetime, "removed": None}
             
             previous_commit = commit_hash
             
+        for smell, data in smells_lifespan.items():
+            self.smells_lifespan_history.append((smell, data))
+        
+        # NOTE: optional sorting by introduced date
+        self.smells_lifespan_history.sort(key=lambda x: x[1]["introduced"])
+        
     def calculate_lifespan_gap(self):
-        for smell, data in self.smells_lifespan.items():
+        for smell, data in self.smells_lifespan_history:
             if data["introduced"] and data["removed"]:
                 data["span"] = (data["removed"] - data["introduced"]).days
             
@@ -85,6 +95,6 @@ class RepoDataAnalyzer:
                 "removed": data["removed"].isoformat() if data["removed"] else None,
                 "span": data["span"] if "span" in data else None
             }
-            for smell, data in self.smells_lifespan.items()
+            for smell, data in self.smells_lifespan_history
         }
-        save_json_file(os.path.join(config.OUTPUT_PATH, "SmellsLifespan.json"), serializable_lifespan)
+        save_json_file(os.path.join(config.OUTPUT_PATH, "Smells_lifespan_OP", f"{os.path.basename(self.repo_path)}.json"), data=serializable_lifespan)
