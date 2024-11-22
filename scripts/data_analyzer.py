@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from runners import Designite, RefMiner
 import config
-from utils import GitManager, spinner, load_csv_file, traverse_directory, load_json_file, save_json_file
+from utils import GitManager, log_execution, load_csv_file, traverse_directory, load_json_file, save_json_file
 
 class RepoDataAnalyzer:
     def __init__(self, repo_path: str, branch: str):
@@ -26,7 +26,7 @@ class RepoDataAnalyzer:
         self.load_smells()
         self.load_refactorings()
         
-    @spinner("Loading smells to RepoDataAnalyzer")
+    @log_execution
     def load_smells(self):
         for commit_path in traverse_directory(self.repo_designite_output_path):
             commit_hash = os.path.basename(commit_path)
@@ -47,13 +47,13 @@ class RepoDataAnalyzer:
                 if os.path.exists(csv_path):
                     smell_dict[commit_hash] = load_csv_file(csv_path, skipCols=config.SMELL_SKIP_COLS)
     
-    @spinner("Loading refactoring pairs to RepoDataAnalyzer")
+    @log_execution
     def load_refactorings(self):
         for commit in load_json_file(self.repo_refminer_output_path).get("commits"):
             if any(commit.get("sha1") == active_commit[0] for active_commit in self.active_commits):
                 self.refactorings[commit.get("sha1")] = commit.get("refactorings")
     
-    @spinner("Calculating smells lifespan")      
+    @log_execution     
     def calculate_smells_lifespan(self):
         sorted_active_commits = sorted(self.active_commits, key=lambda x: x[1])
         smells_lifespan = {}
@@ -100,7 +100,7 @@ class RepoDataAnalyzer:
         
         self.calculate_lifespan_gap()
     
-    @spinner("Calculating lifespan gap")
+    @log_execution
     def calculate_lifespan_gap(self):
         for smell, data in self.smells_lifespan_history:
             if data["introduced"] and data["removed"]:
@@ -109,7 +109,7 @@ class RepoDataAnalyzer:
                 removed_index = next(i for i, (ch, _) in enumerate(self.all_commits) if ch == data["removed_commit"])
                 data["commit_span"] =  introduced_index - removed_index
     
-    @spinner("Mapping refactorings to smells")
+    @log_execution
     def map_refactorings_to_smells(self):
         for smell, data in self.smells_lifespan_history:
             data["refactorings"] = []
@@ -118,7 +118,7 @@ class RepoDataAnalyzer:
                     data["refactorings"] = refactorings
                     break
     
-    @spinner("Saving lifespan to JSON")
+    @log_execution
     def save_lifespan_to_json(self):
         serializable_lifespan = {
             smell: {

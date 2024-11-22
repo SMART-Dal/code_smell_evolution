@@ -11,7 +11,7 @@ repos = [
 
 if __name__ == "__main__":
     CURR_DIR = os.path.dirname(os.path.realpath(__file__))
-    TARGET_REPO_PATH = os.path.join(config.REPOS_PATH, repos[0])
+    TARGET_REPO_PATH = os.path.join(config.REPOS_PATH, repos[1])
     REPOS_LIST: dict = load_json_file(config.REPO_LIST_PATH)
     REPOS_DATA: dict = {}
     

@@ -22,6 +22,7 @@ trap 'handle_signal' SIGUSR1
 
 # -------------------------------------------------------
 echo ">>> Loading modules and activating virtual environment."
+module --force purge
 module load StdEnv/2020 java/17.0.2 python/3.10
 
 export JAVA_TOOL_OPTIONS="-Xms256m -Xmx5g"
@@ -34,24 +35,20 @@ pip install  --no-index -r requirements.txt
 
 
 # -------------------------------------------------------
-echo ">>> Executing the script."
+echo -e "\n\n\n\n\n>>> Executing the script."
 # -u is for unbuffered output so the print statements print it to the slurm out file
 # & at the end is to run the script in background. Unless it's running in background we can't trap the signal
 python -u scripts/analysis.py &
 
-echo ">>> Completed execution of the script."
-# -------------------------------------------------------
-
-# -------------------------------------------------------
 PID=$!
 wait ${PID}
 
-echo ">>> Python Script execution over. Attempting to copy the output file..."
+echo -e ">>> Completed execution of the script.\n\n\n\n\n>>>Attempting to copy the output file..."
 rsync -axvH --no-g --no-p $SLURM_TMPDIR/$repo_name/output/*  $refresearch/data/output
 # -------------------------------------------------------
 
 # -------------------------------------------------------
 echo ">>> Unloading modules and deactivating virtual environment."
-module unload StdEnv/2020 java/17.0.2 python/3.10
 deactivate
+module unload python/3.10 java/17.0.2 StdEnv/2020
 echo ">>> JOB ENDED FOR $repo_name"

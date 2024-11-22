@@ -3,7 +3,7 @@ import subprocess
 import os
 import sys
 import config
-from utils import GitManager, ProcessSpinner
+from utils import GitManager, log_execution
 
 class Designite:
     jar_path = os.path.join(config.EXECUTABLES_PATH, "DesigniteJava.jar")
@@ -13,19 +13,20 @@ class Designite:
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
         
+    @log_execution
     def analyze_commits(self, repo_path: Path, branch: str):
-        with ProcessSpinner("Calculating code smells with Designite for repo " + GitManager.get_repo_name(repo_path)): 
-            try:
-                result = subprocess.run([
-                    "java", "-jar", self.jar_path, 
-                    "-i", repo_path, 
-                    "-o", os.path.join(self.output_dir, GitManager.get_repo_name(repo_path)), 
-                    "-ac", branch
-                ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                error = result.stderr.decode() if result.stderr else "No error message"
-            except subprocess.CalledProcessError as e:
-                output = e.stdout.decode()
-                error = e.stderr.decode() if e.stderr else "No error message"
+        try:
+            print(f"Repo: {repo_path}")
+            result = subprocess.run([
+                "java", "-jar", self.jar_path, 
+                "-i", repo_path, 
+                "-o", os.path.join(self.output_dir, GitManager.get_repo_name(repo_path)), 
+                "-ac", branch
+            ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            error = result.stderr.decode()
+        except subprocess.CalledProcessError as e:
+            error = e.stderr.decode()
+            print(f"Error: {error}")
         
         
 class RefMiner:
@@ -36,6 +37,7 @@ class RefMiner:
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
         
+    @log_execution
     def analyze(self, repo_path: Path, output_path: Path):
         try:
             if not os.path.exists(output_path):
@@ -55,17 +57,17 @@ class RefMiner:
             if sys.platform == 'linux':
                 shell = False
             
-            with ProcessSpinner("Analyzing repository with RefactoringMiner for repo " + GitManager.get_repo_name(repo_path)):
-                try:
-                    result = subprocess.run([
-                        "sh","RefactoringMiner",
-                        "-a", repo_path,
-                        "-json", output_path
-                    ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                    error = result.stderr.decode()
-                except subprocess.CalledProcessError as e:
-                    error = e.stderr.decode()
-                    print(f"Error: {error}")
+            try:
+                print(f"Repo: {repo_path}")
+                result = subprocess.run([
+                    "sh","RefactoringMiner",
+                    "-a", repo_path,
+                    "-json", output_path
+                ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                error = result.stderr.decode()
+            except subprocess.CalledProcessError as e:
+                error = e.stderr.decode()
+                print(f"Error: {error}")
             
             os.chdir(config.ROOT_PATH)
         except Exception as e:

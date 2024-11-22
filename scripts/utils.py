@@ -1,11 +1,37 @@
 import os
-import sys
-import itertools
-import time
-import threading
 import json
 import csv
 from git import Repo
+
+def log_execution(func):
+    def wrapper(*args, **kwargs):
+        # Determine class name if the function is a method
+        class_name = None
+        if args:
+            class_name = args[0].__class__.__name__ if hasattr(args[0], "__class__") else None
+
+        # Log the custom message and function execution details
+        if class_name:
+            print(f"▶ Starting execution of {class_name}.{func.__name__}")
+        else:
+            print(f"▶ Starting execution of {func.__name__}")
+
+        try:
+            result = func(*args, **kwargs)
+            if class_name:
+                print(f"✔ Finished execution of {class_name}.{func.__name__}")
+            else:
+                print(f"✔ Finished execution of {func.__name__}")
+            return result
+        except Exception as e:
+            if class_name:
+                print(f"✖ Error occurred in {class_name}.{func.__name__}: {e}")
+            else:
+                print(f"✖ Error occurred in {func.__name__}: {e}")
+            raise
+    return wrapper
+
+
 
 def load_json_file(file_path):
     """
@@ -57,6 +83,7 @@ class GitManager:
     BASE_URL = "https://github.com/"
     
     @staticmethod
+    @log_execution
     def clone_repo(repo_path, repo_full_name):
         """
         Clone a Git repository.
@@ -65,12 +92,11 @@ class GitManager:
         :param repo_path: Path to the local Git repository.
         """
         repo_url = GitManager.BASE_URL + repo_full_name + ".git"
-        with ProcessSpinner(f"Cloning repository {repo_full_name}"):
-            try:
-                Repo.clone_from(repo_url, repo_path)
-            except Exception as e:
-                print(f"An error occurred while cloning repo: {repo_full_name}")
-                print(f"Error: {e}")
+        try:
+            Repo.clone_from(repo_url, repo_path)
+        except Exception as e:
+            print(f"An error occurred while cloning repo: {repo_full_name}")
+            print(f"Error: {e}")
             
     @staticmethod
     def get_repo_name(repo_path):
@@ -110,47 +136,3 @@ class GitManager:
         repo = Repo(repo_path)
         commits = list(repo.iter_commits(branch))
         return [(commit.hexsha, commit.committed_datetime) for commit in commits]
-    
-class ProcessSpinner:
-    def __init__(self, message):
-        self.message = message
-        self.spinner = itertools.cycle(['-', '/', '|', '\\'])
-        self.stop_running = threading.Event()
-        self.success = None
-
-    def spinner_task(self):
-        while not self.stop_running.is_set():
-            sys.stdout.write(f"\r{next(self.spinner)} {self.message}")
-            sys.stdout.flush()
-            time.sleep(0.1)
-
-    def start(self):
-        self.stop_running.clear()
-        threading.Thread(target=self.spinner_task, daemon=True).start()
-
-    def stop(self, success=True):
-        self.stop_running.set()
-        self.success = success
-        sys.stdout.write('\r')
-        sys.stdout.flush()
-        if self.success:
-            sys.stdout.write(f"\r✔ {self.message} - Completed\n")
-        else:
-            sys.stdout.write(f"\r✖ {self.message} - Failed\n")
-        sys.stdout.flush()
-
-    def __enter__(self):
-        self.start()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.stop(success=(exc_type is None))
-        return False
-    
-def spinner(message):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            with ProcessSpinner(message):
-                return func(*args, **kwargs)
-        return wrapper
-    return decorator
