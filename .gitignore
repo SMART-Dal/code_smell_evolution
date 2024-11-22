@@ -166,3 +166,4 @@ repos/
 
 bin/executables/.config
 temp_log**.txt
+**.out
