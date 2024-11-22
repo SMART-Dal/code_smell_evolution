@@ -146,3 +146,11 @@ class ProcessSpinner:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.stop(success=(exc_type is None))
         return False
+    
+def spinner(message):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            with ProcessSpinner(message):
+                return func(*args, **kwargs)
+        return wrapper
+    return decorator

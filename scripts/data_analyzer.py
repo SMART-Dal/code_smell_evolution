@@ -2,13 +2,14 @@ import os
 from datetime import datetime
 from runners import Designite, RefMiner
 import config
-from utils import GitManager, load_csv_file, traverse_directory, load_json_file, save_json_file
+from utils import GitManager, spinner, load_csv_file, traverse_directory, load_json_file, save_json_file
 
 class RepoDataAnalyzer:
-    def __init__(self, repo_name:str, repo_path: str, branch: str):
+    def __init__(self, repo_path: str, branch: str):
+        self.repo_name = os.path.basename(repo_path)
         self.repo_path = repo_path
-        self.repo_designite_output_path = os.path.join(Designite.output_dir, repo_name)
-        self.repo_refminer_output_path = os.path.join(RefMiner.output_dir, f"{repo_name}.json")
+        self.repo_designite_output_path = os.path.join(Designite.output_dir, self.repo_name)
+        self.repo_refminer_output_path = os.path.join(RefMiner.output_dir, f"{self.repo_name}.json")
         self.branch = branch
         self.active_commits: list[tuple[str, datetime]] = []
         self.all_commits: list[tuple[str, datetime]] = GitManager.get_all_commits(repo_path, branch)
@@ -24,7 +25,8 @@ class RepoDataAnalyzer:
         self.smells_lifespan_history = []
         self.load_smells()
         self.load_refactorings()
-
+        
+    @spinner("Loading smells to RepoDataAnalyzer")
     def load_smells(self):
         for commit_path in traverse_directory(self.repo_designite_output_path):
             commit_hash = os.path.basename(commit_path)
@@ -45,11 +47,13 @@ class RepoDataAnalyzer:
                 if os.path.exists(csv_path):
                     smell_dict[commit_hash] = load_csv_file(csv_path, skipCols=config.SMELL_SKIP_COLS)
     
+    @spinner("Loading refactoring pairs to RepoDataAnalyzer")
     def load_refactorings(self):
         for commit in load_json_file(self.repo_refminer_output_path).get("commits"):
             if any(commit.get("sha1") == active_commit[0] for active_commit in self.active_commits):
                 self.refactorings[commit.get("sha1")] = commit.get("refactorings")
-                    
+    
+    @spinner("Calculating smells lifespan")      
     def calculate_smells_lifespan(self):
         sorted_active_commits = sorted(self.active_commits, key=lambda x: x[1])
         smells_lifespan = {}
@@ -95,7 +99,8 @@ class RepoDataAnalyzer:
         self.smells_lifespan_history.sort(key=lambda x: x[1]["introduced"])
         
         self.calculate_lifespan_gap()
-        
+    
+    @spinner("Calculating lifespan gap")
     def calculate_lifespan_gap(self):
         for smell, data in self.smells_lifespan_history:
             if data["introduced"] and data["removed"]:
@@ -103,16 +108,22 @@ class RepoDataAnalyzer:
                 introduced_index = next(i for i, (ch, _) in enumerate(self.all_commits) if ch == data["introduced_commit"])
                 removed_index = next(i for i, (ch, _) in enumerate(self.all_commits) if ch == data["removed_commit"])
                 data["commit_span"] =  introduced_index - removed_index
-      
+    
+    @spinner("Mapping refactorings to smells")
+    def map_refactorings_to_smells(self):
+        for smell, data in self.smells_lifespan_history:
+            data["refactorings"] = []
+            for commit_hash, refactorings in self.refactorings.items():
+                if commit_hash == data["removed_commit"]:
+                    data["refactorings"] = refactorings
+                    break
+    
+    @spinner("Saving lifespan to JSON")
     def save_lifespan_to_json(self):
         serializable_lifespan = {
             smell: {
-                "introduced_commit": data["introduced_commit"] if data["introduced_commit"] else None,
-                "introduced": data["introduced"].isoformat() if data["introduced"] else None,
-                "removed_commit": data["removed_commit"] if data["removed_commit"] else None,
-                "removed": data["removed"].isoformat() if data["removed"] else None,
-                "commit_span": data["commit_span"] if "commit_span" in data and data["commit_span"] else None,
-                "days_span": data["days_span"] if "days_span" in data and data["days_span"] else None,
+                key: (value.isoformat() if isinstance(value, datetime) else value)
+                for key, value in data.items()
             }
             for smell, data in self.smells_lifespan_history
         }

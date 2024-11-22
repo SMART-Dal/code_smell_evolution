@@ -11,7 +11,7 @@ repos = [
 
 if __name__ == "__main__":
     CURR_DIR = os.path.dirname(os.path.realpath(__file__))
-    TARGET_REPO_PATH = os.path.join(config.REPOS_PATH, repos[1])
+    TARGET_REPO_PATH = os.path.join(config.REPOS_PATH, repos[0])
     REPOS_LIST: dict = load_json_file(config.REPO_LIST_PATH)
     REPOS_DATA: dict = {}
     
@@ -29,24 +29,24 @@ if __name__ == "__main__":
     branches = GitManager.get_git_branches(TARGET_REPO_PATH)
     default_branch = branches[0]
     
-    # try:
-    #     designite_runner = Designite()
-    #     designite_runner.analyze_commits(repo_path = TARGET_REPO_PATH, branch = default_branch)
-    # except Exception as e:
-    #     print(e)
+    try:
+        designite_runner = Designite()
+        designite_runner.analyze_commits(repo_path = TARGET_REPO_PATH, branch = default_branch)
+    except Exception as e:
+        print(e)
     
-    # try:
-    #     ref_miner_runner = RefMiner().analyze(repo_path = TARGET_REPO_PATH, output_path = config.OUTPUT_PATH)
-    # except Exception as e:
-    #     print(e)
+    try:
+        ref_miner_runner = RefMiner().analyze(repo_path = TARGET_REPO_PATH, output_path = config.OUTPUT_PATH)
+    except Exception as e:
+        print(e)
     
     try:
         repo_data_analyzer = RepoDataAnalyzer(
-            repo_name=repos[1],
             repo_path =TARGET_REPO_PATH,
             branch = default_branch
         )
         repo_data_analyzer.calculate_smells_lifespan()
+        repo_data_analyzer.map_refactorings_to_smells()
         repo_data_analyzer.save_lifespan_to_json()
     except Exception as e:
         print(e)
