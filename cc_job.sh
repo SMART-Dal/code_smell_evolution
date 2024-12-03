@@ -6,7 +6,7 @@
 #SBATCH --account=rrg-mrdal22
 #SBATCH --mail-user=gautam@dal.ca
 #SBATCH --mail-type=ALL
-#SBATCH --time=3:00:00
+#SBATCH --time=2:00:00
 
 repo_name="code_smell_evolution"
 
@@ -33,7 +33,14 @@ pip install --no-index --upgrade pip
 pip install  --no-index -r requirements.txt
 # -------------------------------------------------------
 
-
+# -------------------------------------------------------
+echo ">>> Install tree_sitter_java pip package manually"
+# git clone git@github.com:tree-sitter/tree-sitter-java.git
+cd tree-sitter-java
+pip install . --no-index
+cd ..
+# -------------------------------------------------------
+pip list
 # -------------------------------------------------------
 echo -e "\n\n\n\n\n>>> Executing the script."
 # -u is for unbuffered output so the print statements print it to the slurm out file

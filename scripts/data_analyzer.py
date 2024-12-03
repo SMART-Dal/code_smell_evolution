@@ -2,7 +2,8 @@ import os
 from datetime import datetime
 from runners import Designite, RefMiner
 import config
-from utils import GitManager, log_execution, load_csv_file, traverse_directory, load_json_file, save_json_file
+from utils import GitManager, TSManager
+from utils import log_execution, load_csv_file, traverse_directory, load_json_file, save_json_file
 
 class RepoDataAnalyzer:
     def __init__(self, repo_path: str, branch: str):
@@ -112,11 +113,30 @@ class RepoDataAnalyzer:
     @log_execution
     def map_refactorings_to_smells(self):
         for smell, data in self.smells_lifespan_history:
-            data["refactorings"] = []
+            data["affected_files"]= []
+            data["unmapped_refactorings"] = []
             for commit_hash, refactorings in self.refactorings.items():
                 if commit_hash == data["removed_commit"]:
-                    data["refactorings"] = refactorings
+                    data["unmapped_refactorings"] = refactorings
+                    for refactoring in refactorings:
+                        if "rightSideLocations" in refactoring:
+                            for location in refactoring["rightSideLocations"]:
+                                file_path = location.get("filePath")
+                                if file_path and file_path not in data["affected_files"]:
+                                    data["affected_files"].append(file_path)
                     break
+                
+    @log_execution
+    def generate_function_info(self):
+        java_tsm = TSManager()
+        
+        for commit_hash, commit_time in self.active_commits:
+            GitManager.checkout_repo(self.repo_path, commit_hash)
+            for smell, data in self.smells_lifespan_history:
+                data["functions_map"] = {}
+                for file_path in data["affected_files"]:
+                    function_data = java_tsm.get_functions_data(file_path)
+                    data["functions_map"][file_path] = function_data               
     
     @log_execution
     def save_lifespan_to_json(self):

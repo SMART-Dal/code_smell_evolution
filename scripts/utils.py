@@ -1,7 +1,11 @@
 import os
 import json
 import csv
+import subprocess
+import traceback
 from git import Repo
+from tree_sitter import Language, Parser, Tree, Node, Query
+import tree_sitter_java as tsjava
 
 def log_execution(func):
     def wrapper(*args, **kwargs):
@@ -28,6 +32,10 @@ def log_execution(func):
                 print(f"✖ Error occurred in {class_name}.{func.__name__}: {e}")
             else:
                 print(f"✖ Error occurred in {func.__name__}: {e}")
+                
+            # Log the full error traceback
+            traceback_str = traceback.format_exc()
+            print(f"Traceback: {traceback_str}")
             raise
     return wrapper
 
@@ -136,3 +144,73 @@ class GitManager:
         repo = Repo(repo_path)
         commits = list(repo.iter_commits(branch))
         return [(commit.hexsha, commit.committed_datetime) for commit in commits]
+    
+    @staticmethod
+    def checkout_repo(repo_path, commit_hash) -> bool:
+        try:
+            subprocess.run("git", "checkout", commit_hash, cwd=repo_path)
+            return True
+        except subprocess.CalledProcessError as e:
+            print(f"Error git checkout for repo - {repo_path}, commit - {commit_hash}: Error: {e.stderr}")
+            return False
+    
+class TSManager:
+    def __init__(self) -> None:
+        JAVA_LANG = tsjava.language()
+        self.language = Language(JAVA_LANG)
+        self.parser = Parser(JAVA_LANG)
+        
+    def _generate_tree(self, file_path) -> Tree:
+        """
+        Generate the Tree-sitter tree for a given file.
+        
+        :param file_path: Path to the file to parse
+        :return: A Tree-sitter Tree object
+        """
+        try:
+            with open(file_path, 'r', encoding='utf-8') as file:
+                source_code = file.read()
+            
+            tree = self.parser.parse(bytes(source_code, "utf8"))
+            return tree
+        except FileNotFoundError:
+            raise FileNotFoundError(f"File not found: {file_path}")
+        except Exception as e:
+            raise RuntimeError(f"Error generating tree: {e}")
+    
+    def get_functions_data(self, file_path: str):
+        """
+        Extract all function names and their ranges from a Java file using Tree-Sitter queries.
+        
+        :param file_path: Path to the Java file
+        :return: A list of tuples, each containing a function name and its range as (start_line, start_col, end_line, end_col)
+        """
+        query_str = """
+        (method_declaration) @function_def
+        """
+        tree = self._generate_tree(file_path)
+        # source_code = open(file_path, 'r', encoding='utf-8').read()
+        # root_node = tree.root_node
+        
+        query = Query(self.language, query_str)
+        # cursor = ts.TreeCursor
+        captures = query.captures(tree.root_node)
+        # matches = cursor.exec_query(query, root_node, bytes(source_code, "utf8"))
+        
+        functions = []
+        for capture in captures:
+            for (capture_node, capture_name) in capture:
+                capture_node: Node
+                if capture_name == "function_def":
+                    func_name = self._get_function_node_name(capture_node)
+                    start_point = (capture_node.start_point.row, capture_node.start_point.column)
+                    end_point = (capture_node.end_point.row, capture_node.end_point.column)
+                    functions.append((func_name, start_point, end_point))
+        return functions
+    
+    def _get_function_node_name(self, n: Node) -> str:
+        res = n.child_by_field_name("name")
+        if res:
+            return res.text.decode()
+        else:
+            return None
