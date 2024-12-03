@@ -46,8 +46,8 @@ if __name__ == "__main__":
             branch = default_branch
         )
         repo_data_analyzer.calculate_smells_lifespan()
+        repo_data_analyzer.calc_smell_range()
         repo_data_analyzer.map_refactorings_to_smells()
-        repo_data_analyzer.generate_function_info()
         repo_data_analyzer.save_lifespan_to_json()
     except Exception as e:
         print(e)

@@ -2,8 +2,8 @@ import os
 from datetime import datetime
 from runners import Designite, RefMiner
 import config
-from utils import GitManager, TSManager
-from utils import log_execution, load_csv_file, traverse_directory, load_json_file, save_json_file
+from utils import GitManager
+from utils import log_execution, load_csv_file, traverse_directory, load_json_file, save_json_file, get_smell_dict
 
 class RepoDataAnalyzer:
     def __init__(self, repo_path: str, branch: str):
@@ -20,6 +20,8 @@ class RepoDataAnalyzer:
         self.impl_smells = {}
         self.testability_smells = {}
         self.test_smells = {}
+        
+        self.method_metrics = {}
         
         self.refactorings = {}
         
@@ -40,7 +42,8 @@ class RepoDataAnalyzer:
                 ("DesignSmells.csv", self.design_smells),
                 ("ImplementationSmells.csv", self.impl_smells),
                 ("TestabilitySmells.csv", self.testability_smells),
-                ("TestSmells.csv", self.test_smells)
+                ("TestSmells.csv", self.test_smells),
+                ("MethodMetrics.csv", self.method_metrics)
             ]
             
             for csv_file, smell_dict in csv_files:
@@ -127,16 +130,36 @@ class RepoDataAnalyzer:
                     break
                 
     @log_execution
-    def generate_function_info(self):
-        java_tsm = TSManager()
-        
-        for commit_hash, commit_time in self.active_commits:
-            GitManager.checkout_repo(self.repo_path, commit_hash)
-            for smell, data in self.smells_lifespan_history:
-                data["functions_map"] = {}
-                for file_path in data["affected_files"]:
-                    function_data = java_tsm.get_functions_data(file_path)
-                    data["functions_map"][file_path] = function_data               
+    def calc_smell_range(self):
+        for smell, data in self.smells_lifespan_history:
+            package_name = None
+            type_name = None
+            method_name = None
+            smell_dict = get_smell_dict(smell)
+            
+            if smell_dict.get("Package Name"):
+                package_name = smell_dict.get("Package Name")
+
+            if smell_dict.get("Type Name"):
+                type_name = smell_dict.get("Type Name")
+            
+            if smell_dict.get("Method Name"):
+                method_name = smell_dict.get("Method Name")
+                
+            
+            for commit_hash, metrics in self.method_metrics.items():
+                if commit_hash == data["removed_commit"]:
+                    print(f"Commit: {commit_hash}")
+                    for index, metric in enumerate(metrics):
+                        if package_name and type_name and method_name:
+                            if package_name in metric.get("Package Name") and type_name in metric.get("Type Name") and method_name in metric.get("Method Name"):
+                                metric_line = metric.get("Line no")
+                                next_metric_line = metrics[index + 1].get("Line no") if index + 1 < len(metrics) else None
+                                
+                                range = (int(metric_line), int(next_metric_line)-1) if next_metric_line else (metric_line, metric_line)
+                                if range:
+                                    data["range"] = range
+                    break             
     
     @log_execution
     def save_lifespan_to_json(self):
