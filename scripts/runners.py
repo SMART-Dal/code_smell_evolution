@@ -3,6 +3,7 @@ import subprocess
 import os
 import sys
 import config
+from pydriller import Repository
 from utils import GitManager, log_execution
 
 class Designite:
@@ -73,3 +74,21 @@ class RefMiner:
         except Exception as e:
             print(f"An error occurred: {e}")
             return None
+        
+class PyDriller:
+    
+    @staticmethod
+    def get_methods_map(repo_path, branch, commit_hash):
+        LINE_OFFSET = 1
+        
+        file_method_data_map = {}
+        for commit in Repository(path_to_repo=repo_path, only_in_branch=branch, only_commits=[commit_hash], only_modifications_with_file_types=['.java']).traverse_commits():
+            for file in commit.modified_files:
+                methods_data_map = {}
+                for m in file.methods:
+                    if m.name is not None:
+                        start_line = m.start_line - LINE_OFFSET
+                        end_line = m.end_line -LINE_OFFSET
+                        methods_data_map[m.name] = (start_line, end_line)
+                file_method_data_map[file.new_path] = methods_data_map
+        return file_method_data_map
