@@ -141,14 +141,18 @@ class RepoDataAnalyzer:
     @log_execution
     def calc_smell_range(self):
         
-        def java_file_path(info, base_dir="src/main/java"):
+        def java_file_path(info):
             package_name = info.get('Package Name', '').replace('.', '/')
             type_name = info.get('Type Name', '') + ".java"
              # Combine base directory, package path, and file name
             if package_name and type_name:
-                return f"{base_dir}/{package_name}/{type_name}"
+                return f"{package_name}/{type_name}"
+                # return f"src/main/java/{package_name}/{type_name}"
             else:
                 raise ValueError("Invalid input: 'Package Name' or 'Type Name' is missing.")
+        
+        commits_to_cover = [commit[0] for commit in self.active_commits]
+        methods_data_map: dict[str, dict] = PyDriller.get_methods_map(self.repo_path, self.branch, commits_to_cover)
         
         for smell, data in self.smells_lifespan_history:
             smell_dict = get_smell_dict(smell)
@@ -158,9 +162,7 @@ class RepoDataAnalyzer:
                 smell_method_name = smell_dict.get("Method Name")
             
             introduced_commit_hash = data.get("introduced_commit")
-            methods_data_map = PyDriller.get_methods_map(self.repo_path, self.branch, commit_hash=introduced_commit_hash)
-            
-            for file_path, methods_data in methods_data_map.items():
+            for file_path, methods_data in methods_data_map.get(introduced_commit_hash, {}).items():
                 file_path: str
                 methods_data: dict
                 if file_path and smell_path and file_path.endswith(smell_path):
@@ -170,6 +172,7 @@ class RepoDataAnalyzer:
                         method_name_split = method_name.split('::')
                         if smell_method_name and smell_method_name in method_name_split:
                             data["range"] = method_range
+                            break
             
     
     @log_execution
@@ -184,4 +187,4 @@ class RepoDataAnalyzer:
             }
             for smell, data in self.smells_lifespan_history
         }
-        save_json_file(os.path.join(config.OUTPUT_PATH, "Smells_lifespan_OP", f"{os.path.basename(self.repo_path)}.json"), data=serializable_lifespan)
+        save_json_file(os.path.join(config.SMELLS_LIB_PATH, f"{os.path.basename(self.repo_path)}.json"), data=serializable_lifespan)

@@ -4,7 +4,7 @@ import os
 import sys
 import config
 from pydriller import Repository
-from utils import GitManager, log_execution
+from utils import GitManager, log_execution, ColoredStr
 
 class Designite:
     jar_path = os.path.join(config.EXECUTABLES_PATH, "DesigniteJava.jar")
@@ -17,17 +17,25 @@ class Designite:
     @log_execution
     def analyze_commits(self, repo_path: Path, branch: str):
         try:
-            print(f"Repo: {repo_path}")
-            result = subprocess.run([
+            print(f"\nRepo: {ColoredStr.blue(repo_path)} | Branch: {ColoredStr.green(branch)}")
+            branch_ref = branch if branch in ["master", "main"] else "refs/heads/" + branch
+            process = subprocess.Popen([
                 "java", "-jar", self.jar_path, 
                 "-i", repo_path, 
                 "-o", os.path.join(self.output_dir, GitManager.get_repo_name(repo_path)), 
-                "-ac", branch
-            ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            error = result.stderr.decode()
-        except subprocess.CalledProcessError as e:
-            error = e.stderr.decode()
-            print(f"Error: {error}")
+                "-ac", branch_ref
+            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            
+            # Stream the output line by line
+            for line in process.stdout:
+                print(line, end="")  # Output JAR stdout in real-time
+            for line in process.stderr:
+                print(line, end="")  # Output JAR stderr in real-time
+            process.wait()
+            if process.returncode != 0:
+                print(ColoredStr.red(f"Process failed with return code: {process.returncode}"))
+        except Exception as e:
+            print(ColoredStr.red(f"An error occurred: {e}"))
         
         
 class RefMiner:
@@ -39,11 +47,8 @@ class RefMiner:
             os.makedirs(self.output_dir)
         
     @log_execution
-    def analyze(self, repo_path: Path, output_path: Path):
+    def analyze(self, repo_path: Path, branch: str):
         try:
-            if not os.path.exists(output_path):
-                os.mkdir(output_path)
-
             output_path = os.path.join(self.output_dir, GitManager.get_repo_name(repo_path)+".json")
 
             try:
@@ -54,37 +59,42 @@ class RefMiner:
                 print(ex)
             os.chdir(self.bin_path)
             
-            shell = True
-            if sys.platform == 'linux':
-                shell = False
+            shell = sys.platform != 'linux'
             
             try:
-                print(f"Repo: {repo_path}")
-                result = subprocess.run([
+                print(f"\nRepo: {ColoredStr.blue(repo_path)} | Branch: {ColoredStr.green(branch)}")
+                process = subprocess.Popen([
                     "sh","RefactoringMiner",
-                    "-a", repo_path,
+                    "-a", repo_path, branch,
                     "-json", output_path
-                ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                error = result.stderr.decode()
-            except subprocess.CalledProcessError as e:
-                error = e.stderr.decode()
-                print(f"Error: {error}")
-            
-            os.chdir(config.ROOT_PATH)
+                ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=shell)
+                
+                # Stream output in real-time
+                for line in process.stdout:
+                    print(line, end="")
+                for line in process.stderr:
+                    print(line, end="")
+                process.wait()  # Wait for process to complete
+                if process.returncode != 0:
+                    print(ColoredStr.red(f"Process failed with return code: {process.returncode}"))
+            except Exception as e:
+                print(ColoredStr.red(f"An error occurred during analysis: {e}"))
+                
         except Exception as e:
-            print(f"An error occurred: {e}")
-            return None
+            print(ColoredStr.red(f"An error occurred: {e}"))
         
 class PyDriller:
     
     @staticmethod
-    def get_methods_map(repo_path, branch, commit_hash):
-        file_method_data_map = {}
-        for commit in Repository(path_to_repo=repo_path, only_in_branch=branch, only_commits=[commit_hash], only_modifications_with_file_types=['.java']).traverse_commits():
+    def get_methods_map(repo_path, branch, commits):
+        map = {}
+        for commit in Repository(path_to_repo=repo_path, only_in_branch=branch, only_commits=commits, only_modifications_with_file_types=['.java']).traverse_commits():
+            file_map = {}
             for file in commit.modified_files:
                 methods_data_map = {}
                 for m in file.methods:
                     if m.name is not None:
                         methods_data_map[m.name] = (m.start_line, m.end_line)
-                file_method_data_map[file.new_path] = methods_data_map
-        return file_method_data_map
+                file_map[file.new_path] = methods_data_map
+            map[commit.hash] = file_map
+        return map

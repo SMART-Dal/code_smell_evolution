@@ -15,6 +15,7 @@ REPO_LIST_PATH = os.path.join(BIN_PATH, "data", "results.json")
 REPOS_PATH = os.path.join(ROOT_PATH, "repos")
 OUTPUT_PATH = os.path.join(ROOT_PATH, "output")
 
-
+SMELLS_LIB_PATH = os.path.join(OUTPUT_PATH, "Smells_lifespan_OP")
 
 SMELL_SKIP_COLS = ["Project Name"]
+SMELL_COL_NAMES = ["Architecture Smell", "Design Smell", "Implementation Smell", "Testability Smell", "Test Smell"]

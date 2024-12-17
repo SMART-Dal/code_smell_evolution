@@ -11,25 +11,30 @@ def log_execution(func):
         class_name = None
         if args:
             class_name = args[0].__class__.__name__ if hasattr(args[0], "__class__") else None
+            
+        if class_name == "Designite":
+            class_name = ColoredStr.orange(class_name)
+        elif class_name == "RefMiner":
+            class_name = ColoredStr.cyan(class_name)
 
         # Log the custom message and function execution details
         if class_name:
-            print(f"▶ Starting execution of {class_name}.{func.__name__}")
+            print(ColoredStr.light_gray(f"▶ Starting execution of {class_name}.{func.__name__}"))
         else:
-            print(f"▶ Starting execution of {func.__name__}")
+            print(ColoredStr.light_gray(f"▶ Starting execution of {func.__name__}"))
 
         try:
             result = func(*args, **kwargs)
             if class_name:
-                print(f"✔ Finished execution of {class_name}.{func.__name__}")
+                print(ColoredStr.light_gray(f"✔ Finished execution of {class_name}.{func.__name__}"))
             else:
-                print(f"✔ Finished execution of {func.__name__}")
+                print(ColoredStr.light_gray(f"✔ Finished execution of {func.__name__}"))
             return result
         except Exception as e:
             if class_name:
-                print(f"✖ Error occurred in {class_name}.{func.__name__}: {e}")
+                print(ColoredStr.red(f"✖ Error occurred in {class_name}.{func.__name__}: {e}"))
             else:
-                print(f"✖ Error occurred in {func.__name__}: {e}")
+                print(ColoredStr.red(f"✖ Error occurred in {func.__name__}: {e}"))
                 
             # Log the full error traceback
             traceback_str = traceback.format_exc()
@@ -37,7 +42,24 @@ def log_execution(func):
             raise
     return wrapper
 
+class ColoredStr:
+    @staticmethod
+    def blue(string): return "\033[94m {}\033[00m" .format(string)
+    
+    @staticmethod
+    def green(string): return "\033[92m {}\033[00m" .format(string)
+    
+    @staticmethod
+    def red(string): return "\033[91m {}\033[00m" .format(string)
 
+    @staticmethod
+    def light_gray(string): return "\033[97m {}\033[00m" .format(string)
+    
+    @staticmethod
+    def orange(string): return "\033[93m {}\033[00m" .format(string)
+    
+    @staticmethod
+    def cyan(string): return "\033[96m {}\033[00m" .format(string)
 
 def load_json_file(file_path):
     """
@@ -81,8 +103,10 @@ def traverse_directory(dir_path):
     :param dir_path: Path to the directory.
     :yield: Paths of files and subdirectories.
     """
-    for root, dirs, _ in os.walk(dir_path):
+    for root, dirs, files in os.walk(dir_path):
         for name in dirs:
+            yield os.path.join(root, name)
+        for name in files:
             yield os.path.join(root, name)
 
 def get_smell_dict(smell_str: str) -> dict:
@@ -116,22 +140,25 @@ class GitManager:
         :return: The name of the repository folder.
         """
         return os.path.basename(os.path.normpath(repo_path))
-
+    
     @staticmethod
-    def get_git_branches(repo_path):
+    def get_default_branch(repo_path):
         """
-        Get a list of branches in a Git repository.
+        Get the default branch in a Git repository.
 
         :param repo_path: Path to the local Git repository.
-        :return: A list of branch names.
+        :return: The name of the default branch.
         """
-        branches = []
+        default_branch = None
         try:
             repo = Repo(repo_path)
-            branches = [head.name for head in repo.heads]
+            if repo.head.is_detached:
+                default_branch = repo.git.symbolic_ref('refs/remotes/origin/HEAD').split('/')[-1]
+            else:
+                default_branch = repo.head.ref.name
         except Exception as e:
             print(f"An error occurred: {e}")
-        return branches
+        return default_branch
     
     @staticmethod
     def get_all_commits(repo_path, branch):
