@@ -116,19 +116,28 @@ class RepoDataAnalyzer:
     @log_execution
     def map_refactorings_to_smells(self):
         for smell, data in self.smells_lifespan_history:
-            data["affected_files"]= []
             data["unmapped_refactorings"] = []
             for commit_hash, refactorings in self.refactorings.items():
                 if commit_hash == data["removed_commit"]:
                     data["unmapped_refactorings"] = refactorings
-                    for refactoring in refactorings:
-                        if "rightSideLocations" in refactoring:
-                            for location in refactoring["rightSideLocations"]:
-                                file_path = location.get("filePath")
-                                if file_path and file_path not in data["affected_files"]:
-                                    data["affected_files"].append(file_path)
                     break
                 
+        for smell, data in self.smells_lifespan_history:
+            smell_range = data.get("range", None)
+            unmapped_refactorings = data.get("unmapped_refactorings", [])
+            mapped_refactorings = []
+            if smell_range is None:
+                data["mapped_refactorings"] = unmapped_refactorings
+                continue
+            
+            for refactoring in unmapped_refactorings:
+                for location in refactoring["rightSideLocations"]:
+                    if smell_range[0] <= location["startLine"] <= smell_range[1] or smell_range[0] <= location["endLine"] <= smell_range[1]:
+                        mapped_refactorings.append(refactoring)
+                        break
+            
+            data["mapped_refactorings"] = mapped_refactorings
+            
     @log_execution
     def calc_smell_range(self):
         
@@ -165,6 +174,9 @@ class RepoDataAnalyzer:
     
     @log_execution
     def save_lifespan_to_json(self):
+        for  _, data in self.smells_lifespan_history:
+            del data["unmapped_refactorings"]
+        
         serializable_lifespan = {
             smell: {
                 key: (value.isoformat() if isinstance(value, datetime) else value)

@@ -79,16 +79,12 @@ class PyDriller:
     
     @staticmethod
     def get_methods_map(repo_path, branch, commit_hash):
-        LINE_OFFSET = 1
-        
         file_method_data_map = {}
         for commit in Repository(path_to_repo=repo_path, only_in_branch=branch, only_commits=[commit_hash], only_modifications_with_file_types=['.java']).traverse_commits():
             for file in commit.modified_files:
                 methods_data_map = {}
                 for m in file.methods:
                     if m.name is not None:
-                        start_line = m.start_line - LINE_OFFSET
-                        end_line = m.end_line -LINE_OFFSET
-                        methods_data_map[m.name] = (start_line, end_line)
+                        methods_data_map[m.name] = (m.start_line, m.end_line)
                 file_method_data_map[file.new_path] = methods_data_map
         return file_method_data_map
