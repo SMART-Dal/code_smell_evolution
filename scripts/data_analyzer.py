@@ -4,6 +4,7 @@ from runners import Designite, RefMiner, PyDriller
 import config
 from utils import GitManager
 from utils import log_execution, load_csv_file, traverse_directory, load_json_file, save_json_file, get_smell_dict
+from models import *
 
 class RepoDataAnalyzer:
     def __init__(self, repo_path: str, branch: str):
@@ -15,9 +16,10 @@ class RepoDataAnalyzer:
         self.active_commits: list[tuple[str, datetime]] = []
         self.all_commits: list[tuple[str, datetime]] = GitManager.get_all_commits(repo_path, branch)
         
-        self.arch_smells = {}
+        
+        self.architecture_smells = {}
         self.design_smells = {}
-        self.impl_smells = {}
+        self.implementation_smells = {}
         self.testability_smells = {}
         self.test_smells = {}
         
@@ -26,11 +28,11 @@ class RepoDataAnalyzer:
         self.refactorings = {}
         
         self.smells_lifespan_history = []
-        self.load_smells()
-        self.load_refactorings()
+        self.load_raw_smells()
+        # self.load_raw_refactorings()
         
     @log_execution
-    def load_smells(self):
+    def load_raw_smells(self):
         for commit_path in traverse_directory(self.repo_designite_output_path):
             commit_hash = os.path.basename(commit_path)
             commit_datetime = next((dt for ch, dt in self.all_commits if ch == commit_hash), None)
@@ -38,21 +40,37 @@ class RepoDataAnalyzer:
                 self.active_commits.append((commit_hash, commit_datetime))
             
             csv_files = [
-                ("ArchitectureSmells.csv", self.arch_smells),
-                ("DesignSmells.csv", self.design_smells),
-                ("ImplementationSmells.csv", self.impl_smells),
-                ("TestabilitySmells.csv", self.testability_smells),
-                ("TestSmells.csv", self.test_smells),
-                ("MethodMetrics.csv", self.method_metrics)
+                ("ArchitectureSmells.csv", self.architecture_smells, ArchitectureSmell),
+                ("DesignSmells.csv", self.design_smells, DesignSmell),
+                ("ImplementationSmells.csv", self.implementation_smells, ImplementationSmell),
+                ("TestabilitySmells.csv", self.testability_smells, TestabilitySmell),
+                ("TestSmells.csv", self.test_smells, TestSmell),
             ]
             
-            for csv_file, smell_dict in csv_files:
+            for csv_file, smell_dict, smell_model in csv_files:
                 csv_path = os.path.join(commit_path, csv_file)
+                smell_instances = []
                 if os.path.exists(csv_path):
-                    smell_dict[commit_hash] = load_csv_file(csv_path, skipCols=config.SMELL_SKIP_COLS)
+                    smells_data = load_csv_file(csv_path, skipCols=config.SMELL_SKIP_COLS)
+                    for smell_row in smells_data:
+                        pakage_name = smell_row.get("Package Name", None)
+                        smell_name = smell_row.get(smell_model.kind, None)
+                        cause = smell_row.get("Cause of the Smell", None)
+                        smell_instance = smell_model(pakage_name, smell_name, cause)
+                        
+                        if smell_model in [DesignSmell, TestabilitySmell]:
+                            smell_instance.type_name = smell_row.get("Type Name", None)
+                        elif smell_model in [ImplementationSmell, TestSmell]:
+                            smell_instance.type_name = smell_row.get("Type Name", None)
+                            smell_instance.method_name = smell_row.get("Method Name", None)
+                            smell_instance.start_line = smell_row.get("Method start line no", None)
+                        
+                        smell_instances.append(smell_instance)
+                    
+                    smell_dict[commit_hash] = smell_instances
     
     @log_execution
-    def load_refactorings(self):
+    def load_raw_refactorings(self):
         for commit in load_json_file(self.repo_refminer_output_path).get("commits"):
             if any(commit.get("sha1") == active_commit[0] for active_commit in self.active_commits):
                 self.refactorings[commit.get("sha1")] = commit.get("refactorings")
