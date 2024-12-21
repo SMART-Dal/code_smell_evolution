@@ -7,32 +7,36 @@ from utils import log_execution, load_csv_file, traverse_directory, load_json_fi
 from models import *
 
 class RepoDataAnalyzer:
-    def __init__(self, repo_path: str, branch: str):
-        self.repo_name = os.path.basename(repo_path)
+    def __init__(self, username: str, repo_name: str, repo_path: str, branch: str):
         self.repo_path = repo_path
-        self.repo_designite_output_path = os.path.join(Designite.output_dir, self.repo_name)
-        self.repo_refminer_output_path = os.path.join(RefMiner.output_dir, f"{self.repo_name}.json")
+        self.repo_designite_output_path = os.path.join(Designite.output_dir, username, repo_name)
+        self.repo_refminer_output_path = os.path.join(RefMiner.output_dir, username, f"{repo_name}.json")
+        
         self.branch = branch
         self.active_commits: list[tuple[str, datetime]] = []
         self.all_commits: list[tuple[str, datetime]] = GitManager.get_all_commits(repo_path, branch)
         
-        
-        self.architecture_smells = {}
-        self.design_smells = {}
-        self.implementation_smells = {}
-        self.testability_smells = {}
-        self.test_smells = {}
+        self.architecture_smells: dict[str, list[ArchitectureSmell]] = {}
+        self.design_smells: dict[str, list[DesignSmell]] = {}
+        self.implementation_smells: dict[str, list[ImplementationSmell]] = {}
+        self.testability_smells: dict[str, list[TestabilitySmell]] = {}
+        self.test_smells: dict[str, list[TestSmell]] = {}
         
         self.method_metrics = {}
         
         self.refactorings = {}
         
-        self.smells_lifespan_history = []
+        self.smells_lib: list[SmellInstance] = []
         self.load_raw_smells()
-        # self.load_raw_refactorings()
+        self.load_raw_refactorings()
+        pass
         
     @log_execution
     def load_raw_smells(self):
+        """
+        Load raw smells from Designite output.
+        Will load smells for active commits only.
+        """
         for commit_path in traverse_directory(self.repo_designite_output_path):
             commit_hash = os.path.basename(commit_path)
             commit_datetime = next((dt for ch, dt in self.all_commits if ch == commit_hash), None)
@@ -49,8 +53,9 @@ class RepoDataAnalyzer:
             
             for csv_file, smell_dict, smell_model in csv_files:
                 csv_path = os.path.join(commit_path, csv_file)
-                smell_instances = []
                 if os.path.exists(csv_path):
+                    smell_instances = []
+                    smell_hashes = set()
                     smells_data = load_csv_file(csv_path, skipCols=config.SMELL_SKIP_COLS)
                     for smell_row in smells_data:
                         pakage_name = smell_row.get("Package Name", None)
@@ -60,76 +65,107 @@ class RepoDataAnalyzer:
                         
                         if smell_model in [DesignSmell, TestabilitySmell]:
                             smell_instance.type_name = smell_row.get("Type Name", None)
-                        elif smell_model in [ImplementationSmell, TestSmell]:
+                        elif smell_model in [TestSmell]:
+                            smell_instance.type_name = smell_row.get("Type Name", None)
+                            smell_instance.method_name = smell_row.get("Method Name", None)
+                        elif smell_model in [ImplementationSmell]:
                             smell_instance.type_name = smell_row.get("Type Name", None)
                             smell_instance.method_name = smell_row.get("Method Name", None)
                             smell_instance.start_line = smell_row.get("Method start line no", None)
                         
+                        if hash(smell_instance) in smell_hashes: # remove duplicates
+                            continue
+                        
                         smell_instances.append(smell_instance)
+                        smell_hashes.add(hash(smell_instance))
                     
                     smell_dict[commit_hash] = smell_instances
     
     @log_execution
     def load_raw_refactorings(self):
+        """
+        Load raw refactorings from RefMiner output.
+        Will load refactorings for active commits only.
+        """
         for commit in load_json_file(self.repo_refminer_output_path).get("commits"):
             if any(commit.get("sha1") == active_commit[0] for active_commit in self.active_commits):
-                self.refactorings[commit.get("sha1")] = commit.get("refactorings")
+                commit_hash = commit.get("sha1")
+                refactorings = commit.get("refactorings")
+                url = commit.get("url")
+                
+                refactoring_instances = []
+                for refactoring in refactorings:
+                    refactoring_instance = Refactoring(url, refactoring.get("type"), commit_hash)
+                    for location in refactoring.get("rightSideLocations"):
+                        refactoring_instance.add_change(
+                            file_path=location.get("filePath"), 
+                            range=(location.get("startLine"), location.get("endLine")), 
+                            code_element_type=location.get("codeElementType"), 
+                            code_element=location.get("codeElement")
+                        )
+                    refactoring_instances.append(refactoring_instance)
+                
+                self.refactorings[commit_hash] = refactoring_instances
     
     @log_execution     
     def calculate_smells_lifespan(self):
         sorted_active_commits = sorted(self.active_commits, key=lambda x: x[1])
-        smells_lifespan = {}
+        live_smells = {}
         
         previous_commit = None
         for commit_hash, commit_datetime in sorted_active_commits:
             if previous_commit:
-                for smell_dict in [self.arch_smells, self.design_smells, self.impl_smells, self.testability_smells, self.test_smells]:
-                    
+                for smell_dict in [self.architecture_smells, self.design_smells, self.implementation_smells, self.testability_smells, self.test_smells]:
+                    smell_dict: dict[str, list]
                     added_smells = set()
                     removed_smells = set()
-                    previous_smells = smell_dict.get(previous_commit)
-                    current_smells = smell_dict.get(commit_hash)
+                    previous_smells = smell_dict.get(previous_commit, [])
+                    current_smells = smell_dict.get(commit_hash, [])
                     
-                    if previous_smells and current_smells:
-                        added_smells = set(map(str, current_smells)) - set(map(str, previous_smells))
-                        removed_smells = set(map(str, previous_smells)) - set(map(str, current_smells))
-                    elif current_smells and not previous_smells:
-                        added_smells = set(map(str, current_smells))
+                    previous_smells_set = set(previous_smells)
+                    current_smells_set = set(current_smells)
+                    added_smells = current_smells_set - previous_smells_set
+                    removed_smells = previous_smells_set - current_smells_set
                         
                     for smell in added_smells:
-                        smells_lifespan[smell] = {"introduced": commit_datetime, "removed": None, "introduced_commit": commit_hash, "removed_commit": None}
+                        smell_inst = SmellInstance(smell)
+                        smell_inst.introduced_at(commit_hash, commit_datetime)
+                        live_smells[hash(smell_inst.smell)] = smell_inst
+                        
                     for smell in removed_smells:
-                        if smell in smells_lifespan:
-                            smells_lifespan[smell]["removed"] = commit_datetime
-                            smells_lifespan[smell]["removed_commit"] = commit_hash
-                            self.smells_lifespan_history.append((smell, smells_lifespan[smell]))
-                            del smells_lifespan[smell]
+                        smell_hash = hash(smell)
+                        if smell_hash in live_smells:
+                            live_smells[smell_hash].removed_at(commit_hash, commit_datetime)
+                            self.smells_lib.append(live_smells[smell_hash])
+                            del live_smells[smell_hash]
             else:
-                for smell_dict in [self.arch_smells, self.design_smells, self.impl_smells, self.testability_smells, self.test_smells]:
-                    current_smells = smell_dict.get(commit_hash)
+                for smell_dict in [self.architecture_smells, self.design_smells, self.implementation_smells, self.testability_smells, self.test_smells]:
+                    current_smells = smell_dict.get(commit_hash, [])
                     
-                    if current_smells:
-                        for smell in map(str, current_smells):
-                            smells_lifespan[smell] = {"introduced": commit_datetime, "removed": None, "introduced_commit": commit_hash, "removed_commit": None}
+                    for smell in current_smells:
+                        smell_inst = SmellInstance(smell)
+                        smell_inst.introduced_at(commit_hash, commit_datetime)
+                        live_smells[hash(smell)] = smell_inst
             
             previous_commit = commit_hash
             
-        for smell, data in smells_lifespan.items():
-            self.smells_lifespan_history.append((smell, data))
+        for smell in live_smells.values():
+            self.smells_lib.append(smell_inst)
         
         # NOTE: optional sorting by introduced date
-        self.smells_lifespan_history.sort(key=lambda x: x[1]["introduced"])
+        self.smells_lib.sort(key=lambda x: x.introduced.datetime)
         
         self.calculate_lifespan_gap()
     
     @log_execution
     def calculate_lifespan_gap(self):
-        for smell, data in self.smells_lifespan_history:
-            if data["introduced"] and data["removed"]:
-                data["days_span"] = (data["removed"] - data["introduced"]).days
-                introduced_index = next(i for i, (ch, _) in enumerate(self.all_commits) if ch == data["introduced_commit"])
-                removed_index = next(i for i, (ch, _) in enumerate(self.all_commits) if ch == data["removed_commit"])
-                data["commit_span"] =  introduced_index - removed_index
+        for smell in self.smells_lib:
+            if smell.introduced and smell.removed:
+                if smell.introduced.datetime and smell.removed.datetime:
+                    smell.days_span = (smell.removed.datetime - smell.introduced.datetime).days
+                    introduced_index = next(i for i, (ch, _) in enumerate(self.all_commits) if ch == smell.introduced.commit_hash)
+                    removed_index = next(i for i, (ch, _) in enumerate(self.all_commits) if ch == smell.removed.commit_hash)
+                    smell.commit_span =  introduced_index - removed_index
     
     @log_execution
     def map_refactorings_to_smells(self):
@@ -192,17 +228,9 @@ class RepoDataAnalyzer:
                             data["range"] = method_range
                             break
             
-    
     @log_execution
-    def save_lifespan_to_json(self):
-        for  _, data in self.smells_lifespan_history:
-            del data["unmapped_refactorings"]
-        
-        serializable_lifespan = {
-            smell: {
-                key: (value.isoformat() if isinstance(value, datetime) else value)
-                for key, value in data.items()
-            }
-            for smell, data in self.smells_lifespan_history
-        }
-        save_json_file(os.path.join(config.SMELLS_LIB_PATH, f"{os.path.basename(self.repo_path)}.json"), data=serializable_lifespan)
+    def save_lifespan_to_json(self, username, repo_name):
+        save_json_file(
+            file_path=os.path.join(config.SMELLS_LIB_PATH, f"{username}@{repo_name}.json"), 
+            data=[smell_instance.to_dict() for smell_instance in self.smells_lib]
+        )
