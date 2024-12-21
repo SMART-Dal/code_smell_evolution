@@ -81,7 +81,7 @@ def save_json_file(file_path, data):
     """
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, 'w') as file:
-        json.dump(data, file, indent=4)
+        json.dump(data, file, indent=2)
 
 def load_csv_file(file_path, skipCols=[]):
     """
@@ -126,10 +126,11 @@ class GitManager:
         """
         repo_url = GitManager.BASE_URL + repo_full_name + ".git"
         try:
-            Repo.clone_from(repo_url, repo_path)
+            print(f"Cloning repo: {ColoredStr.blue(repo_full_name)}")
+            Repo.clone_from(url=repo_url, to_path=repo_path)
         except Exception as e:
-            print(f"An error occurred while cloning repo: {repo_full_name}")
-            print(f"Error: {e}")
+            print(f"An error occurred while cloning repo: {ColoredStr.red(repo_full_name)}")
+            print(f"Error: {ColoredStr.red(e)}")
             
     @staticmethod
     def get_repo_name(repo_path):

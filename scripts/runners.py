@@ -15,14 +15,18 @@ class Designite:
             os.makedirs(self.output_dir)
         
     @log_execution
-    def analyze_commits(self, repo_path: Path, branch: str):
+    def analyze_commits(self, username: str, repo_name: str, repo_path: Path, branch: str):
         try:
             print(f"\nRepo: {ColoredStr.blue(repo_path)} | Branch: {ColoredStr.green(branch)}")
             branch_ref = branch if branch in ["master", "main"] else "refs/heads/" + branch
+            output_path = os.path.join(self.output_dir, username, repo_name)
+            if not os.path.exists(output_path):
+                os.makedirs(output_path)
+            
             process = subprocess.Popen([
                 "java", "-jar", self.jar_path, 
                 "-i", repo_path, 
-                "-o", os.path.join(self.output_dir, GitManager.get_repo_name(repo_path)), 
+                "-o", output_path, 
                 "-ac", branch_ref
             ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             
@@ -47,9 +51,9 @@ class RefMiner:
             os.makedirs(self.output_dir)
         
     @log_execution
-    def analyze(self, repo_path: Path, branch: str):
+    def analyze(self, username: str, repo_name: str, repo_path: Path, branch: str):
         try:
-            output_path = os.path.join(self.output_dir, GitManager.get_repo_name(repo_path)+".json")
+            output_path = os.path.join(self.output_dir, username, f"{repo_name}.json")
 
             try:
                 java_proc = subprocess.run(["java","-version"], capture_output=True, shell=False)

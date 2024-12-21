@@ -162,7 +162,7 @@ cython_debug/
 #.idea/
 
 output/
-repos/
+corpus/
 
 bin/executables/.config
 temp_log**.txt
