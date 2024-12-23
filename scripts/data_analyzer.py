@@ -155,10 +155,11 @@ class RepoDataAnalyzer:
         # NOTE: optional sorting by introduced date
         self.smells_lib.sort(key=lambda x: x.introduced.datetime)
         
-        self.calculate_lifespan_gap()
+        self._calculate_lifespan_gap()
+        self._calc_smell_range()
     
     @log_execution
-    def calculate_lifespan_gap(self):
+    def _calculate_lifespan_gap(self):
         for smell in self.smells_lib:
             if smell.introduced and smell.removed:
                 if smell.introduced.datetime and smell.removed.datetime:
@@ -166,6 +167,39 @@ class RepoDataAnalyzer:
                     introduced_index = next(i for i, (ch, _) in enumerate(self.all_commits) if ch == smell.introduced.commit_hash)
                     removed_index = next(i for i, (ch, _) in enumerate(self.all_commits) if ch == smell.removed.commit_hash)
                     smell.commit_span =  introduced_index - removed_index
+                    
+    @log_execution
+    def _calc_smell_range(self):
+        
+        def _java_info_to_path(pkg_name='', type_name=''):
+            slash_path = pkg_name.replace('.', '/')
+            extension = type_name + ".java"
+             # Combine base directory, package path
+            if slash_path and extension:
+                return f"{slash_path}/{extension}"
+            else:
+                raise ValueError("Invalid input: 'Package Name' or 'Type Name' is missing.")
+        
+        commits_to_cover = [commit[0] for commit in self.active_commits]
+        methods_data_map: dict[str, dict] = PyDriller.get_methods_map(self.repo_path, self.branch, commits_to_cover)
+        
+        for smell_instance in self.smells_lib:
+            smell_file_path = _java_info_to_path(smell_instance.smell.package_name, smell_instance.smell.type_name)
+            smell_method_name = None
+            if isinstance(smell_instance.smell, (ImplementationSmell, TestSmell)):
+                smell_method_name = smell_instance.smell.method_name
+            
+            for file_path, methods_data in methods_data_map.get(smell_instance.introduced.commit_hash, {}).items():
+                file_path: str
+                methods_data: dict
+                if file_path and smell_file_path and file_path.endswith(smell_file_path):
+                    for method_name, method_range in methods_data.items():
+                        method_name: str
+                        method_range: tuple
+                        method_name_split = method_name.split('::')
+                        if smell_method_name and smell_method_name in method_name_split:
+                            smell_instance.smell.range = method_range
+                            break
     
     @log_execution
     def map_refactorings_to_smells(self):
@@ -191,42 +225,6 @@ class RepoDataAnalyzer:
                         break
             
             data["mapped_refactorings"] = mapped_refactorings
-            
-    @log_execution
-    def calc_smell_range(self):
-        
-        def java_file_path(info):
-            package_name = info.get('Package Name', '').replace('.', '/')
-            type_name = info.get('Type Name', '') + ".java"
-             # Combine base directory, package path, and file name
-            if package_name and type_name:
-                return f"{package_name}/{type_name}"
-                # return f"src/main/java/{package_name}/{type_name}"
-            else:
-                raise ValueError("Invalid input: 'Package Name' or 'Type Name' is missing.")
-        
-        commits_to_cover = [commit[0] for commit in self.active_commits]
-        methods_data_map: dict[str, dict] = PyDriller.get_methods_map(self.repo_path, self.branch, commits_to_cover)
-        
-        for smell, data in self.smells_lifespan_history:
-            smell_dict = get_smell_dict(smell)
-            smell_path = java_file_path(smell_dict)
-            smell_method_name = None
-            if smell_dict.get("Method Name"):
-                smell_method_name = smell_dict.get("Method Name")
-            
-            introduced_commit_hash = data.get("introduced_commit")
-            for file_path, methods_data in methods_data_map.get(introduced_commit_hash, {}).items():
-                file_path: str
-                methods_data: dict
-                if file_path and smell_path and file_path.endswith(smell_path):
-                    for method_name, method_range in methods_data.items():
-                        method_name: str
-                        method_range: tuple
-                        method_name_split = method_name.split('::')
-                        if smell_method_name and smell_method_name in method_name_split:
-                            data["range"] = method_range
-                            break
             
     @log_execution
     def save_lifespan_to_json(self, username, repo_name):
