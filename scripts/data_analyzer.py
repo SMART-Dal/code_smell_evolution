@@ -192,7 +192,26 @@ class RepoDataAnalyzer:
                         if smell_method_name in method_name_split:
                             smell_instance.smell.range = method_range
                             break
-                        
+        
+    @log_execution
+    def map_refactorings_to_smells(self):
+        for smell_instance in self.smells_lib:
+            smell_instance.refactorings = []
+            
+            for commit_hash, refs_list in self.refactorings.items():
+                if smell_instance.removed:        
+                    if commit_hash == smell_instance.removed.commit_hash:
+                        current_version_refactorings = refs_list
+                        for ref in current_version_refactorings:
+                            for change in ref.changes:
+                                if change.file_path and self._check_file_intersection(smell_instance.smell, target_path=change.file_path):
+                                    if not hasattr(smell_instance, "range") or smell_instance.smell.range is None:
+                                        smell_instance.refactorings.append(ref)
+                                    else:
+                                        if self._check_smell_ref_intersection(smell_instance.smell.range, change.range):
+                                            smell_instance.refactorings.append(ref)
+                        break
+    
     def _check_file_intersection(self, smell, target_path: str):
         """
         Check if the smell file path intersects with the target path.
@@ -215,27 +234,6 @@ class RepoDataAnalyzer:
             print(ColoredStr.orange(f"Invalid input: 'Package Name' and 'Type Name' is missing."))
             
         return is_intersected
-        
-    @log_execution
-    def map_refactorings_to_smells(self):
-        for smell_instance in self.smells_lib:
-            smell_instance.refactorings = []
-            
-            for commit_hash, refs_list in self.refactorings.items():
-                if smell_instance.removed:        
-                    if commit_hash == smell_instance.removed.commit_hash:
-                        current_version_refactorings = refs_list
-                        if not isinstance(smell_instance.smell, (ImplementationSmell, TestSmell)):
-                            smell_instance.refactorings = current_version_refactorings
-                        else:
-                            if smell_instance.smell.range is None:
-                                print(ColoredStr.orange(f"Smell range not found for: {smell_instance.smell} | {smell_instance.smell.to_dict()}"))
-                            else:
-                                for ref in current_version_refactorings:
-                                    for change in ref.changes:
-                                        if self._check_smell_ref_intersection(smell_instance.smell.range, change.range):
-                                            smell_instance.refactorings.append(ref)
-                        break
                 
     def _check_smell_ref_intersection(self, smell_range: tuple[int, int], refactoring_range: tuple[int, int]):
         """
