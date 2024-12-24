@@ -36,8 +36,7 @@ def analyze_repo_data(username, repo_name, repo_path, branch):
         print(f"\nRepo: {ColoredStr.blue(repo_path)} | Branch: {ColoredStr.green(branch)}")
         repo_data_analyzer = RepoDataAnalyzer(username, repo_name, repo_path, branch)
         repo_data_analyzer.calculate_smells_lifespan()
-        # repo_data_analyzer.calc_smell_range()
-        # repo_data_analyzer.map_refactorings_to_smells()
+        repo_data_analyzer.map_refactorings_to_smells()
         repo_data_analyzer.save_lifespan_to_json(username, repo_name)
     except Exception as e:
         print(ColoredStr.red(e))

@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from runners import Designite, RefMiner, PyDriller
 import config
-from utils import GitManager
+from utils import GitManager, ColoredStr
 from utils import log_execution, load_csv_file, traverse_directory, load_json_file, save_json_file, get_smell_dict
 from models import *
 
@@ -24,7 +24,7 @@ class RepoDataAnalyzer:
         
         self.method_metrics = {}
         
-        self.refactorings = {}
+        self.refactorings: dict[str, list[Refactoring]] = {}
         
         self.smells_lib: list[SmellInstance] = []
         self.load_raw_smells()
@@ -170,61 +170,78 @@ class RepoDataAnalyzer:
                     
     @log_execution
     def _calc_smell_range(self):
-        
-        def _java_info_to_path(pkg_name='', type_name=''):
-            slash_path = pkg_name.replace('.', '/')
-            extension = type_name + ".java"
-             # Combine base directory, package path
-            if slash_path and extension:
-                return f"{slash_path}/{extension}"
-            else:
-                raise ValueError("Invalid input: 'Package Name' or 'Type Name' is missing.")
+        # pydriller missing nested methods
         
         commits_to_cover = [commit[0] for commit in self.active_commits]
         methods_data_map: dict[str, dict] = PyDriller.get_methods_map(self.repo_path, self.branch, commits_to_cover)
         
         for smell_instance in self.smells_lib:
-            smell_file_path = _java_info_to_path(smell_instance.smell.package_name, smell_instance.smell.type_name)
-            smell_method_name = None
             if isinstance(smell_instance.smell, (ImplementationSmell, TestSmell)):
                 smell_method_name = smell_instance.smell.method_name
+            else:
+                smell_method_name = None
             
             for file_path, methods_data in methods_data_map.get(smell_instance.introduced.commit_hash, {}).items():
                 file_path: str
                 methods_data: dict
-                if file_path and smell_file_path and file_path.endswith(smell_file_path):
+                if file_path and self._check_file_intersection(smell_instance.smell, target_path=file_path):
                     for method_name, method_range in methods_data.items():
                         method_name: str
                         method_range: tuple
                         method_name_split = method_name.split('::')
-                        if smell_method_name and smell_method_name in method_name_split:
+                        if smell_method_name in method_name_split:
                             smell_instance.smell.range = method_range
                             break
-    
+                        
+    def _check_file_intersection(self, smell, target_path: str):
+        """
+        Check if the smell file path intersects with the target path.
+        """
+        is_intersected = False
+        slash_pkg_path = smell.package_name.replace('.', '/') if hasattr(smell, 'package_name') and smell.package_name else None
+        extension = f"{smell.type_name}.java" if hasattr(smell, 'type_name') and smell.type_name else None
+        
+        if slash_pkg_path:
+            if extension:
+                if target_path.endswith(f"{slash_pkg_path}/{extension}"):
+                    is_intersected = True
+            else:
+                target_pkg_path = '/'.join(target_path.split('/')[:-1])
+                target_extension = target_path.split('.')[-1]
+                if target_pkg_path and target_extension:
+                    if target_pkg_path.endswith(slash_pkg_path) and target_extension == "java":
+                        is_intersected = True
+        else:
+            print(ColoredStr.orange(f"Invalid input: 'Package Name' and 'Type Name' is missing."))
+            
+        return is_intersected
+        
     @log_execution
     def map_refactorings_to_smells(self):
-        for smell, data in self.smells_lifespan_history:
-            data["unmapped_refactorings"] = []
-            for commit_hash, refactorings in self.refactorings.items():
-                if commit_hash == data["removed_commit"]:
-                    data["unmapped_refactorings"] = refactorings
-                    break
-                
-        for smell, data in self.smells_lifespan_history:
-            smell_range = data.get("range", None)
-            unmapped_refactorings = data.get("unmapped_refactorings", [])
-            mapped_refactorings = []
-            if smell_range is None:
-                data["mapped_refactorings"] = unmapped_refactorings
-                continue
+        for smell_instance in self.smells_lib:
+            smell_instance.refactorings = []
             
-            for refactoring in unmapped_refactorings:
-                for location in refactoring["rightSideLocations"]:
-                    if smell_range[0] <= location["startLine"] <= smell_range[1] or smell_range[0] <= location["endLine"] <= smell_range[1]:
-                        mapped_refactorings.append(refactoring)
+            for commit_hash, refs_list in self.refactorings.items():
+                if smell_instance.removed:        
+                    if commit_hash == smell_instance.removed.commit_hash:
+                        current_version_refactorings = refs_list
+                        if not isinstance(smell_instance.smell, (ImplementationSmell, TestSmell)):
+                            smell_instance.refactorings = current_version_refactorings
+                        else:
+                            if smell_instance.smell.range is None:
+                                print(ColoredStr.orange(f"Smell range not found for: {smell_instance.smell} | {smell_instance.smell.to_dict()}"))
+                            else:
+                                for ref in current_version_refactorings:
+                                    for change in ref.changes:
+                                        if self._check_smell_ref_intersection(smell_instance.smell.range, change.range):
+                                            smell_instance.refactorings.append(ref)
                         break
-            
-            data["mapped_refactorings"] = mapped_refactorings
+                
+    def _check_smell_ref_intersection(self, smell_range: tuple[int, int], refactoring_range: tuple[int, int]):
+        """
+        Check if the smell range intersects with the refactoring range.
+        """
+        return smell_range[0] <= refactoring_range[0] <= smell_range[1] or smell_range[0] <= refactoring_range[1] <= smell_range[1]
             
     @log_execution
     def save_lifespan_to_json(self, username, repo_name):
