@@ -1,4 +1,53 @@
 from datetime import datetime as dt
+from typing import Union
+
+class CorpusMetrics:
+    def __init__(self):
+        self.repos_info: dict = {}
+        self.smell_metrics: dict = {}
+    
+    def add_repo_avg_commit_span(self, repo_name, avg_commit_span): #not used
+        if repo_name not in self.repos_info:
+            self.repos_info[repo_name] = {}
+        self.repos_info[repo_name]["avg_commit_span"] = avg_commit_span
+        
+    def add_repo_avg_days_span(self, repo_name, avg_days_span): #not used
+        if repo_name not in self.repos_info:
+            self.repos_info[repo_name] = {}
+        self.repos_info[repo_name]["avg_days_span"] = avg_days_span
+        
+    def add_smell_avg_commit_span(self, smell_name, avg_commit_span):
+        if smell_name not in self.smell_metrics:
+            self.smell_metrics[smell_name] = {}
+        if "avg_commit_span" not in self.smell_metrics[smell_name]:
+            self.smell_metrics[smell_name]["avg_commit_span"] = []
+        self.smell_metrics[smell_name]["avg_commit_span"].append(avg_commit_span)
+        
+    def add_smell_avg_days_span(self, smell_name, avg_days_span):
+        if smell_name not in self.smell_metrics:
+            self.smell_metrics[smell_name] = {}
+        if "avg_days_span" not in self.smell_metrics[smell_name]:
+            self.smell_metrics[smell_name]["avg_days_span"] = []
+        self.smell_metrics[smell_name]["avg_days_span"].append(avg_days_span)
+        
+    def add_smell_ref_count(self, smell_name, ref_type, ref_count):
+        if smell_name not in self.smell_metrics:
+            self.smell_metrics[smell_name] = {}
+        if "ref_count" not in self.smell_metrics[smell_name]:
+            self.smell_metrics[smell_name]["ref_count"] = {}
+        if ref_type not in self.smell_metrics[smell_name]["ref_count"]:
+            self.smell_metrics[smell_name]["ref_count"][ref_type] = 0
+        self.smell_metrics[smell_name]["ref_count"][ref_type] += ref_count
+        
+# class RepositoryInfo:
+#     def __init__(self, repo_name):
+#         self.repo_name: str = repo_name
+        
+#         self.commit_span_history: list[int] = []
+#         self.days_span_history: list[int] = []
+        
+#         self.smells_info: dict = {}
+        
 
 class CommitInfo:
     def __init__(self, commit_hash, commit_datetime):
@@ -13,7 +62,7 @@ class CommitInfo:
 
 class SmellInstance:
     def __init__(self, smell):
-        self.smell = smell
+        self.smell: Union[ArchitectureSmell, DesignSmell, ImplementationSmell, TestabilitySmell, TestSmell] = smell
         self.introduced: CommitInfo = None
         self.removed: CommitInfo = None
         self.commit_span: int = None

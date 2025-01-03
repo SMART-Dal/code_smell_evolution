@@ -3,8 +3,9 @@ import config
 from corpus import prepare_corpus, prepare_from_corpus_info
 from runners import Designite, RefMiner
 from data_analyzer import RepoDataAnalyzer
-from lifespan_analyzer import LifespanAnalyzer
+from lifespan_analyzer import CorpusLifespanAnalyzer
 from utils import GitManager, ColoredStr
+import traceback
 
 
 def execute_designite(username, repo_name, repo_path, branch):
@@ -17,6 +18,7 @@ def execute_designite(username, repo_name, repo_path, branch):
         designite_runner.analyze_commits(username, repo_name, repo_path, branch)
     except Exception as e:
         print(ColoredStr.red(e))
+        traceback.print_exc()
 
 def execute_refminer(username, repo_name, repo_path, branch):
     """
@@ -27,6 +29,7 @@ def execute_refminer(username, repo_name, repo_path, branch):
         ref_miner_runner.analyze(username, repo_name, repo_path, branch)
     except Exception as e:
         print(ColoredStr.red(e))
+        traceback.print_exc()
         
 def analyze_repo_data(username, repo_name, repo_path, branch):
     """
@@ -37,23 +40,27 @@ def analyze_repo_data(username, repo_name, repo_path, branch):
         repo_data_analyzer = RepoDataAnalyzer(username, repo_name, repo_path, branch)
         repo_data_analyzer.calculate_smells_lifespan()
         repo_data_analyzer.map_refactorings_to_smells()
+        repo_data_analyzer.generate_metadata()
         repo_data_analyzer.save_lifespan_to_json(username, repo_name)
     except Exception as e:
         print(ColoredStr.red(e))
+        traceback.print_exc()
         
 def analyze_corpus_data():
     try:
-        lifespan_analyzer = LifespanAnalyzer()
-        avg_commit_spans, avg_days_spans, avg_smells_span, top_k_ref_4_smells = lifespan_analyzer.process_repos()
+        lifespan_analyzer = CorpusLifespanAnalyzer()
+        avg_smells_span, top_k_ref_4_smells = lifespan_analyzer.process_corpus()
+        smell_groups = lifespan_analyzer.active_smell_groups
         # lifespan_analyzer.plot_avg_lifespan(avg_commit_spans, avg_days_spans)
-        lifespan_analyzer.plot_avg_smell_lifespan(avg_smells_span)
-        lifespan_analyzer.plot_top_k_ref_4_smell(top_k_ref_4_smells)
+        lifespan_analyzer.plot_avg_smell_lifespan(avg_smells_span, smell_groups)
+        lifespan_analyzer.plot_top_k_ref_4_smell(top_k_ref_4_smells, smell_groups)
+        lifespan_analyzer.pieplot_top_k_ref_4_smell(top_k_ref_4_smells, smell_groups)
     except Exception as e:
         print(ColoredStr.red(e))
+        traceback.print_exc()
 
 if __name__ == "__main__":
     CURR_DIR = os.path.dirname(os.path.realpath(__file__))
-    
     corpus_info: dict = prepare_corpus()
     
     for username, repos in corpus_info.items():

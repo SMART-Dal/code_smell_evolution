@@ -4,7 +4,7 @@ from runners import Designite, RefMiner, PyDriller
 import config
 from utils import GitManager, ColoredStr
 from utils import log_execution, load_csv_file, traverse_directory, load_json_file, save_json_file, get_smell_dict
-from models import *
+from models import SmellInstance, ArchitectureSmell, DesignSmell, ImplementationSmell, TestabilitySmell, TestSmell, Refactoring
 
 class RepoDataAnalyzer:
     def __init__(self, username: str, repo_name: str, repo_path: str, branch: str):
@@ -22,14 +22,15 @@ class RepoDataAnalyzer:
         self.testability_smells: dict[str, list[TestabilitySmell]] = {}
         self.test_smells: dict[str, list[TestSmell]] = {}
         
-        self.method_metrics = {}
-        
         self.refactorings: dict[str, list[Refactoring]] = {}
         
         self.smells_lib: list[SmellInstance] = []
         self.load_raw_smells()
         self.load_raw_refactorings()
-        pass
+        
+        #metadata
+        self.present_smell_types = {}
+        self.present_refactoring_types = []
         
     @log_execution
     def load_raw_smells(self):
@@ -210,7 +211,7 @@ class RepoDataAnalyzer:
                                     else:
                                         if self._check_smell_ref_intersection(smell_instance.smell.range, change.range):
                                             smell_instance.refactorings.append(ref)
-                        break
+                            break
     
     def _check_file_intersection(self, smell, target_path: str):
         """
@@ -225,11 +226,14 @@ class RepoDataAnalyzer:
                 if target_path.endswith(f"{slash_pkg_path}/{extension}"):
                     is_intersected = True
             else:
-                target_pkg_path = '/'.join(target_path.split('/')[:-1])
-                target_extension = target_path.split('.')[-1]
-                if target_pkg_path and target_extension:
-                    if target_pkg_path.endswith(slash_pkg_path) and target_extension == "java":
-                        is_intersected = True
+                if slash_pkg_path == "<All packages>":
+                    is_intersected = True
+                else:
+                    target_pkg_path = '/'.join(target_path.split('/')[:-1])
+                    target_extension = target_path.split('.')[-1]
+                    if target_pkg_path and target_extension:
+                        if target_pkg_path.endswith(slash_pkg_path) and target_extension == "java":
+                            is_intersected = True
         else:
             print(ColoredStr.orange(f"Invalid input: 'Package Name' and 'Type Name' is missing."))
             
@@ -240,10 +244,35 @@ class RepoDataAnalyzer:
         Check if the smell range intersects with the refactoring range.
         """
         return smell_range[0] <= refactoring_range[0] <= smell_range[1] or smell_range[0] <= refactoring_range[1] <= smell_range[1]
-            
+
+    @log_execution
+    def generate_metadata(self):
+        for smell_instance in self.smells_lib:
+            kind = smell_instance.smell.kind
+            smell_name = smell_instance.smell.smell_name
+            if kind not in self.present_smell_types:
+                self.present_smell_types[kind] = []
+            if smell_name not in self.present_smell_types[kind]:
+                self.present_smell_types[kind].append(smell_name)
+
+            for ref in smell_instance.refactorings:
+                ref_type = ref.type_name
+                if ref_type not in self.present_refactoring_types:
+                    self.present_refactoring_types.append(ref_type)
+
     @log_execution
     def save_lifespan_to_json(self, username, repo_name):
+        relative_repo_path = os.path.relpath(self.repo_path, start=config.ROOT_PATH)
+        data = {
+            "metadata": {
+            "path": relative_repo_path,
+            "branch": self.branch,
+            "smell_types": self.present_smell_types,
+            "refactoring_types": self.present_refactoring_types
+            },
+            "smell_instances": [smell_instance.to_dict() for smell_instance in self.smells_lib]
+        }
         save_json_file(
-            file_path=os.path.join(config.SMELLS_LIB_PATH, f"{username}@{repo_name}.json"), 
-            data=[smell_instance.to_dict() for smell_instance in self.smells_lib]
+            file_path=os.path.join(config.SMELLS_LIB_PATH, f"{repo_name}@{username}.json"), 
+            data=data
         )

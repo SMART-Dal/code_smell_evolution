@@ -3,114 +3,139 @@ import config
 from utils import traverse_directory, load_json_file, get_smell_dict
 import matplotlib.pyplot as plt
 import numpy as np
+from models import CorpusMetrics
 
-class LifespanAnalyzer:
+class CorpusLifespanAnalyzer:
     def __init__(self):
         self.lib_path = config.SMELLS_LIB_PATH
         self.plots_dir = os.path.join(config.OUTPUT_PATH, 'plots') 
+        self.active_smell_groups = {}
+        self.corpus_metric = CorpusMetrics()
 
-    def process_repos(self):
-        avg_commit_spans = {}
-        avg_days_spans = {}
-        avg_smells_spans = {}
-        top_refactorings = {}
+    def process_corpus(self):
         
         for file_path in traverse_directory(self.lib_path):
+            file_path: str
             if file_path.endswith('.json'):
-                repo_name = os.path.basename(file_path).replace('.json', '')
+                repo_full_name = os.path.basename(file_path).replace('.json', '')
                 repo_data = load_json_file(file_path)
-                avg_commit_span, avg_days_span, avg_smells_span, ref_occurances = self.calculate_avg_spans(repo_data)
-                avg_commit_spans[repo_name] = avg_commit_span
-                avg_days_spans[repo_name] = avg_days_span
                 
-                for smell, span in avg_smells_span.items():
-                    if smell in avg_smells_spans:
-                        avg_smells_spans[smell]["commit_span"].append(span["avg_commit_span"])
-                        avg_smells_spans[smell]["days_span"].append(span["avg_days_span"])
-                    else:
-                        avg_smells_spans[smell] = {
-                            "commit_span": [span["avg_commit_span"]],
-                            "days_span": [span["avg_days_span"]]
-                        }
+                avg_commit_span, avg_days_span, smell_metrics = self.generate_repo_metrics(repo_data)
+                self.corpus_metric.add_repo_avg_commit_span(repo_full_name, avg_commit_span)
+                self.corpus_metric.add_repo_avg_days_span(repo_full_name, avg_days_span)
                 
-                for smell, ref_types in ref_occurances.items():
-                    if smell not in top_refactorings:
-                        top_refactorings[smell] = {}
-                    for ref_type, count in ref_types.items():
-                        if ref_type in top_refactorings[smell]:
-                            top_refactorings[smell][ref_type] += count
-                        else:
-                            top_refactorings[smell][ref_type] = count
+                for smell, metrics in smell_metrics.items():
+                    self.corpus_metric.add_smell_avg_commit_span(smell, metrics["avg_commit_span"])
+                    self.corpus_metric.add_smell_avg_days_span(smell, metrics["avg_days_span"])
+                    
+                    for ref_type, count in metrics["ref_type_occurance"].items():
+                        self.corpus_metric.add_smell_ref_count(smell, ref_type, count)
         
         # Calculate average smells span for the entire corpus
-        corpus_avg_smells_span = {}
-        for smell, spans in avg_smells_spans.items():
-            avg_commit_span = sum(spans["commit_span"]) / len(spans["commit_span"]) if spans["commit_span"] else 0
-            avg_days_span = sum(spans["days_span"]) / len(spans["days_span"]) if spans["days_span"] else 0
-            corpus_avg_smells_span[smell] = {
-                "avg_commit_span": avg_commit_span,
-                "avg_days_span": avg_days_span
+        corpus_avg_smell_metrics = {}
+        top_k_ref = 5
+        corpus_top_ref_per_smell = {}
+        for smell, metrics in self.corpus_metric.smell_metrics.items():
+            corpus_avg_commit_span = self.list_avg(metrics["avg_commit_span"])
+            corpus_avg_days_span = self.list_avg(metrics["avg_days_span"])
+            corpus_avg_smell_metrics[smell] = {
+            "avg_commit_span": corpus_avg_commit_span,
+            "avg_days_span": corpus_avg_days_span
             }
+            
+            # Calculate top 5 refactorings for each smell
+            ref_counts = metrics.get("ref_count", {})
+            sorted_ref_counts = sorted(ref_counts.items(), key=lambda item: item[1], reverse=True)
+            corpus_top_ref_per_smell[smell] = sorted_ref_counts[:top_k_ref]
         
-        top_k = 5
-        # Calculate top k refactorings for each smell
-        top_k_refactorings = {}
-        for smell, ref_types in top_refactorings.items():
-            sorted_ref_types = sorted(ref_types.items(), key=lambda item: item[1], reverse=True)
-            top_k_refactorings[smell] = sorted_ref_types[:top_k]
-        
-        return avg_commit_spans, avg_days_spans, corpus_avg_smells_span, top_k_refactorings
+        return corpus_avg_smell_metrics, corpus_top_ref_per_smell
     
-    def calculate_avg_spans(self, repo_data: dict):
-        commit_spans = []
-        days_spans = []
-        smells_span = {}
-        ref_count = 0
+    def generate_repo_metrics(self, repo_data):
+        metadata: dict = repo_data.get('metadata', None)
+        smell_instances: list = repo_data.get('smell_instances', [])
+        
+        repo_commit_span_list = []
+        repo_days_span_list = []
+        repo_smells_span_info: dict[str, dict] = {}
         
         # Initialize smells_span with default values
-        for smell_name in config.SMELL_COL_NAMES:
-            smells_span[smell_name] = {"commit_span": [], "days_span": [], "refactoring_types": []}
+        smell_types: dict = metadata.get('smell_types', None)
+        if not smell_types:
+            print("Smell Types not found in metadata")
+            return 0, 0, {}, {}
+        else:
+            for smell_type, smell_names in smell_types.items():
+                for smell_name in smell_names: 
+                    self._track_smell_groups(smell_type, smell_name)
+                    repo_smells_span_info[smell_name] = {
+                        "smell_type": smell_type,
+                        "commit_span": [],
+                        "days_span": [],
+                        "refactoring_types": [],
+                        "refactoring_type_count": {}
+                    }
         
-        for smell, data in repo_data.items():
-            smell_dict = get_smell_dict(smell)
-            smell_name = next((k for k in smell_dict.keys() if k in config.SMELL_COL_NAMES), None)
+        # Collect span data for each smell
+        for smell_instance in smell_instances:
+            smell_instance: dict
+            smell_info = smell_instance.get('smell', None)
             
-            commit_spans.append(data.get('commit_span', 0))
-            days_spans.append(data.get('days_span', 0))
+            commit_span = smell_instance.get('commit_span', 0)
+            days_span = smell_instance.get('days_span', 0)
+            
+            if commit_span is not None:
+                repo_commit_span_list.append(commit_span)
+            if days_span is not None:
+                repo_days_span_list.append(days_span)
 
-            if smell_name:
-                smells_span[smell_name]["commit_span"].append(data.get('commit_span', 0))
-                smells_span[smell_name]["days_span"].append(data.get('days_span', 0))
+            if smell_info:
+                smell_name = smell_info.get('smell_name', None)
+                if commit_span is not None:
+                    repo_smells_span_info[smell_name]["commit_span"].append(commit_span)
+                if days_span is not None:
+                    repo_smells_span_info[smell_name]["days_span"].append(days_span)
                 
-                for refactorings in data.get('mapped_refactorings', []):
-                    ref_type = refactorings.get('type', None)
-                    ref_count += 1
+                for refactoring in smell_instance.get('refactorings', []):
+                    ref_type = refactoring.get('type_name', None)
                     
                     if ref_type:
-                        smells_span[smell_name]["refactoring_types"].append(ref_type)
+                        repo_smells_span_info[smell_name]["refactoring_types"].append(ref_type)
+                        if ref_type in repo_smells_span_info[smell_name]["refactoring_type_count"]:
+                            repo_smells_span_info[smell_name]["refactoring_type_count"][ref_type] += 1
+                        else:
+                            repo_smells_span_info[smell_name]["refactoring_type_count"][ref_type] = 1
         
-        avg_commit_span = sum(commit_spans) / len(commit_spans) if commit_spans else 0
-        avg_days_span = sum(days_spans) / len(days_spans) if days_spans else 0
-        refactoring_type_cooccurrence = {}
+        repo_avg_commit_span = self.list_avg(repo_commit_span_list)
+        repo_avg_days_span = self.list_avg(repo_days_span_list)
         
-        
-        avg_smells_span = {}
-        for smell_name, spans in smells_span.items():
-            avg_commit_span = sum(spans["commit_span"]) / len(spans["commit_span"]) if spans["commit_span"] else 0
-            avg_days_span = sum(spans["days_span"]) / len(spans["days_span"]) if spans["days_span"] else 0
-            avg_smells_span[smell_name] = {
+        repo_smells_metrics = {}
+        for smell_name, smell_metrics in repo_smells_span_info.items():
+            avg_commit_span = self.list_avg(smell_metrics["commit_span"])
+            avg_days_span = self.list_avg(smell_metrics["days_span"])
+            ref_type_occurances = smell_metrics["refactoring_type_count"]
+            repo_smells_metrics[smell_name] = {
                 "avg_commit_span": avg_commit_span,
-                "avg_days_span": avg_days_span
+                "avg_days_span": avg_days_span,
+                "ref_type_occurance": ref_type_occurances
             }
-            refactoring_type_cooccurrence[smell_name] = {}
-            for ref_type in spans["refactoring_types"]:
-                if ref_type in refactoring_type_cooccurrence[smell_name]:
-                    refactoring_type_cooccurrence[smell_name][ref_type] += 1
-                else:
-                    refactoring_type_cooccurrence[smell_name][ref_type] = 1
         
-        print(f"Total Refactorings: {ref_count}")
-        return avg_commit_span, avg_days_span, avg_smells_span, refactoring_type_cooccurrence
+        return repo_avg_commit_span, repo_avg_days_span, repo_smells_metrics
+    
+    def list_avg(self, list_of_ints: list[int]) -> float:
+        return sum(list_of_ints) / len(list_of_ints) if list_of_ints else 0
+
+    def _track_smell_groups(self, smell_type, smell_name):
+        if smell_type not in self.active_smell_groups:
+            self.active_smell_groups[smell_type] = []
+        if smell_name not in self.active_smell_groups[smell_type]:
+            self.active_smell_groups[smell_type].append(smell_name)
+
+    def get_smell_type(self, smell_name: str) -> str:
+        smell_dict = get_smell_dict()
+        for smell_type, smells in smell_dict.items():
+            if smell_name in smells:
+                return smell_type
+        return "Unknown"
 
     def plot_avg_lifespan(self, avg_commit_spans, avg_days_spans):
         repos = list(avg_commit_spans.keys())
@@ -139,69 +164,146 @@ class LifespanAnalyzer:
         # plt.show()
         plt.savefig(os.path.join(self.plots_dir, 'avg_lifespan.png'), dpi=300, bbox_inches='tight')
     
-    def plot_avg_smell_lifespan(self, avg_smells_span ):
-        categories = list(avg_smells_span.keys())
-        avg_commit_spans = [avg_smells_span[smell]['avg_commit_span'] for smell in categories]
-        avg_days_spans = [avg_smells_span[smell]['avg_days_span'] for smell in categories]
-        
-        # Set up bar chart positions
-        x = np.arange(len(categories))  # the label locations
-        width = 0.35  # the width of the bars
-
-        # Create the plot
-        fig, ax = plt.subplots(figsize=(10, 6))
-        bars1 = ax.bar(x - width/2, avg_commit_spans, width, label='Avg Commit Span', color='skyblue')
-        bars2 = ax.bar(x + width/2, avg_days_spans, width, label='Avg Days Span', color='lightgreen')
-
-        # Add labels, title, and legend
-        ax.set_xlabel('Smell Category')
-        ax.set_ylabel('Average Span')
-        ax.set_title('Average Commit and Days Span for Each Smell Category')
-        ax.set_xticks(x)
-        ax.set_xticklabels(categories, rotation=45, ha='right')
-        ax.legend()
-
-        # Annotate bars with values
-        for bar in bars1 + bars2:
-            height = bar.get_height()
-            ax.annotate(f'{height:.1f}',
-                        xy=(bar.get_x() + bar.get_width() / 2, height),
-                        xytext=(0, 3),  # 3 points vertical offset
-                        textcoords="offset points",
-                        ha='center', va='bottom')
+    def plot_avg_smell_lifespan(self, avg_smells_span, smell_groups):
+        for smell_type, smells in smell_groups.items():
+            # Filter data for the current smell type
+            categories = [smell for smell in smells if smell in avg_smells_span]
+            avg_commit_spans = [avg_smells_span[smell]['avg_commit_span'] for smell in categories]
+            avg_days_spans = [avg_smells_span[smell]['avg_days_span'] for smell in categories]
             
-        plt.savefig(os.path.join(self.plots_dir, 'avg_smell_lifespan.png'), dpi=300, bbox_inches='tight')
+            if not categories:
+                print(f"No data available for {smell_type}. Skipping plot.")
+                continue
+            
+            # Set up bar chart positions
+            x = np.arange(len(categories))  # the label locations
+            width = 0.35  # the width of the bars
+
+            # Create the plot
+            fig, ax = plt.subplots(figsize=(10, 6))
+            bars1 = ax.bar(x - width / 2, avg_commit_spans, width, label='Avg Commit Span', color='skyblue')
+            bars2 = ax.bar(x + width / 2, avg_days_spans, width, label='Avg Days Span', color='lightgreen')
+
+            # Add labels, title, and legend
+            ax.set_xlabel('Smell Category')
+            ax.set_ylabel('Average Span')
+            ax.set_title(f'Average Commit and Days Span for {smell_type}')
+            ax.set_xticks(x)
+            ax.set_xticklabels(categories, rotation=45, ha='right')
+            ax.legend()
+
+            # Annotate bars with values
+            for bar in bars1 + bars2:
+                height = bar.get_height()
+                ax.annotate(f'{height:.1f}',
+                            xy=(bar.get_x() + bar.get_width() / 2, height),
+                            xytext=(0, 3),  # 3 points vertical offset
+                            textcoords="offset points",
+                            ha='center', va='bottom')
+
+            # Save the plot
+            filename = f'avg_smell_lifespan_{smell_type.replace(" ", "_").lower()}.png'
+            plt.savefig(os.path.join(self.plots_dir, filename), dpi=300, bbox_inches='tight')
+            plt.close(fig)  # Close the figure to free memory
         
-    def plot_top_k_ref_4_smell(self, smell_data):
-        categories = list(smell_data.keys())
-        methods = {method for smell in smell_data.values() for method, _ in smell}
-        methods = sorted(methods)  # Keep order consistent
+    def plot_top_k_ref_4_smell(self, smell_data, smell_groups):
+        for smell_type, smells in smell_groups.items():
+            # Filter data for the current smell type
+            categories = [smell for smell in smells if smell in smell_data]
+            if not categories:
+                print(f"No data available for {smell_type}. Skipping plot.")
+                continue
 
-        # Build matrix for plotting
-        data_matrix = []
-        for category in categories:
-            data = dict(smell_data[category])
-            data_matrix.append([data.get(method, 0) for method in methods])
+            methods = {method for smell in categories for method, _ in smell_data[smell]}
+            methods = sorted(methods)  # Keep order consistent
 
-        # Transpose data for bar plotting
-        data_matrix = np.array(data_matrix).T
+            # Build matrix for plotting
+            data_matrix = []
+            for category in categories:
+                data = dict(smell_data[category])
+                data_matrix.append([data.get(method, 0) for method in methods])
 
-        # Plot
-        fig, ax = plt.subplots(figsize=(10, 6))
-        x = np.arange(len(categories))
-        bar_width = 0.15
-        colors = plt.cm.tab10.colors
+            # Transpose data for bar plotting
+            data_matrix = np.array(data_matrix).T
 
-        for i, method in enumerate(methods):
-            ax.bar(x + i * bar_width, data_matrix[i], bar_width, label=method, color=colors[i % len(colors)])
+            # Plot
+            fig, ax = plt.subplots(figsize=(10, 6))
+            x = np.arange(len(categories))
+            bar_width = 0.15
+            colors = plt.cm.tab10.colors
 
-        # Formatting
-        ax.set_title('Top Refactorings for Each Smell Category', fontsize=14)
-        ax.set_xlabel('Smell Categories', fontsize=12)
-        ax.set_ylabel('Count', fontsize=12)
-        ax.set_xticks(x + bar_width * (len(methods) - 1) / 2)
-        ax.set_xticklabels(categories, rotation=45, ha='right')
-        ax.legend(title="Refactoring Methods", bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=10)
-        ax.grid(axis='y', linestyle='--', alpha=0.7)
+            for i, method in enumerate(methods):
+                ax.bar(x + i * bar_width, data_matrix[i], bar_width, label=method, color=colors[i % len(colors)])
 
-        plt.savefig(os.path.join(self.plots_dir, 'top_k_ref_with_smell.png'), dpi=300, bbox_inches='tight')
+            # Formatting
+            ax.set_title(f'Top Refactorings for {smell_type}', fontsize=14)
+            ax.set_xlabel('Smell Categories', fontsize=12)
+            ax.set_ylabel('Count', fontsize=12)
+            ax.set_xticks(x + bar_width * (len(methods) - 1) / 2)
+            ax.set_xticklabels(categories, rotation=45, ha='right')
+            ax.legend(title="Refactoring Methods", bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=10)
+            ax.grid(axis='y', linestyle='--', alpha=0.7)
+
+            # Save the plot
+            filename = f'top_k_ref_with_smell_{smell_type.replace(" ", "_").lower()}.png'
+            plt.savefig(os.path.join(self.plots_dir, filename), dpi=300, bbox_inches='tight')
+            plt.close(fig)  # Close the figure to free memory
+            
+    def pieplot_top_k_ref_4_smell(self, smell_data, smell_groups): 
+        for smell_type, smells in smell_groups.items():
+            # Filter data for the current smell type
+            categories = [smell for smell in smells if smell in smell_data]
+            if not categories:
+                print(f"No data available for {smell_type}. Skipping plot.")
+                continue
+
+            # Determine the number of subplots (one for each smell)
+            num_smells = len(categories)
+            cols = 2  # Number of columns for subplots
+            rows = (num_smells + cols - 1) // cols  # Calculate rows needed
+
+            # Create a figure with subplots
+            fig, axes = plt.subplots(rows, cols, figsize=(12, 6 * rows))
+            axes = axes.flatten()  # Flatten the 2D array of axes for easy indexing
+
+            for i, smell_name in enumerate(categories):
+                ax = axes[i]  # Select the appropriate subplot axis
+                # Get the method counts for the current smell_name
+                method_counts = dict(smell_data[smell_name])
+
+                # Skip if no methods for the smell_name
+                if not method_counts:
+                    print(f"No methods found for {smell_name}. Skipping plot.")
+                    continue
+
+                # Prepare data for the pie chart
+                methods = list(method_counts.keys())
+                counts = list(method_counts.values())
+                total = sum(counts)
+                percentages = [count / total * 100 for count in counts]
+
+                # Create the pie chart
+                wedges, texts, autotexts = ax.pie(
+                    counts,
+                    labels=methods,
+                    autopct=lambda pct: f'{pct:.1f}%\n({int(pct * total / 100)})',
+                    colors=plt.cm.tab10.colors[:len(methods)],
+                    startangle=140,
+                    textprops={'fontsize': 8}
+                )
+
+                # Formatting
+                ax.set_title(f'{smell_name}', fontsize=12)
+
+            # Remove empty subplots if any
+            for j in range(i + 1, len(axes)):
+                fig.delaxes(axes[j])
+
+            # Overall title for the smell type
+            fig.suptitle(f'Top Refactorings for {smell_type}', fontsize=16)
+            fig.tight_layout(rect=[0, 0, 1, 0.95])  # Adjust layout
+
+            # Save the plot
+            filename = f'pie_charts_{smell_type.replace(" ", "_").lower()}.png'
+            plt.savefig(os.path.join(self.plots_dir, filename), dpi=300, bbox_inches='tight')
+            plt.close(fig)  # Close the figure to free memory
