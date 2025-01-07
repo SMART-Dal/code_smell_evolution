@@ -6,31 +6,7 @@ from data_analyzer import RepoDataAnalyzer
 from lifespan_analyzer import CorpusLifespanAnalyzer
 from utils import GitManager, ColoredStr
 import traceback
-
-
-def execute_designite(username, repo_name, repo_path, branch):
-    """
-    Collects code smells for a given repository. 
-    """
-    # Generate code smells
-    try:
-        designite_runner = Designite()
-        designite_runner.analyze_commits(username, repo_name, repo_path, branch)
-    except Exception as e:
-        print(ColoredStr.red(e))
-        traceback.print_exc()
-
-def execute_refminer(username, repo_name, repo_path, branch):
-    """
-    Collects refactorings for a given repository.
-    """
-    try:
-        ref_miner_runner = RefMiner()
-        ref_miner_runner.analyze(username, repo_name, repo_path, branch)
-    except Exception as e:
-        print(ColoredStr.red(e))
-        traceback.print_exc()
-        
+   
 def analyze_repo_data(username, repo_name, repo_path, branch):
     """
     Analyzes the collected data for a given repository.
@@ -53,15 +29,24 @@ def analyze_corpus_data():
         smell_groups = lifespan_analyzer.active_smell_groups
         # lifespan_analyzer.plot_avg_lifespan(avg_commit_spans, avg_days_spans)
         lifespan_analyzer.plot_avg_smell_lifespan(avg_smells_span, smell_groups)
+        lifespan_analyzer.plot_avg_smell_lifespan_combined(avg_smells_span, smell_groups)
         lifespan_analyzer.plot_top_k_ref_4_smell(top_k_ref_4_smells, smell_groups)
+        lifespan_analyzer.plot_top_k_ref_4_smell_combined(top_k_ref_4_smells, smell_groups)
         lifespan_analyzer.pieplot_top_k_ref_4_smell(top_k_ref_4_smells, smell_groups)
+        
     except Exception as e:
         print(ColoredStr.red(e))
         traceback.print_exc()
 
 if __name__ == "__main__":
     CURR_DIR = os.path.dirname(os.path.realpath(__file__))
-    corpus_info: dict = prepare_corpus()
+    corpus_info = {
+        "auth0-samples": ["auth0-spring-security5-api-sample"],
+        "ChiselsAndBits": ["Chisels-and-Bits"],
+        "derari": ["cthul"],
+        "typ-ahmedsleem": ["AnaMuslim"],
+    }
+    # corpus_info: dict = prepare_corpus()
     
     for username, repos in corpus_info.items():
         for repo in repos:
@@ -72,10 +57,10 @@ if __name__ == "__main__":
                 print(ColoredStr.red(f"Failed to get default branch for repo: {TARGET_REPO_PATH}"))
                 continue
             
-            execute_designite(username, repo, TARGET_REPO_PATH, branch=default_branch)
-            execute_refminer(username, repo, TARGET_REPO_PATH, branch=default_branch)
+            # execute_designite(username, repo, TARGET_REPO_PATH, branch=default_branch)
+            # execute_refminer(username, repo, TARGET_REPO_PATH, branch=default_branch)
             
-            analyze_repo_data(username, repo, TARGET_REPO_PATH, branch=default_branch)
+            # analyze_repo_data(username, repo, TARGET_REPO_PATH, branch=default_branch)
         
-    # analyze_corpus_data()
+    analyze_corpus_data()
     

@@ -66,10 +66,13 @@ def load_json_file(file_path):
     Load a JSON file.
 
     :param file_path: Path to the JSON file.
-    :return: The JSON data.
+    :return: The JSON data or an empty dictionary if the file is not found.
     """
-    with open(file_path, 'r') as file:
-        data = json.load(file)
+    try:
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        data = {}
     return data
 
 def save_json_file(file_path, data):

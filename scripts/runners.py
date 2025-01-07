@@ -4,7 +4,7 @@ import os
 import sys
 import config
 from pydriller import Repository
-from utils import GitManager, log_execution, ColoredStr
+from utils import log_execution, ColoredStr, save_json_file
 
 class Designite:
     jar_path = os.path.join(config.EXECUTABLES_PATH, "DesigniteJava.jar")
@@ -38,8 +38,22 @@ class Designite:
             process.wait()
             if process.returncode != 0:
                 print(ColoredStr.red(f"Process failed with return code: {process.returncode}"))
+            return process.returncode
         except Exception as e:
             print(ColoredStr.red(f"An error occurred: {e}"))
+            return -1
+            
+    def save_info(self, repo_path: Path, branch: str, success: bool):
+        info_file = os.path.join(self.output_dir, "designite_info.txt")
+        
+        file_exists = os.path.exists(info_file)
+        with open(info_file, "a") as f:
+            if not file_exists:
+                # Write header row if file doesn't exist
+                f.write("Repo Path,Branch,Success\n")
+            
+            # Append the new row of data
+            f.write(f"{repo_path},{branch},{success}\n")
         
         
 class RefMiner:
