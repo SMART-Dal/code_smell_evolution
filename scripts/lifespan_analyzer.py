@@ -33,7 +33,7 @@ class CorpusLifespanAnalyzer:
         
         # Calculate average smells span for the entire corpus
         corpus_avg_smell_metrics = {}
-        top_k_ref = 5
+        top_k_ref = 6
         corpus_top_ref_per_smell = {}
         for smell, metrics in self.corpus_metric.smell_metrics.items():
             corpus_avg_commit_span = self.list_avg(metrics["avg_commit_span"])
@@ -206,6 +206,62 @@ class CorpusLifespanAnalyzer:
             plt.savefig(os.path.join(self.plots_dir, filename), dpi=300, bbox_inches='tight')
             plt.close(fig)  # Close the figure to free memory
         
+    def plot_avg_smell_lifespan_combined(self, avg_smells_span, smell_groups):
+        # Aggregate data for top-level smell types
+        top_level_categories = []
+        combined_commit_spans = []
+        combined_days_spans = []
+
+        for smell_type, smells in smell_groups.items():
+            # Filter data for child smells
+            categories = [smell for smell in smells if smell in avg_smells_span]
+            avg_commit_spans = [avg_smells_span[smell]['avg_commit_span'] for smell in categories]
+            avg_days_spans = [avg_smells_span[smell]['avg_days_span'] for smell in categories]
+
+            if not categories:
+                print(f"No data available for {smell_type}. Skipping aggregation.")
+                continue
+
+            # Aggregate stats for the current smell type
+            top_level_categories.append(smell_type)
+            combined_commit_spans.append(np.mean(avg_commit_spans))
+            combined_days_spans.append(np.mean(avg_days_spans))
+
+        if not top_level_categories:
+            print("No data available for any smell type. Skipping top-level plot.")
+            return
+
+        # Set up bar chart positions
+        x = np.arange(len(top_level_categories))  # the label locations
+        width = 0.35  # the width of the bars
+
+        # Create the plot
+        fig, ax = plt.subplots(figsize=(12, 8))
+        bars1 = ax.bar(x - width / 2, combined_commit_spans, width, label='Avg Commit Span', color='skyblue')
+        bars2 = ax.bar(x + width / 2, combined_days_spans, width, label='Avg Days Span', color='lightgreen')
+
+        # Add labels, title, and legend
+        ax.set_xlabel('Smell Type')
+        ax.set_ylabel('Average Span')
+        ax.set_title('Average Commit and Days Span by Smell Type')
+        ax.set_xticks(x)
+        ax.set_xticklabels(top_level_categories, rotation=45, ha='right')
+        ax.legend()
+
+        # Annotate bars with values
+        for bar in bars1 + bars2:
+            height = bar.get_height()
+            ax.annotate(f'{height:.1f}',
+                        xy=(bar.get_x() + bar.get_width() / 2, height),
+                        xytext=(0, 3),  # 3 points vertical offset
+                        textcoords="offset points",
+                        ha='center', va='bottom')
+
+        # Save the plot
+        filename = 'avg_smell_lifespan_COMBINED.png'
+        plt.savefig(os.path.join(self.plots_dir, filename), dpi=300, bbox_inches='tight')
+        plt.close(fig)  # Close the figure to free memory        
+
     def plot_top_k_ref_4_smell(self, smell_data, smell_groups):
         for smell_type, smells in smell_groups.items():
             # Filter data for the current smell type
@@ -249,6 +305,70 @@ class CorpusLifespanAnalyzer:
             plt.savefig(os.path.join(self.plots_dir, filename), dpi=300, bbox_inches='tight')
             plt.close(fig)  # Close the figure to free memory
             
+    def plot_top_k_ref_4_smell_combined(self, smell_data, smell_groups):
+        # Aggregate data for top-level smell types
+        top_level_categories = []
+        method_names = set()
+
+        # Collect data for each smell type
+        aggregated_data = {}
+        for smell_type, smells in smell_groups.items():
+            categories = [smell for smell in smells if smell in smell_data]
+            if not categories:
+                print(f"No data available for {smell_type}. Skipping aggregation.")
+                continue
+
+            top_level_categories.append(smell_type)
+            aggregated_data[smell_type] = {}
+
+            for category in categories:
+                for method, count in smell_data[category]:
+                    if method not in aggregated_data[smell_type]:
+                        aggregated_data[smell_type][method] = []
+                    aggregated_data[smell_type][method].append(count)
+                    method_names.add(method)
+
+        if not top_level_categories:
+            print("No data available for any smell type. Skipping top-level plot.")
+            return
+
+        # Sort methods and prepare the data matrix
+        method_names = sorted(method_names)
+        data_matrix = []
+
+        for smell_type in top_level_categories:
+            method_counts = []
+            for method in method_names:
+                # Average counts for the current smell type and method
+                counts = aggregated_data[smell_type].get(method, [])
+                method_counts.append(np.mean(counts) if counts else 0)
+            data_matrix.append(method_counts)
+
+        data_matrix = np.array(data_matrix).T  # Transpose for bar plotting
+
+        # Plot
+        fig, ax = plt.subplots(figsize=(12, 8))
+        x = np.arange(len(top_level_categories))
+        bar_width = 0.15
+        colors = plt.cm.tab10.colors
+
+        for i, method in enumerate(method_names):
+            ax.bar(x + i * bar_width, data_matrix[i], bar_width, label=method, color=colors[i % len(colors)])
+
+        # Formatting
+        ax.set_title('Top Refactorings Combined by Smell Type', fontsize=14)
+        ax.set_xlabel('Smell Types', fontsize=12)
+        ax.set_ylabel('Count', fontsize=12)
+        ax.set_xticks(x + bar_width * (len(method_names) - 1) / 2)
+        ax.set_xticklabels(top_level_categories, rotation=45, ha='right')
+        ax.legend(title="Refactoring Methods", bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=10)
+        ax.grid(axis='y', linestyle='--', alpha=0.7)
+
+        # Save the plot
+        filename = 'top_k_ref_COMBINED.png'
+        plt.savefig(os.path.join(self.plots_dir, filename), dpi=300, bbox_inches='tight')
+        plt.close(fig)  # Close the figure to free memory
+            
     def pieplot_top_k_ref_4_smell(self, smell_data, smell_groups): 
         for smell_type, smells in smell_groups.items():
             # Filter data for the current smell type
@@ -257,8 +377,21 @@ class CorpusLifespanAnalyzer:
                 print(f"No data available for {smell_type}. Skipping plot.")
                 continue
 
-            # Determine the number of subplots (one for each smell)
-            num_smells = len(categories)
+            skipped_smells = []  # Keep track of skipped smells
+            valid_smells = []  # Keep track of valid smells for plotting
+
+            for smell_name in categories:
+                if not smell_data.get(smell_name, []):
+                    skipped_smells.append(smell_name)
+                else:
+                    valid_smells.append(smell_name)
+
+            if not valid_smells:
+                print(f"No valid smells with data found for {smell_type}. Skipping plot.")
+                continue
+
+            # Determine the number of subplots (one for each valid smell)
+            num_smells = len(valid_smells)
             cols = 2  # Number of columns for subplots
             rows = (num_smells + cols - 1) // cols  # Calculate rows needed
 
@@ -266,15 +399,10 @@ class CorpusLifespanAnalyzer:
             fig, axes = plt.subplots(rows, cols, figsize=(12, 6 * rows))
             axes = axes.flatten()  # Flatten the 2D array of axes for easy indexing
 
-            for i, smell_name in enumerate(categories):
+            for i, smell_name in enumerate(valid_smells):
                 ax = axes[i]  # Select the appropriate subplot axis
                 # Get the method counts for the current smell_name
                 method_counts = dict(smell_data[smell_name])
-
-                # Skip if no methods for the smell_name
-                if not method_counts:
-                    print(f"No methods found for {smell_name}. Skipping plot.")
-                    continue
 
                 # Prepare data for the pie chart
                 methods = list(method_counts.keys())
@@ -307,3 +435,7 @@ class CorpusLifespanAnalyzer:
             filename = f'pie_charts_{smell_type.replace(" ", "_").lower()}.png'
             plt.savefig(os.path.join(self.plots_dir, filename), dpi=300, bbox_inches='tight')
             plt.close(fig)  # Close the figure to free memory
+
+            # Log skipped smells
+            if skipped_smells:
+                print(f"Skipped the following smells for {smell_type} due to no data: {', '.join(skipped_smells)}")
