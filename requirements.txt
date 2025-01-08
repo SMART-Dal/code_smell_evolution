@@ -1,2 +1,2 @@
 GitPython==3.1.43
-PyDriller==2.7
+python_dotenv==1.0.1

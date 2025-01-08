@@ -3,6 +3,7 @@ import subprocess
 import os
 import sys
 import config
+from dotenv import load_dotenv
 from pydriller import Repository
 from utils import log_execution, ColoredStr, save_json_file
 
@@ -10,7 +11,8 @@ class Designite:
     jar_path = os.path.join(config.EXECUTABLES_PATH, "DesigniteJava.jar")
     output_dir = os.path.join(config.OUTPUT_PATH, "Designite_OP")
 
-    def __init__(self) -> None:
+    def __init__(self, print_log = False) -> None:
+        self.logs = print_log
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
         
@@ -32,7 +34,7 @@ class Designite:
             
             # Stream the output line by line
             for line in process.stdout:
-                print(line, end="")  # Output JAR stdout in real-time
+                if self.logs: print(line, end="")  # Output JAR stdout in real-time
             for line in process.stderr:
                 print(line, end="")  # Output JAR stderr in real-time
             process.wait()
@@ -60,7 +62,8 @@ class RefMiner:
     bin_path = os.path.join(config.EXECUTABLES_PATH, "RefactoringMiner-3.0.9", "bin")
     output_dir = os.path.join(config.OUTPUT_PATH, "RefMiner_OP")
     
-    def __init__(self) -> None:
+    def __init__(self, print_log = False) -> None:
+        self.logs = print_log
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
         
@@ -89,7 +92,7 @@ class RefMiner:
                 
                 # Stream output in real-time
                 for line in process.stdout:
-                    print(line, end="")
+                    if self.log: print(line, end="")
                 for line in process.stderr:
                     print(line, end="")
                 process.wait()  # Wait for process to complete

@@ -1,3 +1,4 @@
+import argparse
 import traceback
 import os
 import config
@@ -55,8 +56,13 @@ def save_info(info_file: str, repo_path: Path, branch: str, success: bool):
         f.write(f"{repo_path},{branch},{success}\n")
         
 if __name__ == "__main__":
-    START_INDEX = 0
-    END_INDEX = 5
+    parser = argparse.ArgumentParser(description="Run analysis on a range of repositories.")
+    parser.add_argument("start", type=int, help="Start index of the repositories to process.")
+    parser.add_argument("end", type=int, help="End index of the repositories to process.")
+    args = parser.parse_args()
+
+    START_INDEX = args.start
+    END_INDEX = args.end
     
     CURR_DIR = os.path.dirname(os.path.realpath(__file__))
     corpus_generator = prepare_corpus(START_INDEX, END_INDEX)

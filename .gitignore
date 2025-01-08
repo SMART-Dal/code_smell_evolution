@@ -167,3 +167,4 @@ corpus/
 bin/executables/.config
 temp_log**.txt
 **.out
+DesigniteLog**.txt
