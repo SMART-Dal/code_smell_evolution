@@ -57,6 +57,7 @@ def save_info(info_file: str, repo_path: Path, branch: str, success: bool):
         
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run analysis on repo index")
+    parser.add_argument("tool", type=str, help="tool to use for analysis")
     parser.add_argument("idx", type=int, help="index of the repository to process.")
     parser.add_argument("task_id", type=int, help="index of tslurm array job task id")
     args = parser.parse_args()
@@ -65,24 +66,19 @@ if __name__ == "__main__":
     TASK_ID = args.task_id
     
     CURR_DIR = os.path.dirname(os.path.realpath(__file__))
-    corpus_generator = prepare_corpus(REPO_IDX)
+    corpus_generator = prepare_corpus(REPO_IDX, clone=False)
     current_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     corpus_info: dict[str, list[str]] = {}
-    corpus_info_filename = f"corpus_info_{TASK_ID}_{current_time}.json"
     
     for username, repo_name, repo_path in corpus_generator:
-        corpus_info.update(load_json_file(os.path.join(config.CORPUS_PATH, corpus_info_filename)))
-        if username not in corpus_info:
-            corpus_info[username] = []
-        corpus_info[username].append(repo_name)
-            
         default_branch = GitManager.get_default_branch(repo_path)
         if not default_branch:
             print(ColoredStr.red(f"Failed to get default branch for repo: {repo_path}"))
             continue
         
-        save_json_file(os.path.join(config.CORPUS_PATH, corpus_info_filename), corpus_info)
-        execute_designite(TASK_ID, username, repo_name, repo_path, branch=default_branch)
-        execute_refminer(TASK_ID, username, repo_name, repo_path, branch=default_branch)
+        if args.tool == "designite":
+            execute_designite(TASK_ID, username, repo_name, repo_path, branch=default_branch)
+        elif args.tool == "refminer":
+            execute_refminer(TASK_ID, username, repo_name, repo_path, branch=default_branch)
             
         

@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=code-smell-evolution
+#SBATCH --job-name=smell-evo-collect-ref
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
 
@@ -11,7 +11,7 @@
 #SBATCH --mail-user=gautam@dal.ca
 #SBATCH --mail-type=ALL
 
-repo_name="code_smell_evolution"
+repo_name="code_smell_evolution_collect_refactorings"
 
 # Define the list of single integer arguments for the 6 tasks
 ARG_VALUES=(0 1 2 3 4 5)
@@ -54,7 +54,7 @@ pip install $SLURM_TMPDIR/pydriller
 echo -e "\n\n\n\n\n>>> Executing the script."
 # -u is for unbuffered output so the print statements print it to the slurm out file
 # & at the end is to run the script in background. Unless it's running in background we can't trap the signal
-python -u scripts/data_generation.py $ARG $SLURM_ARRAY_TASK_ID &
+python -u scripts/data_generation.py refminer $ARG $SLURM_ARRAY_TASK_ID &
 
 PID=$!
 wait ${PID}
