@@ -7,7 +7,11 @@ def prepare_corpus(start_index=0, end_index=-1):
     if not os.path.exists(config.CORPUS_PATH):
         os.makedirs(config.CORPUS_PATH)
     
-    repo_items: list = load_json_file(config.CORPUS_LIST_PATH).get("items")
+    repo_items: list = load_json_file(config.CORPUS_LIST_PATH).get("items", [])
+    
+    #sort by commits ascending
+    repo_items = sorted(repo_items, key=lambda x: x.get("commits", 0))
+    
     if end_index != -1:
         repo_items = repo_items[start_index:end_index]
     else:

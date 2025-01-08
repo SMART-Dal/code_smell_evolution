@@ -11,7 +11,7 @@ else:
 BIN_PATH = os.path.join(ROOT_PATH, "bin")
 EXECUTABLES_PATH = os.path.join(BIN_PATH, "executables")
 REPO_LIST_PATH = os.path.join(BIN_PATH, "data", "results.json")
-CORPUS_LIST_PATH  = os.path.join(BIN_PATH, "data", "results.json")
+CORPUS_LIST_PATH  = os.path.join(BIN_PATH, "data", "MIT_repos.json")
 
 REPOS_PATH = os.path.join(ROOT_PATH, "repos")
 CORPUS_PATH = os.path.join(ROOT_PATH, "corpus")

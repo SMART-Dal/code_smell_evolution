@@ -1,0 +1,4552 @@
+{
+    "parameters": {
+        "nameEquals": false,
+        "language": "Java",
+        "license": "MIT License",
+        "commitsMin": 750,
+        "commitsMax": 2000,
+        "contributorsMin": 10,
+        "starsMin": 25,
+        "codeLinesMin": 25000,
+        "createdMin": 1451606400000,
+        "committedMin": 1704153600000,
+        "committedMax": 1732924800000,
+        "excludeForks": false,
+        "onlyForks": false,
+        "hasIssues": false,
+        "hasPulls": false,
+        "hasWiki": false,
+        "hasLicense": false
+    },
+    "items": [
+        {
+            "id": 3258868,
+            "name": "roncoo/roncoo-education",
+            "isFork": false,
+            "commits": 1705,
+            "branches": 2,
+            "releases": 0,
+            "forks": 550,
+            "mainLanguage": "Java",
+            "defaultBranch": "master",
+            "license": "MIT License",
+            "homepage": "https://edu.roncoo.net",
+            "watchers": 61,
+            "stargazers": 1305,
+            "contributors": 11,
+            "size": 62386,
+            "createdAt": "2018-12-18T07:09:18",
+            "pushedAt": "2024-10-23T08:04:17",
+            "updatedAt": "2024-10-23T08:43:53",
+            "totalIssues": 9,
+            "openIssues": 0,
+            "totalPullRequests": 20,
+            "openPullRequests": 0,
+            "blankLines": 16634,
+            "codeLines": 86307,
+            "commentLines": 11823,
+            "metrics": [
+                {
+                    "codeLines": 11,
+                    "commentLines": 3,
+                    "language": "DOS Batch",
+                    "blankLines": 3
+                },
+                {
+                    "codeLines": 32,
+                    "commentLines": 0,
+                    "language": "Dockerfile",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 5186,
+                    "commentLines": 3,
+                    "language": "SVG",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 889,
+                    "commentLines": 51,
+                    "language": "Maven",
+                    "blankLines": 113
+                },
+                {
+                    "codeLines": 711,
+                    "commentLines": 52,
+                    "language": "CSS",
+                    "blankLines": 59
+                },
+                {
+                    "codeLines": 228,
+                    "commentLines": 8,
+                    "language": "Bourne Shell",
+                    "blankLines": 20
+                },
+                {
+                    "codeLines": 9817,
+                    "commentLines": 38,
+                    "language": "XML",
+                    "blankLines": 7
+                },
+                {
+                    "codeLines": 16480,
+                    "commentLines": 2023,
+                    "language": "JavaScript",
+                    "blankLines": 2155
+                },
+                {
+                    "codeLines": 65,
+                    "commentLines": 0,
+                    "language": "YAML",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 193,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 58
+                },
+                {
+                    "codeLines": 50719,
+                    "commentLines": 9574,
+                    "language": "Java",
+                    "blankLines": 14020
+                },
+                {
+                    "codeLines": 1891,
+                    "commentLines": 28,
+                    "language": "Freemarker Template",
+                    "blankLines": 192
+                },
+                {
+                    "codeLines": 68,
+                    "commentLines": 43,
+                    "language": "Properties",
+                    "blankLines": 1
+                },
+                {
+                    "codeLines": 17,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 6
+                }
+            ],
+            "lastCommit": "2024-10-23T08:03:37",
+            "lastCommitSHA": "2f897fbc2951dc2c6bdd7c355bf738040f3a38e0",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 2280374,
+                "FreeMarker": 63136,
+                "Shell": 5479,
+                "Dockerfile": 1053,
+                "Batchfile": 486
+            },
+            "labels": [
+                "bug",
+                "dependencies",
+                "duplicate",
+                "enhancement",
+                "good first issue",
+                "help wanted",
+                "invalid",
+                "java",
+                "question",
+                "wontfix"
+            ],
+            "topics": [
+                "roncoo",
+                "roncoo-education",
+                "spring-boot-2",
+                "spring-cloud"
+            ]
+        },
+        {
+            "id": 3261167,
+            "name": "raeleus/skin-composer",
+            "isFork": false,
+            "commits": 1373,
+            "branches": 3,
+            "releases": 58,
+            "forks": 35,
+            "mainLanguage": "Java",
+            "defaultBranch": "master",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 23,
+            "stargazers": 420,
+            "contributors": 11,
+            "size": 103992,
+            "createdAt": "2016-05-31T05:28:00",
+            "pushedAt": "2024-05-20T02:39:55",
+            "updatedAt": "2024-05-26T03:11:51",
+            "totalIssues": 127,
+            "openIssues": 8,
+            "totalPullRequests": 24,
+            "openPullRequests": 0,
+            "blankLines": 12057,
+            "codeLines": 77799,
+            "commentLines": 2784,
+            "metrics": [
+                {
+                    "codeLines": 72,
+                    "commentLines": 2,
+                    "language": "DOS Batch",
+                    "blankLines": 21
+                },
+                {
+                    "codeLines": 64369,
+                    "commentLines": 2643,
+                    "language": "Java",
+                    "blankLines": 11357
+                },
+                {
+                    "codeLines": 28,
+                    "commentLines": 19,
+                    "language": "Properties",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 304,
+                    "commentLines": 5,
+                    "language": "Gradle",
+                    "blankLines": 40
+                },
+                {
+                    "codeLines": 1891,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 460
+                },
+                {
+                    "codeLines": 102,
+                    "commentLines": 115,
+                    "language": "Bourne Shell",
+                    "blankLines": 27
+                },
+                {
+                    "codeLines": 24,
+                    "commentLines": 0,
+                    "language": "XML",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 537,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 122
+                },
+                {
+                    "codeLines": 100,
+                    "commentLines": 0,
+                    "language": "YAML",
+                    "blankLines": 30
+                },
+                {
+                    "codeLines": 10372,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 0
+                }
+            ],
+            "lastCommit": "2024-05-20T02:32:32",
+            "lastCommitSHA": "131acac21a4511fd0b577505f31dd6064e9e0418",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 3201651,
+                "Batchfile": 146
+            },
+            "labels": [
+                "bug",
+                "duplicate",
+                "enhancement",
+                "help wanted",
+                "invalid",
+                "question",
+                "wontfix"
+            ],
+            "topics": [
+                "libgdx"
+            ]
+        },
+        {
+            "id": 3264249,
+            "name": "bitwig/bitwig-extensions",
+            "isFork": false,
+            "commits": 1241,
+            "branches": 21,
+            "releases": 0,
+            "forks": 37,
+            "mainLanguage": "Java",
+            "defaultBranch": "api-18",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 25,
+            "stargazers": 186,
+            "contributors": 16,
+            "size": 50856,
+            "createdAt": "2019-08-23T10:39:19",
+            "pushedAt": "2024-11-13T12:07:47",
+            "updatedAt": "2024-11-13T12:07:51",
+            "totalIssues": 16,
+            "openIssues": 10,
+            "totalPullRequests": 77,
+            "openPullRequests": 5,
+            "blankLines": 16831,
+            "codeLines": 100337,
+            "commentLines": 1443,
+            "metrics": [
+                {
+                    "codeLines": 84925,
+                    "commentLines": 1323,
+                    "language": "Java",
+                    "blankLines": 16120
+                },
+                {
+                    "codeLines": 14,
+                    "commentLines": 2,
+                    "language": "YAML",
+                    "blankLines": 5
+                },
+                {
+                    "codeLines": 32,
+                    "commentLines": 0,
+                    "language": "Gradle",
+                    "blankLines": 6
+                },
+                {
+                    "codeLines": 325,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 214
+                },
+                {
+                    "codeLines": 13,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 10691,
+                    "commentLines": 0,
+                    "language": "XML",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 122,
+                    "commentLines": 116,
+                    "language": "Bourne Shell",
+                    "blankLines": 38
+                },
+                {
+                    "codeLines": 12,
+                    "commentLines": 0,
+                    "language": "INI",
+                    "blankLines": 2
+                },
+                {
+                    "codeLines": 4042,
+                    "commentLines": 0,
+                    "language": "HTML",
+                    "blankLines": 421
+                },
+                {
+                    "codeLines": 85,
+                    "commentLines": 0,
+                    "language": "Maven",
+                    "blankLines": 4
+                },
+                {
+                    "codeLines": 69,
+                    "commentLines": 2,
+                    "language": "DOS Batch",
+                    "blankLines": 21
+                },
+                {
+                    "codeLines": 7,
+                    "commentLines": 0,
+                    "language": "Properties",
+                    "blankLines": 0
+                }
+            ],
+            "lastCommit": "2024-11-13T12:07:45",
+            "lastCommitSHA": "da7d70e73cc055475d63ac6c7de17e69f89f4993",
+            "hasWiki": false,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 3623144,
+                "HTML": 2843,
+                "Shell": 460
+            },
+            "labels": [
+                "bug",
+                "documentation",
+                "duplicate",
+                "enhancement",
+                "good first issue",
+                "help wanted",
+                "invalid",
+                "question",
+                "wontfix"
+            ],
+            "topics": []
+        },
+        {
+            "id": 3266952,
+            "name": "linlinjava/litemall",
+            "isFork": false,
+            "commits": 1186,
+            "branches": 6,
+            "releases": 8,
+            "forks": 7208,
+            "mainLanguage": "Java",
+            "defaultBranch": "master",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 733,
+            "stargazers": 19250,
+            "contributors": 61,
+            "size": 24593,
+            "createdAt": "2018-03-22T04:42:30",
+            "pushedAt": "2024-11-07T06:07:01",
+            "updatedAt": "2024-11-08T08:13:14",
+            "totalIssues": 364,
+            "openIssues": 32,
+            "totalPullRequests": 185,
+            "openPullRequests": 5,
+            "blankLines": 23615,
+            "codeLines": 155279,
+            "commentLines": 47672,
+            "metrics": [
+                {
+                    "codeLines": 60606,
+                    "commentLines": 40871,
+                    "language": "Java",
+                    "blankLines": 14958
+                },
+                {
+                    "codeLines": 840,
+                    "commentLines": 216,
+                    "language": "SQL",
+                    "blankLines": 144
+                },
+                {
+                    "codeLines": 662,
+                    "commentLines": 104,
+                    "language": "YAML",
+                    "blankLines": 42
+                },
+                {
+                    "codeLines": 825,
+                    "commentLines": 45,
+                    "language": "SCSS",
+                    "blankLines": 182
+                },
+                {
+                    "codeLines": 4,
+                    "commentLines": 0,
+                    "language": "Dockerfile",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 5953,
+                    "commentLines": 338,
+                    "language": "WXML",
+                    "blankLines": 465
+                },
+                {
+                    "codeLines": 4788,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 11370,
+                    "commentLines": 104,
+                    "language": "WXSS",
+                    "blankLines": 1647
+                },
+                {
+                    "codeLines": 6035,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 2291
+                },
+                {
+                    "codeLines": 12,
+                    "commentLines": 0,
+                    "language": "INI",
+                    "blankLines": 2
+                },
+                {
+                    "codeLines": 31077,
+                    "commentLines": 2558,
+                    "language": "JavaScript",
+                    "blankLines": 2264
+                },
+                {
+                    "codeLines": 15646,
+                    "commentLines": 219,
+                    "language": "Vuejs Component",
+                    "blankLines": 1127
+                },
+                {
+                    "codeLines": 233,
+                    "commentLines": 0,
+                    "language": "SVG",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 834,
+                    "commentLines": 36,
+                    "language": "Sass",
+                    "blankLines": 182
+                },
+                {
+                    "codeLines": 151,
+                    "commentLines": 63,
+                    "language": "Bourne Shell",
+                    "blankLines": 47
+                },
+                {
+                    "codeLines": 14645,
+                    "commentLines": 3045,
+                    "language": "XML",
+                    "blankLines": 19
+                },
+                {
+                    "codeLines": 246,
+                    "commentLines": 56,
+                    "language": "TypeScript",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 180,
+                    "commentLines": 0,
+                    "language": "WiX source",
+                    "blankLines": 33
+                },
+                {
+                    "codeLines": 648,
+                    "commentLines": 7,
+                    "language": "Maven",
+                    "blankLines": 92
+                },
+                {
+                    "codeLines": 36,
+                    "commentLines": 2,
+                    "language": "HTML",
+                    "blankLines": 3
+                },
+                {
+                    "codeLines": 488,
+                    "commentLines": 8,
+                    "language": "CSS",
+                    "blankLines": 117
+                }
+            ],
+            "lastCommit": "2024-06-16T05:21:11",
+            "lastCommitSHA": "92ffc39e016fbe17b6c4fef1aa94764a18fd9fc3",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 3959073,
+                "JavaScript": 963363,
+                "Vue": 500645,
+                "SCSS": 17089,
+                "CSS": 12039,
+                "Shell": 7006,
+                "HTML": 1191,
+                "Dockerfile": 170
+            },
+            "labels": [
+                "bug",
+                "dependencies",
+                "java",
+                "javascript",
+                "新功能",
+                "无开发计划",
+                "无效",
+                "欢迎pr",
+                "欢迎贡献",
+                "重构",
+                "问题不明确"
+            ],
+            "topics": [
+                "litemall",
+                "mall",
+                "spring-boot",
+                "vue",
+                "wechat",
+                "wechat-mini-program"
+            ]
+        },
+        {
+            "id": 3267056,
+            "name": "daviscook477/basemod",
+            "isFork": true,
+            "commits": 1674,
+            "branches": 13,
+            "releases": 80,
+            "forks": 113,
+            "mainLanguage": "Java",
+            "defaultBranch": "master",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 18,
+            "stargazers": 413,
+            "contributors": 47,
+            "size": 9088,
+            "createdAt": "2018-02-11T02:25:11",
+            "pushedAt": "2024-11-10T06:51:40",
+            "updatedAt": "2024-11-10T10:24:05",
+            "totalIssues": 171,
+            "openIssues": 61,
+            "totalPullRequests": 264,
+            "openPullRequests": 10,
+            "blankLines": 5132,
+            "codeLines": 34570,
+            "commentLines": 1891,
+            "metrics": [
+                {
+                    "codeLines": 221,
+                    "commentLines": 0,
+                    "language": "Maven",
+                    "blankLines": 15
+                },
+                {
+                    "codeLines": 33285,
+                    "commentLines": 1891,
+                    "language": "Java",
+                    "blankLines": 4913
+                },
+                {
+                    "codeLines": 124,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 940,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 204
+                }
+            ],
+            "lastCommit": "2024-01-30T04:13:45",
+            "lastCommitSHA": "f002405fcc773b4893d31cf190e3a590b0b169d0",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 1371150
+            },
+            "labels": [
+                "bug",
+                "confirmed",
+                "duplicate",
+                "enhancement",
+                "good first issue",
+                "help wanted",
+                "invalid",
+                "known-issue",
+                "question",
+                "wontfix"
+            ],
+            "topics": []
+        },
+        {
+            "id": 3268376,
+            "name": "graphql-java-generator/graphql-maven-plugin-project",
+            "isFork": false,
+            "commits": 1652,
+            "branches": 5,
+            "releases": 0,
+            "forks": 47,
+            "mainLanguage": "Java",
+            "defaultBranch": "master_2.x",
+            "license": "MIT License",
+            "homepage": "https://graphql-maven-plugin-project.graphql-java-generator.com",
+            "watchers": 4,
+            "stargazers": 118,
+            "contributors": 14,
+            "size": 92240,
+            "createdAt": "2019-03-18T01:05:23",
+            "pushedAt": "2024-09-16T04:38:58",
+            "updatedAt": "2024-09-16T04:39:02",
+            "totalIssues": 171,
+            "openIssues": 5,
+            "totalPullRequests": 42,
+            "openPullRequests": 0,
+            "blankLines": 30034,
+            "codeLines": 98999,
+            "commentLines": 78348,
+            "metrics": [
+                {
+                    "codeLines": 3274,
+                    "commentLines": 249,
+                    "language": "Maven",
+                    "blankLines": 214
+                },
+                {
+                    "codeLines": 1102,
+                    "commentLines": 73,
+                    "language": "XML",
+                    "blankLines": 143
+                },
+                {
+                    "codeLines": 312,
+                    "commentLines": 19,
+                    "language": "HTML",
+                    "blankLines": 7
+                },
+                {
+                    "codeLines": 69576,
+                    "commentLines": 44510,
+                    "language": "Java",
+                    "blankLines": 16416
+                },
+                {
+                    "codeLines": 1273,
+                    "commentLines": 1,
+                    "language": "SQL",
+                    "blankLines": 29
+                },
+                {
+                    "codeLines": 22,
+                    "commentLines": 21,
+                    "language": "Velocity Template Language",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 12,
+                    "commentLines": 23,
+                    "language": "DOS Batch",
+                    "blankLines": 12
+                },
+                {
+                    "codeLines": 18875,
+                    "commentLines": 33267,
+                    "language": "GraphQL",
+                    "blankLines": 12706
+                },
+                {
+                    "codeLines": 49,
+                    "commentLines": 29,
+                    "language": "YAML",
+                    "blankLines": 13
+                },
+                {
+                    "codeLines": 2710,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 1,
+                    "commentLines": 0,
+                    "language": "JSP",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 934,
+                    "commentLines": 2,
+                    "language": "Markdown",
+                    "blankLines": 443
+                },
+                {
+                    "codeLines": 67,
+                    "commentLines": 154,
+                    "language": "Properties",
+                    "blankLines": 51
+                },
+                {
+                    "codeLines": 785,
+                    "commentLines": 0,
+                    "language": "CSV",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 7,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 0
+                }
+            ],
+            "lastCommit": "2024-09-11T04:50:23",
+            "lastCommitSHA": "16abf5b08330917dab0d0303e83e4af4259af9b0",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 5447712,
+                "HTML": 12183,
+                "Batchfile": 1506
+            },
+            "labels": [
+                "bug",
+                "dependencies",
+                "duplicate",
+                "enhancement",
+                "good first issue",
+                "help wanted",
+                "invalid",
+                "question",
+                "wontfix"
+            ],
+            "topics": []
+        },
+        {
+            "id": 3268967,
+            "name": "warmuuh/milkman",
+            "isFork": false,
+            "commits": 810,
+            "branches": 45,
+            "releases": 42,
+            "forks": 73,
+            "mainLanguage": "Java",
+            "defaultBranch": "master",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 13,
+            "stargazers": 1122,
+            "contributors": 14,
+            "size": 6024,
+            "createdAt": "2019-03-27T01:42:47",
+            "pushedAt": "2024-09-27T06:40:57",
+            "updatedAt": "2024-09-27T06:41:02",
+            "totalIssues": 144,
+            "openIssues": 12,
+            "totalPullRequests": 46,
+            "openPullRequests": 3,
+            "blankLines": 7887,
+            "codeLines": 38138,
+            "commentLines": 2647,
+            "metrics": [
+                {
+                    "codeLines": 27227,
+                    "commentLines": 1994,
+                    "language": "Java",
+                    "blankLines": 6899
+                },
+                {
+                    "codeLines": 278,
+                    "commentLines": 1,
+                    "language": "YAML",
+                    "blankLines": 5
+                },
+                {
+                    "codeLines": 1189,
+                    "commentLines": 3,
+                    "language": "SCSS",
+                    "blankLines": 72
+                },
+                {
+                    "codeLines": 184,
+                    "commentLines": 0,
+                    "language": "DOS Batch",
+                    "blankLines": 39
+                },
+                {
+                    "codeLines": 319,
+                    "commentLines": 60,
+                    "language": "Bourne Shell",
+                    "blankLines": 49
+                },
+                {
+                    "codeLines": 949,
+                    "commentLines": 2,
+                    "language": "Markdown",
+                    "blankLines": 411
+                },
+                {
+                    "codeLines": 1220,
+                    "commentLines": 385,
+                    "language": "JavaScript",
+                    "blankLines": 180
+                },
+                {
+                    "codeLines": 14,
+                    "commentLines": 0,
+                    "language": "Protocol Buffers",
+                    "blankLines": 3
+                },
+                {
+                    "codeLines": 16,
+                    "commentLines": 18,
+                    "language": "Properties",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 152,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 2018,
+                    "commentLines": 169,
+                    "language": "Maven",
+                    "blankLines": 136
+                },
+                {
+                    "codeLines": 1180,
+                    "commentLines": 0,
+                    "language": "Sass",
+                    "blankLines": 69
+                },
+                {
+                    "codeLines": 31,
+                    "commentLines": 1,
+                    "language": "SVG",
+                    "blankLines": 1
+                },
+                {
+                    "codeLines": 434,
+                    "commentLines": 14,
+                    "language": "XML",
+                    "blankLines": 23
+                },
+                {
+                    "codeLines": 2927,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 0
+                }
+            ],
+            "lastCommit": "2024-09-27T06:40:57",
+            "lastCommitSHA": "c877eb32bee284fbef51b66c0d34711398b0d2cd",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 1136185,
+                "JavaScript": 71994,
+                "SCSS": 23197,
+                "Shell": 5519,
+                "Batchfile": 1553
+            },
+            "labels": [
+                "bug",
+                "dependencies",
+                "duplicate",
+                "enhancement",
+                "good first issue",
+                "hacktoberfest",
+                "help wanted",
+                "invalid",
+                "not for merge",
+                "onhold",
+                "question",
+                "wontfix"
+            ],
+            "topics": [
+                "grpc",
+                "hacktoberfest",
+                "http",
+                "milkman-plugins",
+                "rest",
+                "testing"
+            ]
+        },
+        {
+            "id": 3269059,
+            "name": "azure/azure-libraries-for-java",
+            "isFork": false,
+            "commits": 848,
+            "branches": 19,
+            "releases": 57,
+            "forks": 98,
+            "mainLanguage": "Java",
+            "defaultBranch": "master",
+            "license": "MIT License",
+            "homepage": "https://docs.microsoft.com/en-us/java/azure/",
+            "watchers": 323,
+            "stargazers": 94,
+            "contributors": 38,
+            "size": 271662,
+            "createdAt": "2017-09-29T08:27:25",
+            "pushedAt": "2024-10-17T11:46:43",
+            "updatedAt": "2024-10-17T11:46:45",
+            "totalIssues": 443,
+            "openIssues": 145,
+            "totalPullRequests": 980,
+            "openPullRequests": 4,
+            "blankLines": 106498,
+            "codeLines": 1299569,
+            "commentLines": 443744,
+            "metrics": [
+                {
+                    "codeLines": 2244,
+                    "commentLines": 6,
+                    "language": "YAML",
+                    "blankLines": 29
+                },
+                {
+                    "codeLines": 519951,
+                    "commentLines": 443366,
+                    "language": "Java",
+                    "blankLines": 105210
+                },
+                {
+                    "codeLines": 3,
+                    "commentLines": 0,
+                    "language": "PowerShell",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 27,
+                    "commentLines": 0,
+                    "language": "CSV",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 232,
+                    "commentLines": 23,
+                    "language": "Properties",
+                    "blankLines": 22
+                },
+                {
+                    "codeLines": 4716,
+                    "commentLines": 119,
+                    "language": "Maven",
+                    "blankLines": 267
+                },
+                {
+                    "codeLines": 70,
+                    "commentLines": 12,
+                    "language": "Bourne Shell",
+                    "blankLines": 29
+                },
+                {
+                    "codeLines": 12,
+                    "commentLines": 5,
+                    "language": "JSP",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 3404,
+                    "commentLines": 7,
+                    "language": "Markdown",
+                    "blankLines": 736
+                },
+                {
+                    "codeLines": 232,
+                    "commentLines": 4,
+                    "language": "JavaScript",
+                    "blankLines": 36
+                },
+                {
+                    "codeLines": 24,
+                    "commentLines": 0,
+                    "language": "Bourne Again Shell",
+                    "blankLines": 6
+                },
+                {
+                    "codeLines": 189,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 40
+                },
+                {
+                    "codeLines": 117,
+                    "commentLines": 14,
+                    "language": "Python",
+                    "blankLines": 16
+                },
+                {
+                    "codeLines": 22,
+                    "commentLines": 0,
+                    "language": "Dockerfile",
+                    "blankLines": 8
+                },
+                {
+                    "codeLines": 84,
+                    "commentLines": 33,
+                    "language": "DOS Batch",
+                    "blankLines": 18
+                },
+                {
+                    "codeLines": 177,
+                    "commentLines": 155,
+                    "language": "XML",
+                    "blankLines": 81
+                },
+                {
+                    "codeLines": 768065,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 0
+                }
+            ],
+            "lastCommit": "2024-10-17T11:46:41",
+            "lastCommitSHA": "af84d032599bee86815b69b5d63750150845e88e",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 49860205,
+                "JavaScript": 11721,
+                "Batchfile": 6821,
+                "Python": 4751,
+                "Shell": 3333,
+                "Dockerfile": 1068,
+                "PowerShell": 160
+            },
+            "labels": [
+                "aad",
+                "acs",
+                "advisor",
+                "aks",
+                "analysis services",
+                "api management",
+                "app services",
+                "application insights",
+                "arm",
+                "arm - core",
+                "arm - managed applications",
+                "arm - rbac",
+                "arm - service catalog",
+                "arm - tags",
+                "arm - templates",
+                "arm-core review",
+                "aro",
+                "authentication",
+                "authorization",
+                "automation",
+                "azure arc enabled servers",
+                "azure data explorer",
+                "azure stack",
+                "azure.spring - cosmos",
+                "batch",
+                "batchai",
+                "billing",
+                "blueprint",
+                "bot service",
+                "bug",
+                "client",
+                "cloud shell",
+                "cognitive services",
+                "commerce",
+                "compat breaks",
+                "compute",
+                "compute - extensions",
+                "compute - images",
+                "compute - managed disks",
+                "compute - rdfe",
+                "compute - vm",
+                "compute - vmss",
+                "consumption- riandshowback",
+                "consumption-billing",
+                "consumption-budget",
+                "consumption-query",
+                "consumption-usagedetailsandexport",
+                "container instances",
+                "container registry",
+                "cosmos",
+                "cost management",
+                "cost management-billing",
+                "cost management-query",
+                "cost management-riandshowback",
+                "cost management-usagedetailsandexport",
+                "customer insights",
+                "customer-reported",
+                "customer-response-expected",
+                "data bricks",
+                "data catalog",
+                "data factory",
+                "data lake",
+                "data lake analytics",
+                "data lake storage gen1",
+                "data lake storage gen2",
+                "data lake store",
+                "data migration",
+                "dependencies",
+                "devtestlab",
+                "do not merge",
+                "docs",
+                "documentation",
+                "donotmerge",
+                "duplicate",
+                "eng",
+                "enhancement",
+                "event grid",
+                "event hubs",
+                "feature request",
+                "feature-request",
+                "functions",
+                "graph",
+                "guest configuration",
+                "hdinsight",
+                "import export",
+                "in progress",
+                "insights",
+                "intune",
+                "investigate",
+                "iot/cli",
+                "iothub",
+                "keyvault",
+                "lab services",
+                "logic app",
+                "machine learning",
+                "machine learning compute",
+                "machine learning experimentation",
+                "managed identity",
+                "managedservices",
+                "marketplace ordering",
+                "media services",
+                "mgmt",
+                "migrate",
+                "mobile engagement",
+                "monitor",
+                "monitor - actiongroups",
+                "monitor - activitylogs",
+                "monitor - alerts",
+                "monitor - applicationinsights",
+                "monitor - autoscale",
+                "monitor - diagnostic settings",
+                "monitor - loganalytics",
+                "monitor - metrics",
+                "mysql",
+                "needs-more-info",
+                "network",
+                "network - application gateway",
+                "network - bastion",
+                "network - cdn",
+                "network - ddos protection",
+                "network - dns",
+                "network - expressroute",
+                "network - firewall",
+                "network - front door",
+                "network - load balancer",
+                "network - network virtual appliance",
+                "network - network watcher",
+                "network - private link",
+                "network - traffic manager",
+                "network - virtual network",
+                "network - virtual network nat",
+                "network - virtual wan",
+                "network - vpn gateway",
+                "notification hub",
+                "operational insights",
+                "operations management",
+                "policy",
+                "policy insights",
+                "postgresql",
+                "powerbi",
+                "question",
+                "recovery services backup",
+                "recovery services site-recovery",
+                "redis cache",
+                "relay",
+                "reservations",
+                "resource authorization",
+                "resource graph",
+                "resource health",
+                "restprinprogress",
+                "restprmerged",
+                "restprrefused",
+                "scheduler",
+                "sdk generator",
+                "sdkupdate arm-core",
+                "search",
+                "security",
+                "securityinsights",
+                "server management",
+                "service attention",
+                "service bus",
+                "service fabric",
+                "service issue",
+                "service map",
+                "servicepr",
+                "signalr",
+                "size : 1",
+                "size : 13",
+                "size : 2",
+                "size : 3",
+                "size : 5",
+                "size : 8",
+                "sql",
+                "sql - backup & restore",
+                "sql - data security",
+                "sql - elastic jobs",
+                "sql - managed instance",
+                "sql - replication & failover",
+                "sql - vm",
+                "storage",
+                "storsimple",
+                "stream analytics",
+                "subscription",
+                "tables",
+                "timeseriesinsights",
+                "triage",
+                "v2",
+                "v2 ga",
+                "v2 preview blocker",
+                "vfxt",
+                "visual studio",
+                "web apps",
+                "wontfix"
+            ],
+            "topics": []
+        },
+        {
+            "id": 3271168,
+            "name": "querz/mcaselector",
+            "isFork": false,
+            "commits": 1409,
+            "branches": 29,
+            "releases": 68,
+            "forks": 176,
+            "mainLanguage": "Java",
+            "defaultBranch": "master",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 41,
+            "stargazers": 3229,
+            "contributors": 33,
+            "size": 23306,
+            "createdAt": "2018-04-22T10:23:26",
+            "pushedAt": "2024-10-23T04:29:21",
+            "updatedAt": "2024-10-23T10:21:06",
+            "totalIssues": 384,
+            "openIssues": 156,
+            "totalPullRequests": 118,
+            "openPullRequests": 9,
+            "blankLines": 6175,
+            "codeLines": 54199,
+            "commentLines": 941,
+            "metrics": [
+                {
+                    "codeLines": 74,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 22
+                },
+                {
+                    "codeLines": 110,
+                    "commentLines": 9,
+                    "language": "Gradle",
+                    "blankLines": 16
+                },
+                {
+                    "codeLines": 100,
+                    "commentLines": 0,
+                    "language": "YAML",
+                    "blankLines": 17
+                },
+                {
+                    "codeLines": 13,
+                    "commentLines": 3,
+                    "language": "Properties",
+                    "blankLines": 2
+                },
+                {
+                    "codeLines": 29,
+                    "commentLines": 0,
+                    "language": "XML",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 105,
+                    "commentLines": 116,
+                    "language": "Bourne Shell",
+                    "blankLines": 28
+                },
+                {
+                    "codeLines": 19426,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 33
+                },
+                {
+                    "codeLines": 1024,
+                    "commentLines": 16,
+                    "language": "CSS",
+                    "blankLines": 241
+                },
+                {
+                    "codeLines": 78,
+                    "commentLines": 26,
+                    "language": "Bourne Again Shell",
+                    "blankLines": 27
+                },
+                {
+                    "codeLines": 5,
+                    "commentLines": 0,
+                    "language": "INI",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 21,
+                    "commentLines": 0,
+                    "language": "Windows Resource File",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 1,
+                    "commentLines": 1,
+                    "language": "Dockerfile",
+                    "blankLines": 1
+                },
+                {
+                    "codeLines": 69,
+                    "commentLines": 2,
+                    "language": "DOS Batch",
+                    "blankLines": 21
+                },
+                {
+                    "codeLines": 33144,
+                    "commentLines": 768,
+                    "language": "Java",
+                    "blankLines": 5767
+                }
+            ],
+            "lastCommit": "2024-10-23T04:29:06",
+            "lastCommitSHA": "bec215e48204f6db119d53c01ba5a67255aa8e78",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 1267433,
+                "CSS": 29706,
+                "Shell": 4784,
+                "Inno Setup": 3911,
+                "Dockerfile": 58
+            },
+            "labels": [
+                "bug",
+                "bug?",
+                "can't fix",
+                "duplicate",
+                "enhancement",
+                "good first issue",
+                "help wanted",
+                "invalid",
+                "missing info",
+                "question",
+                "solution",
+                "won't fix"
+            ],
+            "topics": [
+                "chunks",
+                "delete",
+                "export",
+                "java-16",
+                "javafx",
+                "mca-file",
+                "mca-region",
+                "minecraft",
+                "minecraft-saves",
+                "minecraft-tool",
+                "minecraft-world"
+            ]
+        },
+        {
+            "id": 3271940,
+            "name": "twitch4j/twitch4j",
+            "isFork": false,
+            "commits": 1385,
+            "branches": 16,
+            "releases": 41,
+            "forks": 69,
+            "mainLanguage": "Java",
+            "defaultBranch": "master",
+            "license": "MIT License",
+            "homepage": "https://twitch4j.github.io/",
+            "watchers": 14,
+            "stargazers": 367,
+            "contributors": 36,
+            "size": 5176,
+            "createdAt": "2017-01-07T10:03:54",
+            "pushedAt": "2024-11-17T02:10:42",
+            "updatedAt": "2024-11-17T08:18:32",
+            "totalIssues": 94,
+            "openIssues": 5,
+            "totalPullRequests": 974,
+            "openPullRequests": 8,
+            "blankLines": 9911,
+            "codeLines": 217280,
+            "commentLines": 17307,
+            "metrics": [
+                {
+                    "codeLines": 302,
+                    "commentLines": 79,
+                    "language": "Kotlin",
+                    "blankLines": 56
+                },
+                {
+                    "codeLines": 36783,
+                    "commentLines": 17003,
+                    "language": "Java",
+                    "blankLines": 9624
+                },
+                {
+                    "codeLines": 21,
+                    "commentLines": 0,
+                    "language": "HTML",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 8,
+                    "commentLines": 0,
+                    "language": "Properties",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 51,
+                    "commentLines": 11,
+                    "language": "XML",
+                    "blankLines": 11
+                },
+                {
+                    "codeLines": 106,
+                    "commentLines": 118,
+                    "language": "Bourne Shell",
+                    "blankLines": 28
+                },
+                {
+                    "codeLines": 71,
+                    "commentLines": 2,
+                    "language": "DOS Batch",
+                    "blankLines": 21
+                },
+                {
+                    "codeLines": 15,
+                    "commentLines": 0,
+                    "language": "INI",
+                    "blankLines": 3
+                },
+                {
+                    "codeLines": 59,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 36
+                },
+                {
+                    "codeLines": 664,
+                    "commentLines": 94,
+                    "language": "Gradle",
+                    "blankLines": 132
+                },
+                {
+                    "codeLines": 1157,
+                    "commentLines": 0,
+                    "language": "GraphQL",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 178043,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 0
+                }
+            ],
+            "lastCommit": "2024-11-11T09:10:39",
+            "lastCommitSHA": "7db1b5b1420d9d228b5ffc5e3ffe395938dbc851",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 2199266,
+                "Kotlin": 14728,
+                "HTML": 959
+            },
+            "labels": [
+                "bug/major",
+                "bug/minor",
+                "dependencies",
+                "deprecated",
+                "docs",
+                "duplicate",
+                "enhancement",
+                "feature",
+                "good first issue",
+                "hacktoberfest",
+                "help wanted",
+                "invalid",
+                "question",
+                "spam",
+                "wontfix"
+            ],
+            "topics": [
+                "api",
+                "api-client",
+                "auth",
+                "chat",
+                "eventsub",
+                "gradle",
+                "hacktoberfest",
+                "helix",
+                "irc",
+                "java",
+                "kraken",
+                "oauth",
+                "pubsub",
+                "tmi",
+                "twitch",
+                "twitch-api",
+                "twitch-api-v5",
+                "twitch-irc",
+                "twitchdev",
+                "webhook"
+            ]
+        },
+        {
+            "id": 3271966,
+            "name": "archy-x/aureliumskills",
+            "isFork": false,
+            "commits": 1218,
+            "branches": 7,
+            "releases": 59,
+            "forks": 79,
+            "mainLanguage": "Java",
+            "defaultBranch": "master",
+            "license": "MIT License",
+            "homepage": "https://www.spigotmc.org/resources/81069/",
+            "watchers": 4,
+            "stargazers": 209,
+            "contributors": 23,
+            "size": 6348,
+            "createdAt": "2020-07-07T03:48:28",
+            "pushedAt": "2024-03-07T01:05:33",
+            "updatedAt": "2024-03-04T04:37:52",
+            "totalIssues": 183,
+            "openIssues": 84,
+            "totalPullRequests": 62,
+            "openPullRequests": 7,
+            "blankLines": 3592,
+            "codeLines": 46611,
+            "commentLines": 1256,
+            "metrics": [
+                {
+                    "codeLines": 40,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 14
+                },
+                {
+                    "codeLines": 103,
+                    "commentLines": 109,
+                    "language": "Bourne Shell",
+                    "blankLines": 28
+                },
+                {
+                    "codeLines": 1679,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 82
+                },
+                {
+                    "codeLines": 18245,
+                    "commentLines": 76,
+                    "language": "YAML",
+                    "blankLines": 36
+                },
+                {
+                    "codeLines": 122,
+                    "commentLines": 0,
+                    "language": "Gradle",
+                    "blankLines": 18
+                },
+                {
+                    "codeLines": 26348,
+                    "commentLines": 1069,
+                    "language": "Java",
+                    "blankLines": 3393
+                },
+                {
+                    "codeLines": 68,
+                    "commentLines": 2,
+                    "language": "DOS Batch",
+                    "blankLines": 21
+                },
+                {
+                    "codeLines": 6,
+                    "commentLines": 0,
+                    "language": "Properties",
+                    "blankLines": 0
+                }
+            ],
+            "lastCommit": "2024-03-06T11:06:34",
+            "lastCommitSHA": "2c5ae36b44960bc4062914f0d48708d1abe136cb",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 1228090,
+                "Kotlin": 4108
+            },
+            "labels": [
+                "resolution: cannot reproduce",
+                "resolution: duplicate",
+                "resolution: fixed",
+                "resolution: invalid",
+                "resolution: wont-add",
+                "resolution: works-as-intended",
+                "type: bug",
+                "type: feature",
+                "type: incompatibility",
+                "version: 1.12",
+                "version: 1.13",
+                "version: 1.14",
+                "version: 1.15",
+                "version: 1.16",
+                "version: 1.17"
+            ],
+            "topics": [
+                "bukkit",
+                "java",
+                "minecraft",
+                "minecraft-plugin",
+                "spigot-plugin"
+            ]
+        },
+        {
+            "id": 3272423,
+            "name": "thombergs/code-examples",
+            "isFork": false,
+            "commits": 1009,
+            "branches": 102,
+            "releases": 0,
+            "forks": 2618,
+            "mainLanguage": "Java",
+            "defaultBranch": "master",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 89,
+            "stargazers": 2614,
+            "contributors": 33,
+            "size": 157396,
+            "createdAt": "2017-07-30T02:12:24",
+            "pushedAt": "2024-07-12T06:59:08",
+            "updatedAt": "2024-07-12T06:59:15",
+            "totalIssues": 32,
+            "openIssues": 25,
+            "totalPullRequests": 279,
+            "openPullRequests": 94,
+            "blankLines": 17413,
+            "codeLines": 247222,
+            "commentLines": 4903,
+            "metrics": [
+                {
+                    "codeLines": 8,
+                    "commentLines": 0,
+                    "language": "Pug",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 64,
+                    "commentLines": 0,
+                    "language": "Dockerfile",
+                    "blankLines": 1
+                },
+                {
+                    "codeLines": 171,
+                    "commentLines": 19,
+                    "language": "Kotlin",
+                    "blankLines": 55
+                },
+                {
+                    "codeLines": 105,
+                    "commentLines": 14,
+                    "language": "Vuejs Component",
+                    "blankLines": 11
+                },
+                {
+                    "codeLines": 45767,
+                    "commentLines": 3009,
+                    "language": "Java",
+                    "blankLines": 12428
+                },
+                {
+                    "codeLines": 2814,
+                    "commentLines": 7,
+                    "language": "Markdown",
+                    "blankLines": 1293
+                },
+                {
+                    "codeLines": 2544,
+                    "commentLines": 79,
+                    "language": "YAML",
+                    "blankLines": 223
+                },
+                {
+                    "codeLines": 20,
+                    "commentLines": 2,
+                    "language": "GraphQL",
+                    "blankLines": 3
+                },
+                {
+                    "codeLines": 770,
+                    "commentLines": 0,
+                    "language": "CSV",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 50,
+                    "commentLines": 0,
+                    "language": "Groovy",
+                    "blankLines": 4
+                },
+                {
+                    "codeLines": 7203,
+                    "commentLines": 156,
+                    "language": "Maven",
+                    "blankLines": 639
+                },
+                {
+                    "codeLines": 14,
+                    "commentLines": 0,
+                    "language": "SVG",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 978,
+                    "commentLines": 63,
+                    "language": "HTML",
+                    "blankLines": 99
+                },
+                {
+                    "codeLines": 267,
+                    "commentLines": 1,
+                    "language": "CSS",
+                    "blankLines": 33
+                },
+                {
+                    "codeLines": 172174,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 4
+                },
+                {
+                    "codeLines": 152,
+                    "commentLines": 2,
+                    "language": "JSX",
+                    "blankLines": 12
+                },
+                {
+                    "codeLines": 1772,
+                    "commentLines": 16,
+                    "language": "DOS Batch",
+                    "blankLines": 468
+                },
+                {
+                    "codeLines": 380,
+                    "commentLines": 4,
+                    "language": "SQL",
+                    "blankLines": 64
+                },
+                {
+                    "codeLines": 44,
+                    "commentLines": 0,
+                    "language": "INI",
+                    "blankLines": 2
+                },
+                {
+                    "codeLines": 289,
+                    "commentLines": 89,
+                    "language": "Properties",
+                    "blankLines": 34
+                },
+                {
+                    "codeLines": 3438,
+                    "commentLines": 913,
+                    "language": "Bourne Shell",
+                    "blankLines": 543
+                },
+                {
+                    "codeLines": 739,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 27
+                },
+                {
+                    "codeLines": 316,
+                    "commentLines": 7,
+                    "language": "HCL",
+                    "blankLines": 50
+                },
+                {
+                    "codeLines": 3898,
+                    "commentLines": 238,
+                    "language": "JavaScript",
+                    "blankLines": 711
+                },
+                {
+                    "codeLines": 21,
+                    "commentLines": 0,
+                    "language": "EJS",
+                    "blankLines": 2
+                },
+                {
+                    "codeLines": 808,
+                    "commentLines": 159,
+                    "language": "TypeScript",
+                    "blankLines": 217
+                },
+                {
+                    "codeLines": 794,
+                    "commentLines": 38,
+                    "language": "XML",
+                    "blankLines": 132
+                },
+                {
+                    "codeLines": 1622,
+                    "commentLines": 87,
+                    "language": "Gradle",
+                    "blankLines": 358
+                }
+            ],
+            "lastCommit": "2024-07-12T06:59:08",
+            "lastCommitSHA": "67d3508c1e1d5310e5db47e8c7f011a1faf58143",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 1897632,
+                "JavaScript": 134953,
+                "HTML": 49142,
+                "TypeScript": 33790,
+                "Shell": 13924,
+                "HCL": 7207,
+                "CSS": 7172,
+                "Kotlin": 6321,
+                "Vue": 3230,
+                "Dockerfile": 2552,
+                "Groovy": 1177,
+                "EJS": 419,
+                "Pug": 228
+            },
+            "labels": [
+                "bug",
+                "dependencies",
+                "duplicate",
+                "enhancement",
+                "help wanted",
+                "invalid",
+                "java",
+                "javascript",
+                "question",
+                "wontfix"
+            ],
+            "topics": []
+        },
+        {
+            "id": 3273199,
+            "name": "williamfiset/algorithms",
+            "isFork": false,
+            "commits": 1639,
+            "branches": 11,
+            "releases": 0,
+            "forks": 4400,
+            "mainLanguage": "Java",
+            "defaultBranch": "master",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 426,
+            "stargazers": 17519,
+            "contributors": 50,
+            "size": 1274506,
+            "createdAt": "2017-03-18T02:50:46",
+            "pushedAt": "2024-12-30T10:03:15",
+            "updatedAt": "2024-12-30T12:01:36",
+            "totalIssues": 179,
+            "openIssues": 62,
+            "totalPullRequests": 253,
+            "openPullRequests": 55,
+            "blankLines": 11144,
+            "codeLines": 35574,
+            "commentLines": 9167,
+            "metrics": [
+                {
+                    "codeLines": 335,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 109
+                },
+                {
+                    "codeLines": 7,
+                    "commentLines": 3,
+                    "language": "Properties",
+                    "blankLines": 1
+                },
+                {
+                    "codeLines": 126,
+                    "commentLines": 36,
+                    "language": "Bourne Shell",
+                    "blankLines": 21
+                },
+                {
+                    "codeLines": 86,
+                    "commentLines": 3,
+                    "language": "YAML",
+                    "blankLines": 8
+                },
+                {
+                    "codeLines": 3813,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 2358
+                },
+                {
+                    "codeLines": 20,
+                    "commentLines": 2,
+                    "language": "Python",
+                    "blankLines": 2
+                },
+                {
+                    "codeLines": 197,
+                    "commentLines": 78,
+                    "language": "JavaScript",
+                    "blankLines": 89
+                },
+                {
+                    "codeLines": 55,
+                    "commentLines": 10,
+                    "language": "Gradle",
+                    "blankLines": 15
+                },
+                {
+                    "codeLines": 130,
+                    "commentLines": 5,
+                    "language": "Kotlin",
+                    "blankLines": 17
+                },
+                {
+                    "codeLines": 30731,
+                    "commentLines": 9028,
+                    "language": "Java",
+                    "blankLines": 8500
+                },
+                {
+                    "codeLines": 74,
+                    "commentLines": 2,
+                    "language": "DOS Batch",
+                    "blankLines": 24
+                }
+            ],
+            "lastCommit": "2024-10-31T12:47:54",
+            "lastCommitSHA": "173fa7ce70f5d731c0f2141b48679e4697a76647",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 1437234,
+                "JavaScript": 9310,
+                "Kotlin": 2635,
+                "Python": 755
+            },
+            "labels": [
+                "bug",
+                "data structure",
+                "dependencies",
+                "dynamic programming",
+                "enhancement",
+                "geometry",
+                "github_actions",
+                "good first issue",
+                "graph theory",
+                "help wanted",
+                "java",
+                "linear algebra",
+                "machine learning",
+                "mathematics",
+                "network flow",
+                "question",
+                "selection algorithm",
+                "sorting",
+                "string algorithm",
+                "tree related",
+                "wontfix"
+            ],
+            "topics": [
+                "adjacency",
+                "adjacency-matrix",
+                "algorithm",
+                "algorithms",
+                "dijkstra",
+                "dynamic-programming",
+                "edmonds-karp-algorithm",
+                "geometry",
+                "graph-theory",
+                "linear-algebra",
+                "mathematics",
+                "matrix-multiplication",
+                "maxflow",
+                "nlog",
+                "search-algorithm",
+                "search-algorithms",
+                "sorting-algorithms",
+                "strings",
+                "traveling-salesman",
+                "tree-algorithms"
+            ]
+        },
+        {
+            "id": 3273319,
+            "name": "mapbox/mapbox-java",
+            "isFork": false,
+            "commits": 941,
+            "branches": 78,
+            "releases": 135,
+            "forks": 120,
+            "mainLanguage": "Java",
+            "defaultBranch": "main",
+            "license": "MIT License",
+            "homepage": "https://docs.mapbox.com/android/java/overview/",
+            "watchers": 105,
+            "stargazers": 422,
+            "contributors": 44,
+            "size": 23089,
+            "createdAt": "2016-04-06T08:30:35",
+            "pushedAt": "2024-10-15T01:44:14",
+            "updatedAt": "2024-10-15T01:32:02",
+            "totalIssues": 655,
+            "openIssues": 78,
+            "totalPullRequests": 939,
+            "openPullRequests": 5,
+            "blankLines": 7521,
+            "codeLines": 108844,
+            "commentLines": 17545,
+            "metrics": [
+                {
+                    "codeLines": 383,
+                    "commentLines": 29,
+                    "language": "Kotlin",
+                    "blankLines": 93
+                },
+                {
+                    "codeLines": 28991,
+                    "commentLines": 17186,
+                    "language": "Java",
+                    "blankLines": 6689
+                },
+                {
+                    "codeLines": 64,
+                    "commentLines": 2,
+                    "language": "DOS Batch",
+                    "blankLines": 24
+                },
+                {
+                    "codeLines": 974,
+                    "commentLines": 11,
+                    "language": "Markdown",
+                    "blankLines": 338
+                },
+                {
+                    "codeLines": 24,
+                    "commentLines": 3,
+                    "language": "Properties",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 145,
+                    "commentLines": 5,
+                    "language": "Bourne Shell",
+                    "blankLines": 35
+                },
+                {
+                    "codeLines": 161,
+                    "commentLines": 1,
+                    "language": "YAML",
+                    "blankLines": 12
+                },
+                {
+                    "codeLines": 280,
+                    "commentLines": 186,
+                    "language": "XML",
+                    "blankLines": 110
+                },
+                {
+                    "codeLines": 76907,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 2
+                },
+                {
+                    "codeLines": 131,
+                    "commentLines": 36,
+                    "language": "make",
+                    "blankLines": 50
+                },
+                {
+                    "codeLines": 121,
+                    "commentLines": 20,
+                    "language": "Bourne Again Shell",
+                    "blankLines": 19
+                },
+                {
+                    "codeLines": 663,
+                    "commentLines": 66,
+                    "language": "Gradle",
+                    "blankLines": 149
+                }
+            ],
+            "lastCommit": "2024-10-15T01:31:57",
+            "lastCommitSHA": "c75057c152dc121072363b5f0affe602cb1c64ea",
+            "hasWiki": false,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 1799253,
+                "Kotlin": 16882,
+                "Makefile": 15043,
+                "Shell": 5390
+            },
+            "labels": [
+                "approved",
+                "archived",
+                "blocked",
+                "bug",
+                "core",
+                "directions",
+                "documentation",
+                "feature",
+                "geocoding",
+                "geojson",
+                "isochrone",
+                "jira-sync-complete",
+                "lift: 13",
+                "lift: 5",
+                "m-l importance",
+                "map matching",
+                "matrix",
+                "op-ex",
+                "optimization",
+                "question",
+                "ready for review",
+                "refactor",
+                "release",
+                "release blocker",
+                "scripting",
+                "security",
+                "semver-major",
+                "skip changelog",
+                "starter-task",
+                "static image",
+                "static map",
+                "test",
+                "tilequery",
+                "turf",
+                "under review",
+                "wip",
+                "⚠️ do not merge"
+            ],
+            "topics": [
+                "android",
+                "directions",
+                "geocoding",
+                "geojson",
+                "java",
+                "mapbox",
+                "navigation",
+                "turf"
+            ]
+        },
+        {
+            "id": 3275896,
+            "name": "mattjlewis/diozero",
+            "isFork": false,
+            "commits": 1426,
+            "branches": 2,
+            "releases": 3,
+            "forks": 59,
+            "mainLanguage": "Java",
+            "defaultBranch": "main",
+            "license": "MIT License",
+            "homepage": "https://www.diozero.com",
+            "watchers": 28,
+            "stargazers": 263,
+            "contributors": 14,
+            "size": 97243,
+            "createdAt": "2016-02-02T09:01:19",
+            "pushedAt": "2024-10-15T04:03:27",
+            "updatedAt": "2024-10-15T04:03:31",
+            "totalIssues": 124,
+            "openIssues": 12,
+            "totalPullRequests": 65,
+            "openPullRequests": 3,
+            "blankLines": 14028,
+            "codeLines": 66702,
+            "commentLines": 34816,
+            "metrics": [
+                {
+                    "codeLines": 1352,
+                    "commentLines": 108,
+                    "language": "Maven",
+                    "blankLines": 120
+                },
+                {
+                    "codeLines": 3,
+                    "commentLines": 0,
+                    "language": "Sass",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 148,
+                    "commentLines": 12,
+                    "language": "Bourne Shell",
+                    "blankLines": 42
+                },
+                {
+                    "codeLines": 1687,
+                    "commentLines": 663,
+                    "language": "C",
+                    "blankLines": 472
+                },
+                {
+                    "codeLines": 121,
+                    "commentLines": 30,
+                    "language": "Python",
+                    "blankLines": 15
+                },
+                {
+                    "codeLines": 1040,
+                    "commentLines": 11,
+                    "language": "XML",
+                    "blankLines": 4
+                },
+                {
+                    "codeLines": 3,
+                    "commentLines": 0,
+                    "language": "SCSS",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 133,
+                    "commentLines": 63,
+                    "language": "Dockerfile",
+                    "blankLines": 37
+                },
+                {
+                    "codeLines": 1419,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 53580,
+                    "commentLines": 33409,
+                    "language": "Java",
+                    "blankLines": 11728
+                },
+                {
+                    "codeLines": 150,
+                    "commentLines": 7,
+                    "language": "make",
+                    "blankLines": 52
+                },
+                {
+                    "codeLines": 5,
+                    "commentLines": 0,
+                    "language": "Freemarker Template",
+                    "blankLines": 1
+                },
+                {
+                    "codeLines": 1162,
+                    "commentLines": 388,
+                    "language": "C/C++ Header",
+                    "blankLines": 195
+                },
+                {
+                    "codeLines": 376,
+                    "commentLines": 5,
+                    "language": "Protocol Buffers",
+                    "blankLines": 64
+                },
+                {
+                    "codeLines": 114,
+                    "commentLines": 41,
+                    "language": "YAML",
+                    "blankLines": 18
+                },
+                {
+                    "codeLines": 37,
+                    "commentLines": 79,
+                    "language": "Properties",
+                    "blankLines": 9
+                },
+                {
+                    "codeLines": 3300,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 1143
+                },
+                {
+                    "codeLines": 1549,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 128
+                },
+                {
+                    "codeLines": 523,
+                    "commentLines": 0,
+                    "language": "INI",
+                    "blankLines": 0
+                }
+            ],
+            "lastCommit": "2024-10-15T04:03:25",
+            "lastCommitSHA": "50aac1f13aa1195471f8726affe5365c9403d485",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 3511203,
+                "C": 137468,
+                "Dockerfile": 10026,
+                "Shell": 6518,
+                "Python": 5007,
+                "Makefile": 4712,
+                "FreeMarker": 211
+            },
+            "labels": [
+                "bug",
+                "dependencies",
+                "duplicate",
+                "enhancement",
+                "help wanted",
+                "invalid",
+                "question",
+                "wontfix"
+            ],
+            "topics": [
+                "analog-devices",
+                "arduino",
+                "asus-tinker-board",
+                "beaglebone-black",
+                "firmata",
+                "gpio",
+                "gpiod",
+                "hacktoberfest",
+                "i2c",
+                "java",
+                "libgpiod",
+                "odroid-c2",
+                "pico",
+                "raspberry-pi",
+                "serial",
+                "serial-communication",
+                "serial-port",
+                "spi",
+                "spi-device",
+                "spi-devices"
+            ]
+        },
+        {
+            "id": 3312974,
+            "name": "xeroapi/xero-java",
+            "isFork": false,
+            "commits": 828,
+            "branches": 48,
+            "releases": 143,
+            "forks": 88,
+            "mainLanguage": "Java",
+            "defaultBranch": "master",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 18,
+            "stargazers": 78,
+            "contributors": 27,
+            "size": 37416,
+            "createdAt": "2016-06-14T09:22:47",
+            "pushedAt": "2024-11-04T12:46:11",
+            "updatedAt": "2024-11-04T12:46:21",
+            "totalIssues": 211,
+            "openIssues": 28,
+            "totalPullRequests": 179,
+            "openPullRequests": 4,
+            "blankLines": 35396,
+            "codeLines": 243884,
+            "commentLines": 88401,
+            "metrics": [
+                {
+                    "codeLines": 260,
+                    "commentLines": 0,
+                    "language": "YAML",
+                    "blankLines": 32
+                },
+                {
+                    "codeLines": 9,
+                    "commentLines": 0,
+                    "language": "Properties",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 16,
+                    "commentLines": 0,
+                    "language": "INI",
+                    "blankLines": 5
+                },
+                {
+                    "codeLines": 9,
+                    "commentLines": 0,
+                    "language": "Bourne Shell",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 124225,
+                    "commentLines": 88248,
+                    "language": "Java",
+                    "blankLines": 21680
+                },
+                {
+                    "codeLines": 921,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 219
+                },
+                {
+                    "codeLines": 315,
+                    "commentLines": 13,
+                    "language": "Maven",
+                    "blankLines": 5
+                },
+                {
+                    "codeLines": 118129,
+                    "commentLines": 140,
+                    "language": "HTML",
+                    "blankLines": 13455
+                }
+            ],
+            "lastCommit": "2024-11-04T12:46:06",
+            "lastCommitSHA": "6855f416fb89c4816027bfa62d1a7cb972ca2c69",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 7224251,
+                "Shell": 1211
+            },
+            "labels": [
+                "epic",
+                "priority: critical",
+                "priority: high",
+                "priority: low",
+                "priority: medium",
+                "status: abandoned",
+                "status: accepted",
+                "status: available",
+                "status: blocked",
+                "status: completed",
+                "status: do not merge",
+                "status: duplicate",
+                "status: help wanted",
+                "status: in discussion",
+                "status: in progress",
+                "status: invalid",
+                "status: on hold",
+                "status: pending changes",
+                "status: pending oas update",
+                "status: review needed",
+                "status: revision needed",
+                "status: wontfix",
+                "type: api not sdk",
+                "type: bug - confirmed",
+                "type: bug - investigating",
+                "type: bug - reported",
+                "type: dependencies",
+                "type: documentation",
+                "type: enhancement",
+                "type: feature request",
+                "type: maintenance",
+                "type: question",
+                "version 2.x",
+                "version 3.x",
+                "version 4.x"
+            ],
+            "topics": [
+                "accounting",
+                "java",
+                "sdk",
+                "xero"
+            ]
+        },
+        {
+            "id": 3337912,
+            "name": "reneargento/algorithms-sedgewick-wayne",
+            "isFork": false,
+            "commits": 839,
+            "branches": 1,
+            "releases": 0,
+            "forks": 661,
+            "mainLanguage": "Java",
+            "defaultBranch": "master",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 63,
+            "stargazers": 2197,
+            "contributors": 28,
+            "size": 15195,
+            "createdAt": "2016-11-27T05:54:25",
+            "pushedAt": "2024-05-21T06:55:49",
+            "updatedAt": "2024-05-30T09:36:35",
+            "totalIssues": 244,
+            "openIssues": 2,
+            "totalPullRequests": 65,
+            "openPullRequests": 0,
+            "blankLines": 32097,
+            "codeLines": 116586,
+            "commentLines": 8345,
+            "metrics": [
+                {
+                    "codeLines": 95180,
+                    "commentLines": 8345,
+                    "language": "Java",
+                    "blankLines": 28151
+                },
+                {
+                    "codeLines": 27,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 14
+                },
+                {
+                    "codeLines": 1,
+                    "commentLines": 0,
+                    "language": "YAML",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 21378,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 3932
+                }
+            ],
+            "lastCommit": "2024-05-21T06:55:41",
+            "lastCommitSHA": "5465741e0e138039ea629267b68c05f15a5e05df",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 4430357
+            },
+            "labels": [
+                "bug",
+                "duplicate",
+                "enhancement",
+                "help wanted",
+                "invalid",
+                "question",
+                "wontfix"
+            ],
+            "topics": []
+        },
+        {
+            "id": 4515590,
+            "name": "fabricmc/mixin",
+            "isFork": true,
+            "commits": 1006,
+            "branches": 36,
+            "releases": 0,
+            "forks": 42,
+            "mainLanguage": "Java",
+            "defaultBranch": "main",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 6,
+            "stargazers": 66,
+            "contributors": 34,
+            "size": 8168,
+            "createdAt": "2018-10-28T09:41:07",
+            "pushedAt": "2024-11-24T08:12:09",
+            "updatedAt": "2024-11-24T08:12:13",
+            "totalIssues": 62,
+            "openIssues": 25,
+            "totalPullRequests": 97,
+            "openPullRequests": 9,
+            "blankLines": 10154,
+            "codeLines": 38498,
+            "commentLines": 34726,
+            "metrics": [
+                {
+                    "codeLines": 48,
+                    "commentLines": 1,
+                    "language": "YAML",
+                    "blankLines": 4
+                },
+                {
+                    "codeLines": 507,
+                    "commentLines": 34,
+                    "language": "Gradle",
+                    "blankLines": 78
+                },
+                {
+                    "codeLines": 21,
+                    "commentLines": 0,
+                    "language": "Properties",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 103,
+                    "commentLines": 105,
+                    "language": "Groovy",
+                    "blankLines": 28
+                },
+                {
+                    "codeLines": 36375,
+                    "commentLines": 34428,
+                    "language": "Java",
+                    "blankLines": 9910
+                },
+                {
+                    "codeLines": 105,
+                    "commentLines": 116,
+                    "language": "Bourne Shell",
+                    "blankLines": 28
+                },
+                {
+                    "codeLines": 69,
+                    "commentLines": 2,
+                    "language": "DOS Batch",
+                    "blankLines": 21
+                },
+                {
+                    "codeLines": 429,
+                    "commentLines": 7,
+                    "language": "XML",
+                    "blankLines": 1
+                },
+                {
+                    "codeLines": 774,
+                    "commentLines": 33,
+                    "language": "CSS",
+                    "blankLines": 73
+                },
+                {
+                    "codeLines": 34,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 7
+                },
+                {
+                    "codeLines": 33,
+                    "commentLines": 0,
+                    "language": "HTML",
+                    "blankLines": 4
+                }
+            ],
+            "lastCommit": "2024-11-24T08:11:39",
+            "lastCommitSHA": "cfe821a9dfc6f4e859c81b62bd76885afb4f662c",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 3056690,
+                "Groovy": 9793
+            },
+            "labels": [
+                "bug",
+                "duplicate",
+                "enhancement",
+                "good first issue",
+                "help wanted",
+                "invalid",
+                "question",
+                "wontfix"
+            ],
+            "topics": []
+        },
+        {
+            "id": 46579406,
+            "name": "promcteam/proskillapi",
+            "isFork": false,
+            "commits": 1581,
+            "branches": 9,
+            "releases": 14,
+            "forks": 32,
+            "mainLanguage": "Java",
+            "defaultBranch": "dev",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 6,
+            "stargazers": 57,
+            "contributors": 20,
+            "size": 238810,
+            "createdAt": "2021-04-30T02:49:37",
+            "pushedAt": "2024-03-24T08:09:59",
+            "updatedAt": "2024-03-08T03:51:48",
+            "totalIssues": 514,
+            "openIssues": 156,
+            "totalPullRequests": 194,
+            "openPullRequests": 2,
+            "blankLines": 6649,
+            "codeLines": 42396,
+            "commentLines": 21955,
+            "metrics": [
+                {
+                    "codeLines": 6673,
+                    "commentLines": 487,
+                    "language": "YAML",
+                    "blankLines": 34
+                },
+                {
+                    "codeLines": 81,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 33
+                },
+                {
+                    "codeLines": 35313,
+                    "commentLines": 21462,
+                    "language": "Java",
+                    "blankLines": 6550
+                },
+                {
+                    "codeLines": 227,
+                    "commentLines": 1,
+                    "language": "Maven",
+                    "blankLines": 13
+                },
+                {
+                    "codeLines": 15,
+                    "commentLines": 0,
+                    "language": "XML",
+                    "blankLines": 3
+                },
+                {
+                    "codeLines": 87,
+                    "commentLines": 5,
+                    "language": "Python",
+                    "blankLines": 16
+                }
+            ],
+            "lastCommit": "2024-03-24T12:33:12",
+            "lastCommitSHA": "48b01b0fba1b2bb1c5211a811ad56c1279776c01",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 2290862
+            },
+            "labels": [
+                "bug",
+                "dependencies",
+                "documentation",
+                "duplicate",
+                "enhancement",
+                "good first issue",
+                "help wanted",
+                "invalid",
+                "low-priority",
+                "needs info",
+                "question",
+                "stale",
+                "wontfix"
+            ],
+            "topics": []
+        },
+        {
+            "id": 47972107,
+            "name": "crossroads-development/crossroads",
+            "isFork": false,
+            "commits": 1258,
+            "branches": 21,
+            "releases": 0,
+            "forks": 18,
+            "mainLanguage": "Java",
+            "defaultBranch": "1.19",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 6,
+            "stargazers": 28,
+            "contributors": 12,
+            "size": 16799,
+            "createdAt": "2016-08-12T08:21:01",
+            "pushedAt": "2024-01-30T03:28:21",
+            "updatedAt": "2023-09-24T01:12:41",
+            "totalIssues": 227,
+            "openIssues": 21,
+            "totalPullRequests": 42,
+            "openPullRequests": 0,
+            "blankLines": 10717,
+            "codeLines": 119900,
+            "commentLines": 5612,
+            "metrics": [
+                {
+                    "codeLines": 35,
+                    "commentLines": 7,
+                    "language": "TOML",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 55340,
+                    "commentLines": 5263,
+                    "language": "Java",
+                    "blankLines": 10125
+                },
+                {
+                    "codeLines": 116,
+                    "commentLines": 54,
+                    "language": "Gradle",
+                    "blankLines": 31
+                },
+                {
+                    "codeLines": 25,
+                    "commentLines": 4,
+                    "language": "Properties",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 1184,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 124
+                },
+                {
+                    "codeLines": 717,
+                    "commentLines": 174,
+                    "language": "Python",
+                    "blankLines": 126
+                },
+                {
+                    "codeLines": 62252,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 241
+                },
+                {
+                    "codeLines": 66,
+                    "commentLines": 2,
+                    "language": "DOS Batch",
+                    "blankLines": 21
+                },
+                {
+                    "codeLines": 66,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 22
+                },
+                {
+                    "codeLines": 99,
+                    "commentLines": 108,
+                    "language": "Bourne Shell",
+                    "blankLines": 27
+                }
+            ],
+            "lastCommit": "2024-01-30T03:26:03",
+            "lastCommitSHA": "7058ad65aaaacaa398d00eee4c9bdff62f7bc5b1",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 2680836,
+                "Python": 42093
+            },
+            "labels": [
+                "beta",
+                "bug",
+                "cannot reproduce",
+                "duplicate",
+                "help wanted",
+                "incompatability",
+                "invalid",
+                "localization",
+                "low priority",
+                "question",
+                "suggestion",
+                "wontfix"
+            ],
+            "topics": [
+                "minecraft"
+            ]
+        },
+        {
+            "id": 59503236,
+            "name": "xceptance/neodymium-library",
+            "isFork": false,
+            "commits": 1368,
+            "branches": 47,
+            "releases": 24,
+            "forks": 11,
+            "mainLanguage": "Java",
+            "defaultBranch": "master",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 23,
+            "stargazers": 80,
+            "contributors": 12,
+            "size": 37245,
+            "createdAt": "2017-08-17T02:22:03",
+            "pushedAt": "2024-11-18T03:53:07",
+            "updatedAt": "2024-11-18T10:54:10",
+            "totalIssues": 222,
+            "openIssues": 55,
+            "totalPullRequests": 88,
+            "openPullRequests": 11,
+            "blankLines": 5145,
+            "codeLines": 27759,
+            "commentLines": 3674,
+            "metrics": [
+                {
+                    "codeLines": 164,
+                    "commentLines": 0,
+                    "language": "CSV",
+                    "blankLines": 1
+                },
+                {
+                    "codeLines": 208,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 60,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 26
+                },
+                {
+                    "codeLines": 71,
+                    "commentLines": 0,
+                    "language": "XML",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 481,
+                    "commentLines": 168,
+                    "language": "JavaScript",
+                    "blankLines": 70
+                },
+                {
+                    "codeLines": 35,
+                    "commentLines": 0,
+                    "language": "Cucumber",
+                    "blankLines": 12
+                },
+                {
+                    "codeLines": 26179,
+                    "commentLines": 3080,
+                    "language": "Java",
+                    "blankLines": 4959
+                },
+                {
+                    "codeLines": 157,
+                    "commentLines": 426,
+                    "language": "Properties",
+                    "blankLines": 64
+                },
+                {
+                    "codeLines": 404,
+                    "commentLines": 0,
+                    "language": "Maven",
+                    "blankLines": 13
+                }
+            ],
+            "lastCommit": "2024-11-18T10:54:04",
+            "lastCommitSHA": "239f0117f4d09c7af332b2a47d16e1bc475e4791",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 1131847,
+                "JavaScript": 21084,
+                "Gherkin": 2182
+            },
+            "labels": [
+                "bug",
+                "codeChangeRequired",
+                "codeDone",
+                "codeImplementationNeeded",
+                "codeReadyForMerge",
+                "codeReadyForRecheck",
+                "docsDone",
+                "docsReadyForMerge",
+                "docsneeded",
+                "draft",
+                "duplicate",
+                "feature",
+                "high priority",
+                "improvement",
+                "invalid",
+                "low priority",
+                "medium priority",
+                "plugin",
+                "question",
+                "requiresmajorrelease",
+                "research",
+                "task",
+                "update-dependency",
+                "wontfix"
+            ],
+            "topics": [
+                "automation-test",
+                "bdd",
+                "java",
+                "selenide",
+                "test-automation",
+                "test-automation-framework",
+                "webdriver"
+            ]
+        },
+        {
+            "id": 69319592,
+            "name": "gaming32/arrayv",
+            "isFork": false,
+            "commits": 1331,
+            "branches": 4,
+            "releases": 10,
+            "forks": 44,
+            "mainLanguage": "Java",
+            "defaultBranch": "main",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 15,
+            "stargazers": 276,
+            "contributors": 11,
+            "size": 31280,
+            "createdAt": "2020-11-07T10:25:22",
+            "pushedAt": "2024-05-09T07:00:27",
+            "updatedAt": "2024-05-16T05:28:49",
+            "totalIssues": 33,
+            "openIssues": 11,
+            "totalPullRequests": 69,
+            "openPullRequests": 3,
+            "blankLines": 7979,
+            "codeLines": 34987,
+            "commentLines": 7355,
+            "metrics": [
+                {
+                    "codeLines": 38,
+                    "commentLines": 2,
+                    "language": "YAML",
+                    "blankLines": 2
+                },
+                {
+                    "codeLines": 168,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 18
+                },
+                {
+                    "codeLines": 22,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 3
+                },
+                {
+                    "codeLines": 206,
+                    "commentLines": 6,
+                    "language": "Python",
+                    "blankLines": 56
+                },
+                {
+                    "codeLines": 470,
+                    "commentLines": 2,
+                    "language": "XML",
+                    "blankLines": 47
+                },
+                {
+                    "codeLines": 153,
+                    "commentLines": 0,
+                    "language": "DOS Batch",
+                    "blankLines": 35
+                },
+                {
+                    "codeLines": 52,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 215,
+                    "commentLines": 62,
+                    "language": "Bourne Shell",
+                    "blankLines": 33
+                },
+                {
+                    "codeLines": 33241,
+                    "commentLines": 7272,
+                    "language": "Java",
+                    "blankLines": 7762
+                },
+                {
+                    "codeLines": 215,
+                    "commentLines": 9,
+                    "language": "Groovy",
+                    "blankLines": 16
+                },
+                {
+                    "codeLines": 4,
+                    "commentLines": 0,
+                    "language": "Properties",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 203,
+                    "commentLines": 2,
+                    "language": "Maven",
+                    "blankLines": 7
+                }
+            ],
+            "lastCommit": "2024-05-09T06:50:08",
+            "lastCommitSHA": "74f6ada530f0ed0ae38fe95db40ebf971a19167c",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 1675593,
+                "Groovy": 10330,
+                "Python": 7885,
+                "Batchfile": 275
+            },
+            "labels": [
+                "bug",
+                "closed-temporarily",
+                "documentation",
+                "duplicate",
+                "enhancement",
+                "good first issue",
+                "help wanted",
+                "improved-feature",
+                "information requested",
+                "invalid",
+                "merged-externally",
+                "needs testing",
+                "new release",
+                "new-feature",
+                "new-sorts",
+                "question",
+                "unable-to-fix",
+                "wontfix"
+            ],
+            "topics": []
+        },
+        {
+            "id": 70589578,
+            "name": "cgerard321/champlain_petclinic",
+            "isFork": false,
+            "commits": 783,
+            "branches": 105,
+            "releases": 0,
+            "forks": 8,
+            "mainLanguage": "Java",
+            "defaultBranch": "main",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 6,
+            "stargazers": 39,
+            "contributors": 120,
+            "size": 22985,
+            "createdAt": "2021-08-10T07:05:16",
+            "pushedAt": "2024-11-22T06:35:07",
+            "updatedAt": "2024-11-22T06:35:11",
+            "totalIssues": 0,
+            "openIssues": 0,
+            "totalPullRequests": 1056,
+            "openPullRequests": 14,
+            "blankLines": 21151,
+            "codeLines": 134316,
+            "commentLines": 12550,
+            "metrics": [
+                {
+                    "codeLines": 585,
+                    "commentLines": 30,
+                    "language": "Go",
+                    "blankLines": 192
+                },
+                {
+                    "codeLines": 17688,
+                    "commentLines": 808,
+                    "language": "TypeScript",
+                    "blankLines": 1690
+                },
+                {
+                    "codeLines": 41,
+                    "commentLines": 1,
+                    "language": "JSX",
+                    "blankLines": 6
+                },
+                {
+                    "codeLines": 794,
+                    "commentLines": 24,
+                    "language": "SQL",
+                    "blankLines": 66
+                },
+                {
+                    "codeLines": 271,
+                    "commentLines": 8,
+                    "language": "DOS Batch",
+                    "blankLines": 84
+                },
+                {
+                    "codeLines": 9160,
+                    "commentLines": 0,
+                    "language": "SVG",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 1467,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 29,
+                    "commentLines": 0,
+                    "language": "INI",
+                    "blankLines": 2
+                },
+                {
+                    "codeLines": 61,
+                    "commentLines": 0,
+                    "language": "MSBuild script",
+                    "blankLines": 14
+                },
+                {
+                    "codeLines": 21,
+                    "commentLines": 0,
+                    "language": "Visual Studio Solution",
+                    "blankLines": 1
+                },
+                {
+                    "codeLines": 83,
+                    "commentLines": 0,
+                    "language": "XML",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 1503,
+                    "commentLines": 1,
+                    "language": "Markdown",
+                    "blankLines": 506
+                },
+                {
+                    "codeLines": 20,
+                    "commentLines": 20,
+                    "language": "C# Generated",
+                    "blankLines": 8
+                },
+                {
+                    "codeLines": 81,
+                    "commentLines": 3,
+                    "language": "Properties",
+                    "blankLines": 18
+                },
+                {
+                    "codeLines": 3947,
+                    "commentLines": 485,
+                    "language": "C#",
+                    "blankLines": 622
+                },
+                {
+                    "codeLines": 927,
+                    "commentLines": 26,
+                    "language": "Gradle",
+                    "blankLines": 191
+                },
+                {
+                    "codeLines": 14384,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 2
+                },
+                {
+                    "codeLines": 128,
+                    "commentLines": 23,
+                    "language": "Dockerfile",
+                    "blankLines": 31
+                },
+                {
+                    "codeLines": 66342,
+                    "commentLines": 9306,
+                    "language": "Java",
+                    "blankLines": 14831
+                },
+                {
+                    "codeLines": 1740,
+                    "commentLines": 397,
+                    "language": "YAML",
+                    "blankLines": 274
+                },
+                {
+                    "codeLines": 574,
+                    "commentLines": 409,
+                    "language": "Bourne Shell",
+                    "blankLines": 130
+                },
+                {
+                    "codeLines": 4442,
+                    "commentLines": 739,
+                    "language": "JavaScript",
+                    "blankLines": 914
+                },
+                {
+                    "codeLines": 20,
+                    "commentLines": 0,
+                    "language": "PlantUML",
+                    "blankLines": 18
+                },
+                {
+                    "codeLines": 6008,
+                    "commentLines": 142,
+                    "language": "CSS",
+                    "blankLines": 892
+                },
+                {
+                    "codeLines": 114,
+                    "commentLines": 3,
+                    "language": "Bourne Again Shell",
+                    "blankLines": 20
+                },
+                {
+                    "codeLines": 3886,
+                    "commentLines": 125,
+                    "language": "HTML",
+                    "blankLines": 639
+                }
+            ],
+            "lastCommit": "2024-11-22T06:35:06",
+            "lastCommitSHA": "a1717901b47b2f56f612222a4793d8574e952bbc",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 3597998,
+                "TypeScript": 644084,
+                "JavaScript": 231789,
+                "HTML": 207769,
+                "C#": 174435,
+                "CSS": 119684,
+                "Go": 17847,
+                "Dockerfile": 5899,
+                "Shell": 3194
+            },
+            "labels": [
+                "INVT",
+                "VIST",
+                "apig",
+                "auth",
+                "bill",
+                "bug",
+                "cart",
+                "conf",
+                "cust",
+                "documentation",
+                "duplicate",
+                "feat",
+                "good first issue",
+                "help wanted",
+                "invalid",
+                "mail",
+                "prod",
+                "question",
+                "vets",
+                "vise",
+                "wontfix"
+            ],
+            "topics": []
+        },
+        {
+            "id": 72621870,
+            "name": "lisa-analyzer/lisa",
+            "isFork": false,
+            "commits": 1905,
+            "branches": 4,
+            "releases": 14,
+            "forks": 32,
+            "mainLanguage": "Java",
+            "defaultBranch": "master",
+            "license": "MIT License",
+            "homepage": "https://lisa-analyzer.github.io/",
+            "watchers": 7,
+            "stargazers": 46,
+            "contributors": 13,
+            "size": 9115,
+            "createdAt": "2020-09-22T08:49:10",
+            "pushedAt": "2024-08-16T01:36:59",
+            "updatedAt": "2024-08-16T01:37:03",
+            "totalIssues": 193,
+            "openIssues": 29,
+            "totalPullRequests": 126,
+            "openPullRequests": 2,
+            "blankLines": 12996,
+            "codeLines": 79875,
+            "commentLines": 26029,
+            "metrics": [
+                {
+                    "codeLines": 433,
+                    "commentLines": 15,
+                    "language": "YAML",
+                    "blankLines": 33
+                },
+                {
+                    "codeLines": 349,
+                    "commentLines": 41,
+                    "language": "Gradle",
+                    "blankLines": 55
+                },
+                {
+                    "codeLines": 9,
+                    "commentLines": 2,
+                    "language": "Properties",
+                    "blankLines": 1
+                },
+                {
+                    "codeLines": 167,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 57
+                },
+                {
+                    "codeLines": 64337,
+                    "commentLines": 25724,
+                    "language": "Java",
+                    "blankLines": 11750
+                },
+                {
+                    "codeLines": 351,
+                    "commentLines": 180,
+                    "language": "Bourne Shell",
+                    "blankLines": 71
+                },
+                {
+                    "codeLines": 206,
+                    "commentLines": 6,
+                    "language": "DOS Batch",
+                    "blankLines": 66
+                },
+                {
+                    "codeLines": 3679,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 455,
+                    "commentLines": 0,
+                    "language": "XML",
+                    "blankLines": 3
+                },
+                {
+                    "codeLines": 439,
+                    "commentLines": 60,
+                    "language": "ANTLR Grammar",
+                    "blankLines": 141
+                },
+                {
+                    "codeLines": 2,
+                    "commentLines": 1,
+                    "language": "JavaScript",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 9448,
+                    "commentLines": 0,
+                    "language": "HTML",
+                    "blankLines": 819
+                }
+            ],
+            "lastCommit": "2024-08-16T01:36:57",
+            "lastCommitSHA": "8e472bbcaef86679b0f4e87b23f3a763c4fccf26",
+            "hasWiki": false,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 3161262,
+                "JavaScript": 388457,
+                "HTML": 365332,
+                "ANTLR": 8757
+            },
+            "labels": [
+                "‼ priority:p1",
+                "⁉ priority:p2",
+                "⚠ priority:p5",
+                "❔ type:question",
+                "❕ priority:p4",
+                "❗ priority:p3",
+                "\uD83C\uDF0D scope:interproc",
+                "\uD83C\uDF86 type:feature",
+                "\uD83C\uDF8A resolution:resolved",
+                "\uD83C\uDFD7 resolution:wip",
+                "\uD83C\uDFDB scope:program-structure",
+                "\uD83C\uDFE8 scope:infrastructure",
+                "\uD83D\uDC1E type:bug",
+                "\uD83D\uDCD1 scope:docs",
+                "\uD83D\uDD0D scope:analysis",
+                "\uD83D\uDD17 resolution:duplicate",
+                "\uD83D\uDEAB resolution:wontfix",
+                "\uD83D\uDEE0 type:refactoring",
+                "\uD83E\uDDEB type:test",
+                "\uD83E\uDDF1 scope:build"
+            ],
+            "topics": [
+                "abstract-interpretation",
+                "analysis",
+                "analyzer",
+                "cybersecurity",
+                "formal-methods",
+                "java",
+                "lisa",
+                "program-verification",
+                "static-analysis",
+                "static-analyzer",
+                "static-analyzers"
+            ]
+        },
+        {
+            "id": 80850794,
+            "name": "falsehoodmc/fabrication",
+            "isFork": false,
+            "commits": 826,
+            "branches": 15,
+            "releases": 129,
+            "forks": 23,
+            "mainLanguage": "Java",
+            "defaultBranch": "3.0/1.18",
+            "license": "MIT License",
+            "homepage": "https://www.curseforge.com/minecraft/mc-mods/fabrication",
+            "watchers": 5,
+            "stargazers": 113,
+            "contributors": 17,
+            "size": 4027,
+            "createdAt": "2020-10-20T07:54:21",
+            "pushedAt": "2024-11-23T05:13:07",
+            "updatedAt": "2024-11-23T05:13:11",
+            "totalIssues": 443,
+            "openIssues": 18,
+            "totalPullRequests": 191,
+            "openPullRequests": 0,
+            "blankLines": 4956,
+            "codeLines": 32966,
+            "commentLines": 829,
+            "metrics": [
+                {
+                    "codeLines": 367,
+                    "commentLines": 0,
+                    "language": "Handlebars",
+                    "blankLines": 5
+                },
+                {
+                    "codeLines": 2234,
+                    "commentLines": 95,
+                    "language": "YAML",
+                    "blankLines": 392
+                },
+                {
+                    "codeLines": 489,
+                    "commentLines": 12,
+                    "language": "Gradle",
+                    "blankLines": 61
+                },
+                {
+                    "codeLines": 25,
+                    "commentLines": 8,
+                    "language": "Properties",
+                    "blankLines": 2
+                },
+                {
+                    "codeLines": 76,
+                    "commentLines": 2,
+                    "language": "DOS Batch",
+                    "blankLines": 26
+                },
+                {
+                    "codeLines": 1155,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 4
+                },
+                {
+                    "codeLines": 27900,
+                    "commentLines": 484,
+                    "language": "Java",
+                    "blankLines": 4358
+                },
+                {
+                    "codeLines": 67,
+                    "commentLines": 2,
+                    "language": "GLSL",
+                    "blankLines": 16
+                },
+                {
+                    "codeLines": 280,
+                    "commentLines": 189,
+                    "language": "INI",
+                    "blankLines": 44
+                },
+                {
+                    "codeLines": 4,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 1
+                },
+                {
+                    "codeLines": 77,
+                    "commentLines": 1,
+                    "language": "JavaScript",
+                    "blankLines": 1
+                },
+                {
+                    "codeLines": 59,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 16
+                },
+                {
+                    "codeLines": 233,
+                    "commentLines": 36,
+                    "language": "Bourne Shell",
+                    "blankLines": 30
+                }
+            ],
+            "lastCommit": "2024-11-23T05:12:32",
+            "lastCommitSHA": "836ff25c7b3cdf205f065b8f7e6797078d7fa4e5",
+            "hasWiki": false,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 1267078,
+                "Handlebars": 12923,
+                "JavaScript": 3588,
+                "Shell": 3331,
+                "GLSL": 2361
+            },
+            "labels": [
+                "k: defect",
+                "k: feature request",
+                "k: improvement",
+                "k: incompatibility",
+                "k: not our defect",
+                "k: question",
+                "k: regression",
+                "k: wtf",
+                "l: internal",
+                "l: ui",
+                "n: breaks servers",
+                "n: breaks worlds",
+                "n: fabinjector",
+                "n: fabric",
+                "n: forge",
+                "n: horrible bukkit monstrosity",
+                "n: optifine",
+                "p: major",
+                "p: minor",
+                "s: already fixed",
+                "s: cannot reproduce",
+                "s: duplicate",
+                "s: invalid",
+                "s: needs research",
+                "s: new",
+                "s: under consideration",
+                "s: won't fix",
+                "s: works as intended",
+                "v: 1.16",
+                "v: 1.16 2.0",
+                "v: 1.17",
+                "v: 1.18",
+                "v: 1.18.2",
+                "v: 1.19",
+                "v: 1.19.3",
+                "v: 1.19.4",
+                "v: 1.20"
+            ],
+            "topics": [
+                "fabricmc",
+                "minecraft",
+                "minecraft-mod"
+            ]
+        },
+        {
+            "id": 84792630,
+            "name": "marvionkirito/altoclef",
+            "isFork": true,
+            "commits": 1087,
+            "branches": 1,
+            "releases": 22,
+            "forks": 22,
+            "mainLanguage": "Java",
+            "defaultBranch": "main",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 16,
+            "stargazers": 103,
+            "contributors": 22,
+            "size": 3284,
+            "createdAt": "2022-10-31T09:17:03",
+            "pushedAt": "2024-08-13T03:46:19",
+            "updatedAt": "2024-08-13T10:16:20",
+            "totalIssues": 0,
+            "openIssues": 0,
+            "totalPullRequests": 22,
+            "openPullRequests": 4,
+            "blankLines": 5694,
+            "codeLines": 33071,
+            "commentLines": 4726,
+            "metrics": [
+                {
+                    "codeLines": 31829,
+                    "commentLines": 4584,
+                    "language": "Java",
+                    "blankLines": 5512
+                },
+                {
+                    "codeLines": 66,
+                    "commentLines": 2,
+                    "language": "DOS Batch",
+                    "blankLines": 21
+                },
+                {
+                    "codeLines": 19,
+                    "commentLines": 6,
+                    "language": "Properties",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 232,
+                    "commentLines": 3,
+                    "language": "Markdown",
+                    "blankLines": 108
+                },
+                {
+                    "codeLines": 95,
+                    "commentLines": 21,
+                    "language": "Gradle",
+                    "blankLines": 18
+                },
+                {
+                    "codeLines": 99,
+                    "commentLines": 108,
+                    "language": "Bourne Shell",
+                    "blankLines": 25
+                },
+                {
+                    "codeLines": 592,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 1
+                },
+                {
+                    "codeLines": 75,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 64,
+                    "commentLines": 2,
+                    "language": "YAML",
+                    "blankLines": 9
+                }
+            ],
+            "lastCommit": "2024-08-05T12:15:29",
+            "lastCommitSHA": "e45566e2ac643be5a241ad507cf6c2522e84ca02",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 1681918
+            },
+            "labels": [
+                "bug",
+                "documentation",
+                "duplicate",
+                "enhancement",
+                "good first issue",
+                "help wanted",
+                "invalid",
+                "question",
+                "wontfix"
+            ],
+            "topics": []
+        },
+        {
+            "id": 94471406,
+            "name": "skbkontur/extern-java-sdk",
+            "isFork": false,
+            "commits": 1083,
+            "branches": 10,
+            "releases": 7,
+            "forks": 7,
+            "mainLanguage": "Java",
+            "defaultBranch": "master",
+            "license": "MIT License",
+            "homepage": "https://extern-api.kontur.ru/swagger",
+            "watchers": 9,
+            "stargazers": 26,
+            "contributors": 19,
+            "size": 11662,
+            "createdAt": "2017-12-08T07:21:10",
+            "pushedAt": "2024-04-15T10:59:05",
+            "updatedAt": "2023-12-25T07:58:19",
+            "totalIssues": 2,
+            "openIssues": 0,
+            "totalPullRequests": 193,
+            "openPullRequests": 1,
+            "blankLines": 7987,
+            "codeLines": 34026,
+            "commentLines": 18231,
+            "metrics": [
+                {
+                    "codeLines": 1,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 28,
+                    "commentLines": 25,
+                    "language": "Properties",
+                    "blankLines": 2
+                },
+                {
+                    "codeLines": 30424,
+                    "commentLines": 17966,
+                    "language": "Java",
+                    "blankLines": 7697
+                },
+                {
+                    "codeLines": 874,
+                    "commentLines": 0,
+                    "language": "XML",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 140,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 45
+                },
+                {
+                    "codeLines": 1130,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 17
+                },
+                {
+                    "codeLines": 1342,
+                    "commentLines": 237,
+                    "language": "Maven",
+                    "blankLines": 201
+                },
+                {
+                    "codeLines": 87,
+                    "commentLines": 3,
+                    "language": "DOS Batch",
+                    "blankLines": 25
+                }
+            ],
+            "lastCommit": "2024-04-15T10:59:03",
+            "lastCommitSHA": "39bdfc7963f30fded3d2c45711b0f0f62b177563",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 2126432,
+                "Batchfile": 3096
+            },
+            "labels": [
+                "bug",
+                "dependencies",
+                "duplicate",
+                "enhancement",
+                "good first issue",
+                "help wanted",
+                "invalid",
+                "question",
+                "wontfix"
+            ],
+            "topics": [
+                "api",
+                "extern",
+                "java",
+                "kontur",
+                "sdk"
+            ]
+        },
+        {
+            "id": 94487237,
+            "name": "sunbird-lern/userorg-service",
+            "isFork": false,
+            "commits": 1855,
+            "branches": 77,
+            "releases": 24,
+            "forks": 136,
+            "mainLanguage": "Java",
+            "defaultBranch": "master",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 15,
+            "stargazers": 31,
+            "contributors": 32,
+            "size": 19201,
+            "createdAt": "2017-07-03T02:51:28",
+            "pushedAt": "2024-07-01T07:17:05",
+            "updatedAt": "2024-07-01T07:17:12",
+            "totalIssues": 21,
+            "openIssues": 18,
+            "totalPullRequests": 1233,
+            "openPullRequests": 40,
+            "blankLines": 8825,
+            "codeLines": 147865,
+            "commentLines": 5635,
+            "metrics": [
+                {
+                    "codeLines": 8,
+                    "commentLines": 0,
+                    "language": "Bourne Again Shell",
+                    "blankLines": 4
+                },
+                {
+                    "codeLines": 641,
+                    "commentLines": 3,
+                    "language": "SVG",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 33841,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 28,
+                    "commentLines": 2,
+                    "language": "Dockerfile",
+                    "blankLines": 1
+                },
+                {
+                    "codeLines": 1005,
+                    "commentLines": 27,
+                    "language": "Maven",
+                    "blankLines": 32
+                },
+                {
+                    "codeLines": 12,
+                    "commentLines": 0,
+                    "language": "SQL",
+                    "blankLines": 4
+                },
+                {
+                    "codeLines": 810,
+                    "commentLines": 398,
+                    "language": "CSS",
+                    "blankLines": 59
+                },
+                {
+                    "codeLines": 584,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 141
+                },
+                {
+                    "codeLines": 34978,
+                    "commentLines": 109,
+                    "language": "YAML",
+                    "blankLines": 249
+                },
+                {
+                    "codeLines": 966,
+                    "commentLines": 40,
+                    "language": "Properties",
+                    "blankLines": 32
+                },
+                {
+                    "codeLines": 545,
+                    "commentLines": 3,
+                    "language": "Freemarker Template",
+                    "blankLines": 15
+                },
+                {
+                    "codeLines": 877,
+                    "commentLines": 13,
+                    "language": "XML",
+                    "blankLines": 16
+                },
+                {
+                    "codeLines": 3126,
+                    "commentLines": 400,
+                    "language": "JavaScript",
+                    "blankLines": 226
+                },
+                {
+                    "codeLines": 96,
+                    "commentLines": 13,
+                    "language": "Bourne Shell",
+                    "blankLines": 41
+                },
+                {
+                    "codeLines": 69761,
+                    "commentLines": 4610,
+                    "language": "Java",
+                    "blankLines": 7993
+                },
+                {
+                    "codeLines": 572,
+                    "commentLines": 17,
+                    "language": "Velocity Template Language",
+                    "blankLines": 12
+                },
+                {
+                    "codeLines": 15,
+                    "commentLines": 0,
+                    "language": "CSV",
+                    "blankLines": 0
+                }
+            ],
+            "lastCommit": "2024-07-01T07:17:05",
+            "lastCommitSHA": "a68ca7c09518a9f76de5183bc8b16dbf765e8e94",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 3109768,
+                "Open Policy Agent": 81607,
+                "FreeMarker": 29632,
+                "CSS": 19399,
+                "JavaScript": 18499,
+                "Shell": 4626,
+                "Dockerfile": 802
+            },
+            "labels": [
+                "bug",
+                "dependencies",
+                "duplicate",
+                "enhancement",
+                "help wanted",
+                "invalid",
+                "question",
+                "wontfix"
+            ],
+            "topics": []
+        },
+        {
+            "id": 94519740,
+            "name": "serg-delft/andy",
+            "isFork": false,
+            "commits": 1219,
+            "branches": 5,
+            "releases": 0,
+            "forks": 23,
+            "mainLanguage": "Java",
+            "defaultBranch": "main",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 6,
+            "stargazers": 78,
+            "contributors": 24,
+            "size": 2232,
+            "createdAt": "2021-06-27T10:19:30",
+            "pushedAt": "2024-07-22T04:59:29",
+            "updatedAt": "2024-07-22T04:59:32",
+            "totalIssues": 107,
+            "openIssues": 32,
+            "totalPullRequests": 166,
+            "openPullRequests": 5,
+            "blankLines": 8355,
+            "codeLines": 37546,
+            "commentLines": 3513,
+            "metrics": [
+                {
+                    "codeLines": 1566,
+                    "commentLines": 16,
+                    "language": "Maven",
+                    "blankLines": 334
+                },
+                {
+                    "codeLines": 41,
+                    "commentLines": 13,
+                    "language": "Python",
+                    "blankLines": 17
+                },
+                {
+                    "codeLines": 566,
+                    "commentLines": 26,
+                    "language": "CSS",
+                    "blankLines": 98
+                },
+                {
+                    "codeLines": 1556,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 247
+                },
+                {
+                    "codeLines": 260,
+                    "commentLines": 2,
+                    "language": "HTML",
+                    "blankLines": 38
+                },
+                {
+                    "codeLines": 798,
+                    "commentLines": 6,
+                    "language": "Markdown",
+                    "blankLines": 384
+                },
+                {
+                    "codeLines": 9,
+                    "commentLines": 0,
+                    "language": "make",
+                    "blankLines": 3
+                },
+                {
+                    "codeLines": 4657,
+                    "commentLines": 615,
+                    "language": "JavaScript",
+                    "blankLines": 404
+                },
+                {
+                    "codeLines": 135,
+                    "commentLines": 122,
+                    "language": "YAML",
+                    "blankLines": 45
+                },
+                {
+                    "codeLines": 3,
+                    "commentLines": 0,
+                    "language": "Bourne Shell",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 26956,
+                    "commentLines": 2676,
+                    "language": "Java",
+                    "blankLines": 6570
+                },
+                {
+                    "codeLines": 279,
+                    "commentLines": 4,
+                    "language": "Fortran 77",
+                    "blankLines": 43
+                },
+                {
+                    "codeLines": 37,
+                    "commentLines": 0,
+                    "language": "XML",
+                    "blankLines": 12
+                },
+                {
+                    "codeLines": 3,
+                    "commentLines": 0,
+                    "language": "Properties",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 627,
+                    "commentLines": 25,
+                    "language": "TypeScript",
+                    "blankLines": 145
+                },
+                {
+                    "codeLines": 10,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 43,
+                    "commentLines": 8,
+                    "language": "Dockerfile",
+                    "blankLines": 15
+                }
+            ],
+            "lastCommit": "2024-07-22T04:59:28",
+            "lastCommitSHA": "5e3fa3c3a8cf8dacf61ab38f782982b550afb8bb",
+            "hasWiki": false,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 1281974,
+                "JavaScript": 110694,
+                "HTML": 97754,
+                "CSS": 91695,
+                "TypeScript": 22968,
+                "Makefile": 12592,
+                "Dockerfile": 1722,
+                "BitBake": 1620,
+                "NASL": 1620,
+                "Shell": 63
+            },
+            "labels": [
+                "bug",
+                "critical priority",
+                "docker",
+                "docs",
+                "enhancement",
+                "good first issue",
+                "hacktoberfest-accepted",
+                "high priority",
+                "invalid",
+                "low priority",
+                "maven plugin",
+                "medium priority",
+                "refactoring",
+                "spam",
+                "tests",
+                "wontfix"
+            ],
+            "topics": []
+        },
+        {
+            "id": 94675104,
+            "name": "sublinks/sublinks-api",
+            "isFork": false,
+            "commits": 941,
+            "branches": 8,
+            "releases": 0,
+            "forks": 18,
+            "mainLanguage": "Java",
+            "defaultBranch": "main",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 11,
+            "stargazers": 74,
+            "contributors": 17,
+            "size": 3199,
+            "createdAt": "2023-10-05T01:11:24",
+            "pushedAt": "2024-08-26T11:36:10",
+            "updatedAt": "2024-08-27T03:04:55",
+            "totalIssues": 225,
+            "openIssues": 130,
+            "totalPullRequests": 239,
+            "openPullRequests": 7,
+            "blankLines": 6525,
+            "codeLines": 28385,
+            "commentLines": 2104,
+            "metrics": [
+                {
+                    "codeLines": 25140,
+                    "commentLines": 1665,
+                    "language": "Java",
+                    "blankLines": 6214
+                },
+                {
+                    "codeLines": 104,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 28
+                },
+                {
+                    "codeLines": 80,
+                    "commentLines": 3,
+                    "language": "Gradle",
+                    "blankLines": 21
+                },
+                {
+                    "codeLines": 197,
+                    "commentLines": 35,
+                    "language": "YAML",
+                    "blankLines": 24
+                },
+                {
+                    "codeLines": 7,
+                    "commentLines": 0,
+                    "language": "Dockerfile",
+                    "blankLines": 2
+                },
+                {
+                    "codeLines": 9,
+                    "commentLines": 0,
+                    "language": "JSON",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 188,
+                    "commentLines": 117,
+                    "language": "Bourne Shell",
+                    "blankLines": 37
+                },
+                {
+                    "codeLines": 12,
+                    "commentLines": 0,
+                    "language": "HTML",
+                    "blankLines": 0
+                },
+                {
+                    "codeLines": 1191,
+                    "commentLines": 271,
+                    "language": "SQL",
+                    "blankLines": 146
+                },
+                {
+                    "codeLines": 69,
+                    "commentLines": 2,
+                    "language": "DOS Batch",
+                    "blankLines": 21
+                },
+                {
+                    "codeLines": 1297,
+                    "commentLines": 0,
+                    "language": "INI",
+                    "blankLines": 30
+                },
+                {
+                    "codeLines": 5,
+                    "commentLines": 0,
+                    "language": "Text",
+                    "blankLines": 2
+                },
+                {
+                    "codeLines": 86,
+                    "commentLines": 11,
+                    "language": "Properties",
+                    "blankLines": 0
+                }
+            ],
+            "lastCommit": "2024-08-16T08:22:35",
+            "lastCommitSHA": "bdef0bfd6c71d265ce766450b9e7b5156395fef7",
+            "hasWiki": false,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 1153829,
+                "PLpgSQL": 32566,
+                "HTML": 2247,
+                "Dockerfile": 283
+            },
+            "labels": [
+                "blocked",
+                "bug",
+                "chores",
+                "dependencies",
+                "design",
+                "docker",
+                "documentation",
+                "duplicate",
+                "enhancement",
+                "github_actions",
+                "good first issue",
+                "help wanted",
+                "invalid",
+                "java",
+                "needs refinment",
+                "needs_detail",
+                "on hold",
+                "optional",
+                "question",
+                "submodules",
+                "wait_for_native_api",
+                "wontfix"
+            ],
+            "topics": []
+        },
+        {
+            "id": 94878586,
+            "name": "promcteam/fabled",
+            "isFork": false,
+            "commits": 1702,
+            "branches": 9,
+            "releases": 14,
+            "forks": 33,
+            "mainLanguage": "Java",
+            "defaultBranch": "dev",
+            "license": "MIT License",
+            "homepage": null,
+            "watchers": 6,
+            "stargazers": 58,
+            "contributors": 22,
+            "size": 259334,
+            "createdAt": "2021-04-30T02:49:37",
+            "pushedAt": "2024-06-05T06:17:39",
+            "updatedAt": "2024-06-05T06:17:42",
+            "totalIssues": 522,
+            "openIssues": 161,
+            "totalPullRequests": 254,
+            "openPullRequests": 1,
+            "blankLines": 7101,
+            "codeLines": 44570,
+            "commentLines": 22760,
+            "metrics": [
+                {
+                    "codeLines": 81,
+                    "commentLines": 0,
+                    "language": "Markdown",
+                    "blankLines": 37
+                },
+                {
+                    "codeLines": 87,
+                    "commentLines": 5,
+                    "language": "Python",
+                    "blankLines": 16
+                },
+                {
+                    "codeLines": 204,
+                    "commentLines": 1,
+                    "language": "Maven",
+                    "blankLines": 11
+                },
+                {
+                    "codeLines": 37462,
+                    "commentLines": 22254,
+                    "language": "Java",
+                    "blankLines": 7001
+                },
+                {
+                    "codeLines": 6721,
+                    "commentLines": 500,
+                    "language": "YAML",
+                    "blankLines": 33
+                },
+                {
+                    "codeLines": 15,
+                    "commentLines": 0,
+                    "language": "XML",
+                    "blankLines": 3
+                }
+            ],
+            "lastCommit": "2024-06-05T06:17:37",
+            "lastCommitSHA": "18e4eef7037aeb96be930cac9e6b27c55ce9c1ed",
+            "hasWiki": true,
+            "isArchived": false,
+            "isDisabled": false,
+            "isLocked": false,
+            "languages": {
+                "Java": 2429754
+            },
+            "labels": [
+                "bug",
+                "dependencies",
+                "documentation",
+                "duplicate",
+                "enhancement",
+                "good first issue",
+                "help wanted",
+                "invalid",
+                "java",
+                "javascript",
+                "low-priority",
+                "needs info",
+                "question",
+                "stale",
+                "wontfix"
+            ],
+            "topics": []
+        }
+    ]
+}
