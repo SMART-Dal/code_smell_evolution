@@ -1,4 +1,5 @@
 import os
+import argparse
 import config
 from utils import GitManager, load_json_file, save_json_file
 import datetime
@@ -50,7 +51,18 @@ def prepare_from_corpus_info(corpus_info: dict):
         print(e)
     
 if __name__ == "__main__":
-    corpus_info = prepare_corpus(0, 3)
+    parser = argparse.ArgumentParser(description="Clone repositories from corpus list")
+    parser.add_argument("idx", type=int, help="index of the repository to process.")
+    args = parser.parse_args()
+    
+    corpus_generator = prepare_corpus(repo_index=args.idx)
     current_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    filename = f"corpus_info_{current_time}.json"
-    save_json_file(os.path.join(config.CORPUS_PATH, filename), corpus_info)
+    corpus_info: dict[str, list[str]] = {}
+    corpus_info_filename = f"corpus_info_{current_time}.json"
+    
+    for username, repo_name, repo_path in corpus_generator:
+        corpus_info.update(load_json_file(os.path.join(config.CORPUS_PATH, corpus_info_filename)))
+        if username not in corpus_info:
+            corpus_info[username] = []
+        corpus_info[username].append(repo_name)
+        save_json_file(os.path.join(config.CORPUS_PATH, corpus_info_filename), corpus_info)
