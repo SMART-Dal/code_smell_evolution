@@ -3,7 +3,10 @@ import config
 from utils import GitManager, load_json_file, save_json_file
 import datetime
 
-def prepare_corpus(start_index=0, end_index=-1):
+def prepare_corpus(repo_index=None):
+    if repo_index is None:
+        raise ValueError("repo_index must be provided")
+    
     if not os.path.exists(config.CORPUS_PATH):
         os.makedirs(config.CORPUS_PATH)
     
@@ -12,21 +15,20 @@ def prepare_corpus(start_index=0, end_index=-1):
     #sort by commits ascending
     repo_items = sorted(repo_items, key=lambda x: x.get("commits", 0))
     
-    if end_index != -1:
-        repo_items = repo_items[start_index:end_index]
-    else:
-        repo_items = repo_items[start_index:]
+    if repo_index < 0 or repo_index >= len(repo_items):
+        raise IndexError(f"repo_index {repo_index} is out of range")
+    
+    repo_item = repo_items[repo_index]
     
     try:
-        for repo in repo_items:
-            username, repo_name = repo.get("name").split("/")
-            repo_path = os.path.join(config.CORPUS_PATH, username, repo_name)
-            GitManager.clone_repo(
-                repo_path=repo_path,
-                repo_full_name=repo.get("name")
-            )
-            
-            yield username, repo_name, repo_path
+        username, repo_name = repo_item.get("name").split("/")
+        repo_path = os.path.join(config.CORPUS_PATH, username, repo_name)
+        GitManager.clone_repo(
+            repo_path=repo_path,
+            repo_full_name=repo_item.get("name")
+        )
+        
+        yield username, repo_name, repo_path
                 
     except Exception as e:
         print(e)

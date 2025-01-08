@@ -3,9 +3,8 @@ import subprocess
 import os
 import sys
 import config
-from dotenv import load_dotenv
 from pydriller import Repository
-from utils import log_execution, ColoredStr, save_json_file
+from utils import log_execution, ColoredStr
 
 class Designite:
     jar_path = os.path.join(config.EXECUTABLES_PATH, "DesigniteJava.jar")
@@ -29,7 +28,7 @@ class Designite:
                 "java", "-jar", self.jar_path, 
                 "-i", repo_path, 
                 "-o", output_path, 
-                "-ac", branch_ref
+                "-aco", branch_ref
             ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             
             # Stream the output line by line

@@ -8,7 +8,7 @@ from corpus import prepare_corpus
 from runners import Designite, RefMiner
 from utils import GitManager, ColoredStr, save_json_file, load_json_file
 
-def execute_designite(username, repo_name, repo_path, branch):
+def execute_designite(slurm_task_id, username, repo_name, repo_path, branch):
     """
     Collects code smells for a given repository. 
     """
@@ -25,10 +25,10 @@ def execute_designite(username, repo_name, repo_path, branch):
         print(ColoredStr.red(e))
         traceback.print_exc()
     
-    info_file = os.path.join(designite_runner.output_dir, "designite_log.txt")
+    info_file = os.path.join(designite_runner.output_dir, f"designite_status_{slurm_task_id}.txt")
     save_info(info_file, repo_path, branch, success)
 
-def execute_refminer(username, repo_name, repo_path, branch):
+def execute_refminer(slurm_task_id, username, repo_name, repo_path, branch):
     """
     Collects refactorings for a given repository.
     """
@@ -41,7 +41,7 @@ def execute_refminer(username, repo_name, repo_path, branch):
         print(ColoredStr.red(e))
         traceback.print_exc()
         
-    info_file = os.path.join(ref_miner_runner.output_dir, "refminer_log.txt")
+    info_file = os.path.join(ref_miner_runner.output_dir, f"refminer_status_{slurm_task_id}.txt")
     save_info(info_file, repo_path, branch, success)
         
 def save_info(info_file: str, repo_path: Path, branch: str, success: bool):
@@ -56,19 +56,19 @@ def save_info(info_file: str, repo_path: Path, branch: str, success: bool):
         f.write(f"{repo_path},{branch},{success}\n")
         
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run analysis on a range of repositories.")
-    parser.add_argument("start", type=int, help="Start index of the repositories to process.")
-    parser.add_argument("end", type=int, help="End index of the repositories to process.")
+    parser = argparse.ArgumentParser(description="Run analysis on repo index")
+    parser.add_argument("idx", type=int, help="index of the repository to process.")
+    parser.add_argument("task_id", type=int, help="index of tslurm array job task id")
     args = parser.parse_args()
 
-    START_INDEX = args.start
-    END_INDEX = args.end
+    REPO_IDX = args.idx
+    TASK_ID = args.task_id
     
     CURR_DIR = os.path.dirname(os.path.realpath(__file__))
-    corpus_generator = prepare_corpus(START_INDEX, END_INDEX)
+    corpus_generator = prepare_corpus(REPO_IDX)
     current_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     corpus_info: dict[str, list[str]] = {}
-    corpus_info_filename = f"corpus_info_{current_time}.json"
+    corpus_info_filename = f"corpus_info_{TASK_ID}_{current_time}.json"
     
     for username, repo_name, repo_path in corpus_generator:
         corpus_info.update(load_json_file(os.path.join(config.CORPUS_PATH, corpus_info_filename)))
@@ -82,7 +82,7 @@ if __name__ == "__main__":
             continue
         
         save_json_file(os.path.join(config.CORPUS_PATH, corpus_info_filename), corpus_info)
-        execute_designite(username, repo_name, repo_path, branch=default_branch)
-        execute_refminer(username, repo_name, repo_path, branch=default_branch)
+        execute_designite(TASK_ID, username, repo_name, repo_path, branch=default_branch)
+        execute_refminer(TASK_ID, username, repo_name, repo_path, branch=default_branch)
             
         
