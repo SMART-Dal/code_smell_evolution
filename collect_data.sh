@@ -33,14 +33,22 @@ trap 'handle_signal' SIGUSR1
 echo ">>> Loading modules and activating virtual environment."
 module --force purge
 module load StdEnv/2020 java/17.0.2 python/3.10
-
-# export JAVA_TOOL_OPTIONS="-Xms256m -Xmx2g"
+unset JAVA_TOOL_OPTIONS
 
 virtualenv --no-download $SLURM_TMPDIR/.venv
 source $SLURM_TMPDIR/.venv/bin/activate
 pip install --no-index --upgrade pip
 pip install  --no-index -r requirements.txt
 # -------------------------------------------------------
+
+# Clone the pydriller repository
+# echo ">>> Cloning pydriller repository into tmp directory."
+# git clone https://github.com/ishepard/pydriller.git $SLURM_TMPDIR/pydriller
+cp -R pydriller/ $SLURM_TMPDIR/pydriller 
+
+# Install pydriller
+echo ">>> Installing pydriller."
+pip install $SLURM_TMPDIR/pydriller
 
 # -------------------------------------------------------
 echo -e "\n\n\n\n\n>>> Executing the script."
