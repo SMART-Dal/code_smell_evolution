@@ -11,7 +11,7 @@ def prepare_corpus(repo_index=None, clone=True):
     if not os.path.exists(config.CORPUS_PATH):
         os.makedirs(config.CORPUS_PATH)
     
-    repo_items: list = load_json_file(config.CORPUS_LIST_PATH).get("items", [])
+    repo_items: list = load_json_file(config.CORPUS_SPECS_PATH).get("items", [])
     
     #sort by commits ascending
     repo_items = sorted(repo_items, key=lambda x: x.get("commits", 0))
