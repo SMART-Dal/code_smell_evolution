@@ -15,6 +15,7 @@ def merge_json_files(source_path, output_file, prefix):
             with open(file_path, 'r') as f:
                 data = json.load(f)
                 merged_data.update(data)
+                os.remove(file_path)  # Delete the file after merging
         with open(output_file, 'w') as f:
             json.dump(merged_data, f, indent=2)
         print(f"Merged data written to {output_file}")
@@ -45,6 +46,7 @@ def merge_txt_files(source_path, output_file, prefix):
                         header_added = True
                     
                     merged_rows.extend(data_rows)
+            os.remove(file_path)  # Delete the file after merging
 
         with open(output_file, 'w') as f:
             f.write("\n".join(merged_rows))

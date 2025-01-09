@@ -8,7 +8,7 @@ from corpus import prepare_corpus
 from runners import Designite, RefMiner
 from utils import GitManager, ColoredStr, save_json_file, load_json_file
 
-def execute_designite(slurm_task_id, username, repo_name, repo_path, branch):
+def execute_designite(username, repo_name, repo_path, branch):
     """
     Collects code smells for a given repository. 
     """
@@ -25,10 +25,11 @@ def execute_designite(slurm_task_id, username, repo_name, repo_path, branch):
         print(ColoredStr.red(e))
         traceback.print_exc()
     
-    info_file = os.path.join(designite_runner.output_dir, f"designite_status_{slurm_task_id}.txt")
+    current_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    info_file = os.path.join(designite_runner.output_dir, f"designite_status_{current_time}.txt")
     save_info(info_file, repo_path, branch, success)
 
-def execute_refminer(slurm_task_id, username, repo_name, repo_path, branch):
+def execute_refminer(username, repo_name, repo_path, branch):
     """
     Collects refactorings for a given repository.
     """
@@ -40,8 +41,9 @@ def execute_refminer(slurm_task_id, username, repo_name, repo_path, branch):
     except Exception as e:
         print(ColoredStr.red(e))
         traceback.print_exc()
-        
-    info_file = os.path.join(ref_miner_runner.output_dir, f"refminer_status_{slurm_task_id}.txt")
+    
+    current_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    info_file = os.path.join(ref_miner_runner.output_dir, f"refminer_status_{current_time}.txt")
     save_info(info_file, repo_path, branch, success)
         
 def save_info(info_file: str, repo_path: Path, branch: str, success: bool):
@@ -56,16 +58,14 @@ def save_info(info_file: str, repo_path: Path, branch: str, success: bool):
         f.write(f"{repo_path},{branch},{success}\n")
         
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser(description="Run analysis on repo index")
-    # parser.add_argument("tool", type=str, help="tool to use for analysis")
-    # parser.add_argument("idx", type=int, help="index of the repository to process.")
-    # parser.add_argument("task_id", type=int, help="index of tslurm array job task id")
-    # args = parser.parse_args()
+    parser = argparse.ArgumentParser(description="Run analysis on repo index")
+    parser.add_argument("tool", type=str, help="tool to use for analysis")
+    parser.add_argument("idx", type=int, help="index of the repository to process.")
+    args = parser.parse_args()
     
 
-    TOOL = "refminer"
-    REPO_IDX = 0
-    TASK_ID = 0
+    TOOL = args.tool
+    REPO_IDX = args.idx
     
     CURR_DIR = os.path.dirname(os.path.realpath(__file__))
     corpus_generator = prepare_corpus(REPO_IDX, clone=False)
@@ -79,8 +79,8 @@ if __name__ == "__main__":
             continue
         
         if TOOL == "designite":
-            execute_designite(TASK_ID, username, repo_name, repo_path, branch=default_branch)
+            execute_designite(username, repo_name, repo_path, branch=default_branch)
         elif TOOL == "refminer":
-            execute_refminer(TASK_ID, username, repo_name, repo_path, branch=default_branch)
+            execute_refminer(username, repo_name, repo_path, branch=default_branch)
             
         

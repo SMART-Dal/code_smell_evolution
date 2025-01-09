@@ -11,7 +11,7 @@
 
 repo_name="code_smell_evolution_CORPUS"
 
-repo_indices=(6 7 8 9 10)
+repo_indices=(11 12 13 14 15)
 
 echo ">>> JOB STARTED FOR $repo_name"
 handle_signal() 

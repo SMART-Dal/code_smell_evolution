@@ -14,7 +14,7 @@
 repo_name="code_smell_evolution_collect_smell"
 
 # Define the list of single integer arguments for the 6 tasks
-ARG_VALUES=(6 7 8 9 10)
+ARG_VALUES=(11 12 13 14 15)
 
 # Get the argument for this task ID
 ARG=${ARG_VALUES[$SLURM_ARRAY_TASK_ID]}
@@ -54,7 +54,7 @@ pip install $SLURM_TMPDIR/pydriller
 echo -e "\n\n\n\n\n>>> Executing the script."
 # -u is for unbuffered output so the print statements print it to the slurm out file
 # & at the end is to run the script in background. Unless it's running in background we can't trap the signal
-python -u scripts/data_generation.py designite $ARG $SLURM_ARRAY_TASK_ID &
+python -u scripts/data_generation.py designite $ARG &
 
 PID=$!
 wait ${PID}

@@ -69,6 +69,10 @@ class RefMiner:
     @log_execution
     def analyze(self, username: str, repo_name: str, repo_path: Path, branch: str):
         try:
+            user_output_path = os.path.join(self.output_dir, username)
+            if not os.path.exists(user_output_path):
+                os.makedirs(user_output_path)
+
             output_path = os.path.join(self.output_dir, username, f"{repo_name}.json")
 
             try:
