@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=code-smell-evo-purge
+#SBATCH --job-name=evo-corpus
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
 
@@ -11,9 +11,9 @@
 
 repo_name="code_smell_evolution_CORPUS"
 
-repo_indices = (6 7 8 9 10)
+repo_indices=(6 7 8 9 10)
 
-echo ">>> JOB STARTED FOR $repo_name (Task ID: $SLURM_ARRAY_TASK_ID with ARG: $ARG)"
+echo ">>> JOB STARTED FOR $repo_name"
 handle_signal() 
 {
     echo 'Trapped - Moving File'
@@ -54,4 +54,4 @@ rsync -axvH --no-g --no-p $SLURM_TMPDIR/$repo_name/output/*  $refresearch/data/o
 echo ">>> Unloading modules and deactivating virtual environment."
 deactivate
 module unload python/3.10 java/17.0.2 StdEnv/2020
-echo ">>> JOB ENDED FOR $repo_name (Task ID: $SLURM_ARRAY_TASK_ID)"
+echo ">>> JOB ENDED FOR $repo_name"
