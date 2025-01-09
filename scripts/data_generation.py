@@ -34,7 +34,7 @@ def execute_refminer(slurm_task_id, username, repo_name, repo_path, branch):
     """
     success = False
     try:
-        ref_miner_runner = RefMiner()
+        ref_miner_runner = RefMiner(print_log=True)
         ref_miner_runner.analyze(username, repo_name, repo_path, branch)
         success = True
     except Exception as e:
@@ -56,14 +56,16 @@ def save_info(info_file: str, repo_path: Path, branch: str, success: bool):
         f.write(f"{repo_path},{branch},{success}\n")
         
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run analysis on repo index")
-    parser.add_argument("tool", type=str, help="tool to use for analysis")
-    parser.add_argument("idx", type=int, help="index of the repository to process.")
-    parser.add_argument("task_id", type=int, help="index of tslurm array job task id")
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser(description="Run analysis on repo index")
+    # parser.add_argument("tool", type=str, help="tool to use for analysis")
+    # parser.add_argument("idx", type=int, help="index of the repository to process.")
+    # parser.add_argument("task_id", type=int, help="index of tslurm array job task id")
+    # args = parser.parse_args()
+    
 
-    REPO_IDX = args.idx
-    TASK_ID = args.task_id
+    TOOL = "refminer"
+    REPO_IDX = 0
+    TASK_ID = 0
     
     CURR_DIR = os.path.dirname(os.path.realpath(__file__))
     corpus_generator = prepare_corpus(REPO_IDX, clone=False)
@@ -76,9 +78,9 @@ if __name__ == "__main__":
             print(ColoredStr.red(f"Failed to get default branch for repo: {repo_path}"))
             continue
         
-        if args.tool == "designite":
+        if TOOL == "designite":
             execute_designite(TASK_ID, username, repo_name, repo_path, branch=default_branch)
-        elif args.tool == "refminer":
+        elif TOOL == "refminer":
             execute_refminer(TASK_ID, username, repo_name, repo_path, branch=default_branch)
             
         

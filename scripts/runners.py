@@ -72,7 +72,7 @@ class RefMiner:
             output_path = os.path.join(self.output_dir, username, f"{repo_name}.json")
 
             try:
-                java_proc = subprocess.run(["java","-version"], capture_output=True, shell=False)
+                java_proc = subprocess.run(["java", "-version"], capture_output=True, shell=False)
                 java_proc.check_returncode()
             except Exception as ex:
                 print("Java error")
@@ -83,26 +83,23 @@ class RefMiner:
             
             try:
                 print(f"\nRepo: {ColoredStr.blue(repo_path)} | Branch: {ColoredStr.green(branch)}")
-                process = subprocess.Popen([
-                    "sh","RefactoringMiner",
+                result = subprocess.run([
+                    "sh", "RefactoringMiner",
                     "-a", repo_path, branch,
                     "-json", output_path
-                ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=shell)
+                ], capture_output=True, text=True, shell=shell)
                 
-                # Stream output in real-time
-                for line in process.stdout:
-                    if self.log: print(line, end="")
-                for line in process.stderr:
-                    print(line, end="")
-                process.wait()  # Wait for process to complete
-                if process.returncode != 0:
-                    print(ColoredStr.red(f"Process failed with return code: {process.returncode}"))
+                if result.returncode != 0:
+                    print(ColoredStr.red(f"Process failed with return code: {result.returncode}"))
+                    print(result.stderr)
+                    
+                if self.logs:
+                    print(result.stdout)
             except Exception as e:
                 print(ColoredStr.red(f"An error occurred during analysis: {e}"))
                 
         except Exception as e:
             print(ColoredStr.red(f"An error occurred: {e}"))
-        
 class PyDriller:
     
     @staticmethod
