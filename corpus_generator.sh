@@ -3,6 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
 
+#SBATCH --mem-per-cpu=8G
 #SBATCH --time=45:00          # Process limit for each task
 
 #SBATCH --account=def-tusharma
