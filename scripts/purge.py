@@ -5,6 +5,13 @@ import config
 def merge_json_files(source_path, output_file, prefix):
     try:
         merged_data = {}
+        
+         # Check if the output file already exists and load existing data
+        if os.path.exists(output_file):
+            with open(output_file, 'r') as f:
+                existing_data = json.load(f)
+                merged_data.update(existing_data)
+        
         files = os.listdir(source_path)
         json_files = [
             f for f in files 
@@ -25,13 +32,21 @@ def merge_json_files(source_path, output_file, prefix):
 def merge_txt_files(source_path, output_file, prefix):
     try:
         merged_rows = []
+        header_added = False  # To track if the header has already been added
+        
+        # Check if the output file already exists and read its data
+        if os.path.exists(output_file):
+            with open(output_file, 'r') as f:
+                existing_rows = f.readlines()
+                if existing_rows:
+                    merged_rows.extend(row.strip() for row in existing_rows if row.strip())
+                    header_added = True  # Assume the existing file already has a header
+        
         files = os.listdir(source_path)
         txt_files = [
             f for f in files 
             if f.endswith('.txt') and f.startswith(prefix) and os.path.isfile(os.path.join(source_path, f))
         ]
-        
-        header_added = False  # To track if the header has already been added
 
         for file in txt_files:
             file_path = os.path.join(source_path, file)

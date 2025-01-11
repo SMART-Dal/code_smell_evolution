@@ -13,25 +13,15 @@ repo_name="code_smell_evolution_PURGE"
 
 
 echo ">>> JOB STARTED FOR $repo_name"
-handle_signal() 
-{
-    echo 'Trapped - Moving File'
-    rsync -axvH --no-g --no-p $SLURM_TMPDIR/$repo_name/output/* $refresearch/data/output/
-    exit 0
-}
-
-trap 'handle_signal' SIGUSR1
 
 # -------------------------------------------------------
 echo ">>> Loading modules and activating virtual environment."
 module --force purge
-module load StdEnv/2020 java/17.0.2 python/3.10
-unset JAVA_TOOL_OPTIONS
+module load StdEnv/2020 python/3.10
 
 virtualenv --no-download $SLURM_TMPDIR/.venv
 source $SLURM_TMPDIR/.venv/bin/activate
 pip install --no-index --upgrade pip
-pip install  --no-index -r requirements.txt
 # -------------------------------------------------------
 
 # -------------------------------------------------------
@@ -42,9 +32,6 @@ python -u scripts/purge.py &
 
 PID=$!
 wait ${PID}
-
-echo -e ">>> Completed execution of the script.\n\n\n\n\n>>>Attempting to copy the output file..."
-rsync -axvH --no-g --no-p $SLURM_TMPDIR/$repo_name/output/*  $refresearch/data/output
 # -------------------------------------------------------
 
 # -------------------------------------------------------
