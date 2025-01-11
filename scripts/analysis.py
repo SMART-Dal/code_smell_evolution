@@ -1,7 +1,6 @@
 import os
 import config
 from corpus import prepare_corpus, prepare_from_corpus_info
-from runners import Designite, RefMiner
 from data_analyzer import RepoDataAnalyzer
 from lifespan_analyzer import CorpusLifespanAnalyzer
 from utils import GitManager, ColoredStr
@@ -40,27 +39,30 @@ def analyze_corpus_data():
 
 if __name__ == "__main__":
     CURR_DIR = os.path.dirname(os.path.realpath(__file__))
-    corpus_info = {
-        "auth0-samples": ["auth0-spring-security5-api-sample"],
-        "ChiselsAndBits": ["Chisels-and-Bits"],
-        "derari": ["cthul"],
-        "typ-ahmedsleem": ["AnaMuslim"],
-    }
-    # corpus_info: dict = prepare_corpus()
+    # corpus_generator = prepare_corpus(REPO_IDX, clone=False)
+    corpus_generator = [
+        ('bitwig', 'bitwig-extensions', os.path.join(config.CORPUS_PATH, 'bitwig', 'bitwig-extensions')),
+        ('cgerard321', 'champlain_petclinic', os.path.join(config.CORPUS_PATH, 'cgerard321', 'champlain_petclinic')),
+        ('fabricmc', 'mixin', os.path.join(config.CORPUS_PATH, 'fabricmc', 'mixin')),
+        ('falsehoodmc', 'fabrication', os.path.join(config.CORPUS_PATH, 'falsehoodmc', 'fabrication')),
+        ('linlinjava', 'litemall', os.path.join(config.CORPUS_PATH, 'linlinjava', 'litemall')),
+        ('mapbox', 'mapbox-java', os.path.join(config.CORPUS_PATH, 'mapbox', 'mapbox-java')),
+        ('marvionkirito', 'altoclef', os.path.join(config.CORPUS_PATH, 'marvionkirito', 'altoclef')),
+        ('reneargento', 'algorithms-sedgewick-wayne', os.path.join(config.CORPUS_PATH, 'reneargento', 'algorithms-sedgewick-wayne')),
+        ('serg-delft', 'andy', os.path.join(config.CORPUS_PATH, 'serg-delft', 'andy')),
+        ('skbkontur', 'extern-java-sdk', os.path.join(config.CORPUS_PATH, 'skbkontur', 'extern-java-sdk')),
+        ('sublinks', 'sublinks-api', os.path.join(config.CORPUS_PATH, 'sublinks', 'sublinks-api')),
+        ('thombergs', 'code-examples', os.path.join(config.CORPUS_PATH, 'thombergs', 'code-examples')),
+        ('warmuuh', 'milkman', os.path.join(config.CORPUS_PATH, 'warmuuh', 'milkman')),
+    ]
     
-    for username, repos in corpus_info.items():
-        for repo in repos:
-            TARGET_REPO_PATH = os.path.join(config.CORPUS_PATH, username, repo)
-                
-            default_branch = GitManager.get_default_branch(TARGET_REPO_PATH)
-            if not default_branch:
-                print(ColoredStr.red(f"Failed to get default branch for repo: {TARGET_REPO_PATH}"))
-                continue
-            
-            # execute_designite(username, repo, TARGET_REPO_PATH, branch=default_branch)
-            # execute_refminer(username, repo, TARGET_REPO_PATH, branch=default_branch)
-            
-            # analyze_repo_data(username, repo, TARGET_REPO_PATH, branch=default_branch)
+    # for username, repo_name, repo_path in corpus_generator:
+    #     default_branch = GitManager.get_default_branch(repo_path)
+    #     if not default_branch:
+    #         print(ColoredStr.red(f"Failed to get default branch for repo: {repo_path}"))
+    #         continue
+        
+    #     analyze_repo_data(username, repo_name, repo_path, branch=default_branch)
         
     analyze_corpus_data()
     

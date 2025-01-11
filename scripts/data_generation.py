@@ -1,7 +1,6 @@
 import argparse
 import traceback
 import os
-import config
 import datetime
 from pathlib import Path
 from corpus import prepare_corpus
@@ -70,7 +69,6 @@ if __name__ == "__main__":
     CURR_DIR = os.path.dirname(os.path.realpath(__file__))
     corpus_generator = prepare_corpus(REPO_IDX, clone=False)
     current_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    corpus_info: dict[str, list[str]] = {}
     
     for username, repo_name, repo_path in corpus_generator:
         default_branch = GitManager.get_default_branch(repo_path)
