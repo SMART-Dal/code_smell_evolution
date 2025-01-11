@@ -10,11 +10,19 @@ def zip_dir(dir_path, zip_path):
     :param dir_path: Path to the directory to be zipped.
     :param zip_path: Path to the output zip file.
     """
-    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-        for root, dirs, files in os.walk(dir_path):
-            for file in files:
-                zip_file.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), os.path.join(dir_path, '..')))
-                
+    try:
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            if os.path.isdir(dir_path):
+                for root, dirs, files in os.walk(dir_path):
+                    for file in files:
+                        file_path = os.path.join(root, file)
+                        arcname = os.path.relpath(file_path, dir_path)
+                        zipf.write(file_path, arcname)
+            else:
+                zipf.write(dir_path, os.path.basename(dir_path))
+        print(f"Successfully compressed '{dir_path}'.")
+    except Exception as e:
+        print(f"Error while zipping '{dir_path}': {e}")
 def unzip_file(zip_path, extract_to):
     """
     Unzip a file.
@@ -22,8 +30,12 @@ def unzip_file(zip_path, extract_to):
     :param zip_path: Path to the zip file.
     :param extract_to: Path to the directory where the file will be extracted.
     """
-    with zipfile.ZipFile(zip_path, 'r') as zip_file:
-        zip_file.extractall(extract_to)
+    try:
+        with zipfile.ZipFile(zip_path, 'r') as zip_file:
+            zip_file.extractall(extract_to)
+        print(f"Successfully extracted '{zip_path}' to '{extract_to}'.")
+    except Exception as e:
+        print(f"Error while extracting '{zip_path}': {e}")
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="zip/unzip a directory.")
@@ -60,7 +72,12 @@ if __name__ == '__main__':
     if args.type == "smells":
         target_path = os.path.join(DESIGNITE_OP_DIR, username, repo_name)
     elif args.type == "refs":
-        target_path = os.path.join(REFMINER_OP_DIR, username, f"{repo_name}.json")    
+        target_path = os.path.join(REFMINER_OP_DIR, username, f"{repo_name}.json")
+        
+    # Validate target path
+    if not os.path.exists(target_path):
+        print(f"Error: Target path '{target_path}' does not exist.")
+        exit(1)
     
     if args.action == "zip":
         zip_dir(target_path, os.path.join(zip_lib_path, f'{args.type}_{args.idx}.zip'))

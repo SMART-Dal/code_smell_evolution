@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH --job-name=evo-purge
+#SBATCH --job-name=evo-zip
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
 
 #SBATCH --mem-per-cpu=8G
-#SBATCH --array=0-6             # Array range for 6 tasks
+#SBATCH --array=0-12             # Array range for 6 tasks
 #SBATCH --time=30:00          # Process limit for each task
 
 #SBATCH --account=def-tusharma
@@ -14,11 +14,11 @@
 repo_name="code_smell_evolution_ZIP/UNZIP"
 
 # Define the list of single integer arguments for the 6 tasks
-ARG_VALUES=(0 1 2 3 4 5 6)
+ARG_VALUES=(0 1 2 3 4 5 6 7 8 9 10 11 12)
 
 # Get the arguments for this task ID
-MODE="ZIP"
-OUTPUT="smells"
+MODE="zip"              #choices=["zip", "unzip"]
+OUTPUT="refs"         #choices=["smells", "refs"]
 ARG=${ARG_VALUES[$SLURM_ARRAY_TASK_ID]}
 
 echo ">>> JOB STARTED FOR $repo_name  (Task ID: $SLURM_ARRAY_TASK_ID with ARG: $ARG)"
