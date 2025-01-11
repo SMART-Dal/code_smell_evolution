@@ -1,5 +1,4 @@
 import os
-import config
 from corpus import prepare_corpus, prepare_from_corpus_info
 from data_analyzer import RepoDataAnalyzer
 from lifespan_analyzer import CorpusLifespanAnalyzer

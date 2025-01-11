@@ -1,14 +1,17 @@
 import os
 import config
-from utils import traverse_directory, load_json_file, get_smell_dict
+from utils import traverse_directory, load_json_file, save_json_file
 import matplotlib.pyplot as plt
 import numpy as np
 from models import CorpusMetrics
 
 class CorpusLifespanAnalyzer:
     def __init__(self):
-        self.lib_path = config.SMELLS_LIB_PATH
-        self.plots_dir = os.path.join(config.OUTPUT_PATH, 'plots') 
+        self.lib_path = config.SMELL_LIFESPANS_PATH
+        self.plots_dir = os.path.join(config.OUTPUT_PATH, 'plots')
+        if not os.path.exists(self.plots_dir):
+            os.makedirs(self.plots_dir)
+        
         self.active_smell_groups = {}
         self.corpus_metric = CorpusMetrics()
 
@@ -47,6 +50,13 @@ class CorpusLifespanAnalyzer:
             ref_counts = metrics.get("ref_count", {})
             sorted_ref_counts = sorted(ref_counts.items(), key=lambda item: item[1], reverse=True)
             corpus_top_ref_per_smell[smell] = sorted_ref_counts[:top_k_ref]
+            
+        # Save the corpus stats to a JSON file
+        corpus_stats = {
+            "avg_smell_metrics": corpus_avg_smell_metrics,
+            "top_ref_per_smell": corpus_top_ref_per_smell
+        }
+        save_json_file(os.path.join(self.lib_path, '_corpus_stats.json'), corpus_stats)
         
         return corpus_avg_smell_metrics, corpus_top_ref_per_smell
     
@@ -54,9 +64,18 @@ class CorpusLifespanAnalyzer:
         metadata: dict = repo_data.get('metadata', None)
         smell_instances: list = repo_data.get('smell_instances', [])
         
+        repo_stats_filename = None
         repo_commit_span_list = []
         repo_days_span_list = []
         repo_smells_span_info: dict[str, dict] = {}
+        
+        path = metadata.get('path', None)
+        if not path:
+            print("Path not found in metadata to generate stats json")
+            return 0, 0, {}, {}
+        else:
+            parts = path.split('/')
+            repo_stats_filename = f"{parts[-1]}@{parts[-2]}_stats.json"
         
         # Initialize smells_span with default values
         smell_types: dict = metadata.get('smell_types', None)
@@ -118,24 +137,29 @@ class CorpusLifespanAnalyzer:
                 "avg_days_span": avg_days_span,
                 "ref_type_occurance": ref_type_occurances
             }
+            
+        # Save the repo stats to a JSON file
+        repo_stats = {
+            "avg_commit_span": repo_avg_commit_span,
+            "avg_days_span": repo_avg_days_span,
+            "smells_metrics": repo_smells_metrics
+        }
+        save_json_file(os.path.join(self.lib_path, repo_stats_filename), repo_stats)
         
         return repo_avg_commit_span, repo_avg_days_span, repo_smells_metrics
     
     def list_avg(self, list_of_ints: list[int]) -> float:
-        return sum(list_of_ints) / len(list_of_ints) if list_of_ints else 0
+        # Filter out non-numeric values and ensure the list contains only valid numbers
+        valid_numbers = [x for x in list_of_ints if isinstance(x, (int, float))]
+        
+        # Calculate the average only if the list has valid numbers
+        return sum(valid_numbers) / len(valid_numbers) if valid_numbers else 0
 
     def _track_smell_groups(self, smell_type, smell_name):
         if smell_type not in self.active_smell_groups:
             self.active_smell_groups[smell_type] = []
         if smell_name not in self.active_smell_groups[smell_type]:
             self.active_smell_groups[smell_type].append(smell_name)
-
-    def get_smell_type(self, smell_name: str) -> str:
-        smell_dict = get_smell_dict()
-        for smell_type, smells in smell_dict.items():
-            if smell_name in smells:
-                return smell_type
-        return "Unknown"
 
     def plot_avg_lifespan(self, avg_commit_spans, avg_days_spans):
         repos = list(avg_commit_spans.keys())
@@ -438,4 +462,4 @@ class CorpusLifespanAnalyzer:
 
             # Log skipped smells
             if skipped_smells:
-                print(f"Skipped the following smells for {smell_type} due to no data: {', '.join(skipped_smells)}")
+                print(f"Skipped the following smells for {smell_type} due to no data: {', '.join(filter(None, skipped_smells))}")

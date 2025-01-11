@@ -112,9 +112,6 @@ def traverse_directory(dir_path):
         for name in files:
             yield os.path.join(root, name)
 
-def get_smell_dict(smell_str: str) -> dict:
-    return eval(smell_str)
-
 class GitManager:
     BASE_URL = "https://github.com/"
     

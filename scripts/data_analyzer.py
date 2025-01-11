@@ -3,7 +3,7 @@ from datetime import datetime
 from runners import Designite, RefMiner, PyDriller
 import config
 from utils import GitManager, ColoredStr
-from utils import log_execution, load_csv_file, traverse_directory, load_json_file, save_json_file, get_smell_dict
+from utils import log_execution, load_csv_file, traverse_directory, load_json_file, save_json_file
 from models import SmellInstance, ArchitectureSmell, DesignSmell, ImplementationSmell, TestabilitySmell, TestSmell, Refactoring
 
 class RepoDataAnalyzer:
@@ -273,6 +273,6 @@ class RepoDataAnalyzer:
             "smell_instances": [smell_instance.to_dict() for smell_instance in self.smells_lib]
         }
         save_json_file(
-            file_path=os.path.join(config.SMELLS_LIB_PATH, f"{repo_name}@{username}.json"), 
+            file_path=os.path.join(config.SMELL_LIFESPANS_PATH, f"{repo_name}@{username}.json"), 
             data=data
         )

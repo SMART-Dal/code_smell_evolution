@@ -17,7 +17,7 @@ REPOS_PATH = os.path.join(ROOT_PATH, "repos")
 CORPUS_PATH = os.path.join(ROOT_PATH, "corpus")
 OUTPUT_PATH = os.path.join(ROOT_PATH, "output")
 
-SMELLS_LIB_PATH = os.path.join(OUTPUT_PATH, "Smells_lifespan_OP")
+SMELL_LIFESPANS_PATH = os.path.join(OUTPUT_PATH, "Smells_lifespan_OP")
 
 SMELL_SKIP_COLS = ["Project Name"]
 SMELL_COL_NAMES = ["Architecture Smell", "Design Smell", "Implementation Smell", "Testability Smell", "Test Smell"]
