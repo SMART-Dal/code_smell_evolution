@@ -5,7 +5,7 @@ import datetime
 from pathlib import Path
 from corpus import prepare_corpus
 from runners import Designite, RefMiner
-from utils import GitManager, ColoredStr, save_json_file, load_json_file
+from utils import GitManager, ColoredStr
 
 def execute_designite(username, repo_name, repo_path, branch):
     """
@@ -67,18 +67,19 @@ if __name__ == "__main__":
     REPO_IDX = args.idx
     
     CURR_DIR = os.path.dirname(os.path.realpath(__file__))
-    corpus_generator = prepare_corpus(REPO_IDX, clone=False)
+    repo = prepare_corpus(REPO_IDX, clone=False)
     current_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     
-    for username, repo_name, repo_path in corpus_generator:
-        default_branch = GitManager.get_default_branch(repo_path)
-        if not default_branch:
-            print(ColoredStr.red(f"Failed to get default branch for repo: {repo_path}"))
-            continue
-        
+    (username, repo_name, repo_path) = repo
+    default_branch = GitManager.get_default_branch(repo_path)
+    
+    if default_branch:
         if TOOL == "designite":
             execute_designite(username, repo_name, repo_path, branch=default_branch)
         elif TOOL == "refminer":
             execute_refminer(username, repo_name, repo_path, branch=default_branch)
+    else:
+        print(ColoredStr.red(f"Failed to get default branch for repo: {repo_path}"))
+        
             
         
