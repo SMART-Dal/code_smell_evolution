@@ -2,6 +2,7 @@ import os
 import argparse
 import zipfile
 import config
+from corpus import prepare_corpus
 
 def zip_dir(dir_path, zip_path):
     """
@@ -51,23 +52,13 @@ if __name__ == '__main__':
     DESIGNITE_OP_DIR = os.path.join(config.OUTPUT_PATH, 'Designite_OP')
     REFMINER_OP_DIR = os.path.join(config.OUTPUT_PATH, 'RefMiner_OP')
     
-    # corpus_generator = prepare_corpus(REPO_IDX, clone=False)
-    corpus_generator = [
-        ('bitwig', 'bitwig-extensions', os.path.join(config.CORPUS_PATH, 'bitwig', 'bitwig-extensions')),
-        ('cgerard321', 'champlain_petclinic', os.path.join(config.CORPUS_PATH, 'cgerard321', 'champlain_petclinic')),
-        ('fabricmc', 'mixin', os.path.join(config.CORPUS_PATH, 'fabricmc', 'mixin')),
-        ('falsehoodmc', 'fabrication', os.path.join(config.CORPUS_PATH, 'falsehoodmc', 'fabrication')),
-        ('linlinjava', 'litemall', os.path.join(config.CORPUS_PATH, 'linlinjava', 'litemall')),
-        ('mapbox', 'mapbox-java', os.path.join(config.CORPUS_PATH, 'mapbox', 'mapbox-java')),
-        ('marvionkirito', 'altoclef', os.path.join(config.CORPUS_PATH, 'marvionkirito', 'altoclef')),
-        ('reneargento', 'algorithms-sedgewick-wayne', os.path.join(config.CORPUS_PATH, 'reneargento', 'algorithms-sedgewick-wayne')),
-        ('serg-delft', 'andy', os.path.join(config.CORPUS_PATH, 'serg-delft', 'andy')),
-        ('skbkontur', 'extern-java-sdk', os.path.join(config.CORPUS_PATH, 'skbkontur', 'extern-java-sdk')),
-        ('sublinks', 'sublinks-api', os.path.join(config.CORPUS_PATH, 'sublinks', 'sublinks-api')),
-        ('thombergs', 'code-examples', os.path.join(config.CORPUS_PATH, 'thombergs', 'code-examples')),
-        ('warmuuh', 'milkman', os.path.join(config.CORPUS_PATH, 'warmuuh', 'milkman')),
-    ]
-    (username, repo_name, _)  = corpus_generator[args.idx]
+    (username, repo_name, _) = prepare_corpus(args.idx, clone=False)
+    
+    if args.action == "unzip":
+        P = os.path.join(DESIGNITE_OP_DIR, username, repo_name) if args.type == "smells" else os.path.join(REFMINER_OP_DIR, username)
+        if not os.path.exists(P):
+            os.makedirs(P)
+    
     
     if args.type == "smells":
         target_path = os.path.join(DESIGNITE_OP_DIR, username, repo_name)
