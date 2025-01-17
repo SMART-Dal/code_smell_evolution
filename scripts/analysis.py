@@ -38,30 +38,16 @@ def analyze_corpus_data():
 
 if __name__ == "__main__":
     CURR_DIR = os.path.dirname(os.path.realpath(__file__))
-    # corpus_generator = prepare_corpus(REPO_IDX, clone=False)
-    corpus_generator = [
-        ('bitwig', 'bitwig-extensions', os.path.join(config.CORPUS_PATH, 'bitwig', 'bitwig-extensions')),
-        ('cgerard321', 'champlain_petclinic', os.path.join(config.CORPUS_PATH, 'cgerard321', 'champlain_petclinic')),
-        ('fabricmc', 'mixin', os.path.join(config.CORPUS_PATH, 'fabricmc', 'mixin')),
-        ('falsehoodmc', 'fabrication', os.path.join(config.CORPUS_PATH, 'falsehoodmc', 'fabrication')),
-        ('linlinjava', 'litemall', os.path.join(config.CORPUS_PATH, 'linlinjava', 'litemall')),
-        ('mapbox', 'mapbox-java', os.path.join(config.CORPUS_PATH, 'mapbox', 'mapbox-java')),
-        ('marvionkirito', 'altoclef', os.path.join(config.CORPUS_PATH, 'marvionkirito', 'altoclef')),
-        ('reneargento', 'algorithms-sedgewick-wayne', os.path.join(config.CORPUS_PATH, 'reneargento', 'algorithms-sedgewick-wayne')),
-        ('serg-delft', 'andy', os.path.join(config.CORPUS_PATH, 'serg-delft', 'andy')),
-        ('skbkontur', 'extern-java-sdk', os.path.join(config.CORPUS_PATH, 'skbkontur', 'extern-java-sdk')),
-        ('sublinks', 'sublinks-api', os.path.join(config.CORPUS_PATH, 'sublinks', 'sublinks-api')),
-        ('thombergs', 'code-examples', os.path.join(config.CORPUS_PATH, 'thombergs', 'code-examples')),
-        ('warmuuh', 'milkman', os.path.join(config.CORPUS_PATH, 'warmuuh', 'milkman')),
-    ]
+    idxs = [0]
     
-    # for username, repo_name, repo_path in corpus_generator:
-    #     default_branch = GitManager.get_default_branch(repo_path)
-    #     if not default_branch:
-    #         print(ColoredStr.red(f"Failed to get default branch for repo: {repo_path}"))
-    #         continue
+    for idx in idxs:
+        (username, repo_name, repo_path) = prepare_corpus(idx, clone=False)
         
-    #     analyze_repo_data(username, repo_name, repo_path, branch=default_branch)
+        default_branch = GitManager.get_default_branch(repo_path)
+        if not default_branch:
+            print(ColoredStr.red(f"Failed to get default branch for repo: {repo_path}"))
+        else:
+            analyze_repo_data(username, repo_name, repo_path, branch=default_branch)
         
-    analyze_corpus_data()
+    # analyze_corpus_data()
     
