@@ -61,16 +61,16 @@ if __name__ == '__main__':
     
     
     if args.type == "smells":
-        target_path = os.path.join(DESIGNITE_OP_DIR, username, repo_name)
+        target_dir = os.path.join(DESIGNITE_OP_DIR, username, repo_name)
     elif args.type == "refs":
-        target_path = os.path.join(REFMINER_OP_DIR, username, f"{repo_name}.json")
+        target_dir = os.path.join(REFMINER_OP_DIR, username)
         
     # Validate target path
-    if not os.path.exists(target_path):
-        print(f"Error: Target path '{target_path}' does not exist.")
+    if not os.path.exists(target_dir):
+        print(f"Error: Target path '{target_dir}' does not exist.")
         exit(1)
     
     if args.action == "zip":
-        zip_dir(target_path, os.path.join(zip_lib_path, f'{args.type}_{args.idx}.zip'))
+        zip_dir(target_dir, os.path.join(zip_lib_path, f'{args.type}_{args.idx}.zip'))
     elif args.action == "unzip":
-        unzip_file(os.path.join(zip_lib_path, f'{args.type}_{args.idx}.zip'), target_path)
+        unzip_file(os.path.join(zip_lib_path, f'{args.type}_{args.idx}.zip'), target_dir)
