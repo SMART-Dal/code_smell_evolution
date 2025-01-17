@@ -67,7 +67,8 @@ class SmellInstance:
         self.removed: CommitInfo = None
         self.commit_span: int = None
         self.days_span: int = None
-        self.refactorings: list[Refactoring] = []
+        self.introduced_by_refactorings: list[Refactoring] = []  # Refactorings that introduced the smell
+        self.removed_by_refactorings: list[Refactoring] = []  # Refactorings that helped to remove the smell
         
     def introduced_at(self, commit_hash, datetime):
         self.introduced = CommitInfo(commit_hash, datetime)
@@ -78,11 +79,12 @@ class SmellInstance:
     def to_dict(self):
         return {
             "smell": self.smell.to_dict(),
-            "introduced": self.introduced.to_dict() if self.introduced else None,
-            "removed": self.removed.to_dict() if self.removed else None,
             "commit_span": self.commit_span,
             "days_span": self.days_span,
-            "refactorings": [r.to_dict() for r in self.refactorings]
+            "introduced": self.introduced.to_dict() if self.introduced else None,
+            "removed": self.removed.to_dict() if self.removed else None,
+            "introduced_by_refactorings": [r.to_dict() for r in self.introduced_by_refactorings],
+            "removed_by_refactorings": [r.to_dict() for r in self.removed_by_refactorings]
         }
         
 class _Smell:

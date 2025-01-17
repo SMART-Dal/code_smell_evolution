@@ -197,20 +197,32 @@ class RepoDataAnalyzer:
     @log_execution
     def map_refactorings_to_smells(self):
         for smell_instance in self.smells_lib:
-            smell_instance.refactorings = []
+            smell_instance.removed_by_refactorings = []
+            smell_instance.introduced_by_refactorings = []
             
             for commit_hash, refs_list in self.refactorings.items():
-                if smell_instance.removed:        
-                    if commit_hash == smell_instance.removed.commit_hash:
-                        current_version_refactorings = refs_list
-                        for ref in current_version_refactorings:
+                if smell_instance.introduced: # current version refactorings
+                    if commit_hash == smell_instance.introduced.commit_hash:
+                        for ref in refs_list:
                             for change in ref.changes:
                                 if change.file_path and self._check_file_intersection(smell_instance.smell, target_path=change.file_path):
                                     if not hasattr(smell_instance, "range") or smell_instance.smell.range is None:
-                                        smell_instance.refactorings.append(ref)
+                                        smell_instance.introduced_by_refactorings.append(ref)
                                     else:
                                         if self._check_smell_ref_intersection(smell_instance.smell.range, change.range):
-                                            smell_instance.refactorings.append(ref)
+                                            smell_instance.introduced_by_refactorings.append(ref)
+                            break
+                
+                if smell_instance.removed:        
+                    if commit_hash == smell_instance.removed.commit_hash:
+                        for ref in refs_list: # current version refactorings
+                            for change in ref.changes:
+                                if change.file_path and self._check_file_intersection(smell_instance.smell, target_path=change.file_path):
+                                    if not hasattr(smell_instance, "range") or smell_instance.smell.range is None:
+                                        smell_instance.removed_by_refactorings.append(ref)
+                                    else:
+                                        if self._check_smell_ref_intersection(smell_instance.smell.range, change.range):
+                                            smell_instance.removed_by_refactorings.append(ref)
                             break
     
     def _check_file_intersection(self, smell, target_path: str):
@@ -255,7 +267,7 @@ class RepoDataAnalyzer:
             if smell_name not in self.present_smell_types[kind]:
                 self.present_smell_types[kind].append(smell_name)
 
-            for ref in smell_instance.refactorings:
+            for ref in smell_instance.removed_by_refactorings:
                 ref_type = ref.type_name
                 if ref_type not in self.present_refactoring_types:
                     self.present_refactoring_types.append(ref_type)
