@@ -204,25 +204,35 @@ class RepoDataAnalyzer:
                 if smell_instance.introduced: # current version refactorings
                     if commit_hash == smell_instance.introduced.commit_hash:
                         for ref in refs_list:
+                            ref_change_pairs = []
                             for change in ref.changes:
                                 if change.file_path and self._check_file_intersection(smell_instance.smell, target_path=change.file_path):
-                                    if not hasattr(smell_instance, "range") or smell_instance.smell.range is None:
-                                        smell_instance.introduced_by_refactorings.append(ref)
+                                    if not hasattr(smell_instance.smell, "range") or smell_instance.smell.range is None:
+                                        ref_change_pairs.append(change)
                                     else:
                                         if self._check_smell_ref_intersection(smell_instance.smell.range, change.range):
-                                            smell_instance.introduced_by_refactorings.append(ref)
+                                            ref_change_pairs.append(change)
+                            if ref_change_pairs:
+                                new_ref = Refactoring(ref.url, ref.type_name, ref.commit_hash)
+                                new_ref.changes = ref_change_pairs
+                                smell_instance.introduced_by_refactorings.append(new_ref)
                             break
                 
                 if smell_instance.removed:        
                     if commit_hash == smell_instance.removed.commit_hash:
                         for ref in refs_list: # current version refactorings
                             for change in ref.changes:
+                                ref_change_pairs = []
                                 if change.file_path and self._check_file_intersection(smell_instance.smell, target_path=change.file_path):
-                                    if not hasattr(smell_instance, "range") or smell_instance.smell.range is None:
-                                        smell_instance.removed_by_refactorings.append(ref)
+                                    if not hasattr(smell_instance.smell, "range") or smell_instance.smell.range is None:
+                                        ref_change_pairs.append(ref)
                                     else:
                                         if self._check_smell_ref_intersection(smell_instance.smell.range, change.range):
-                                            smell_instance.removed_by_refactorings.append(ref)
+                                            ref_change_pairs.append(ref)
+                            if ref_change_pairs:
+                                new_ref = Refactoring(ref.url, ref.type_name, ref.commit_hash)
+                                new_ref.changes = ref_change_pairs
+                                smell_instance.removed_by_refactorings.append(new_ref)          
                             break
     
     def _check_file_intersection(self, smell, target_path: str):
@@ -255,7 +265,7 @@ class RepoDataAnalyzer:
         """
         Check if the smell range intersects with the refactoring range.
         """
-        return smell_range[0] <= refactoring_range[0] <= smell_range[1] or smell_range[0] <= refactoring_range[1] <= smell_range[1]
+        return not (smell_range[1] < refactoring_range[0] or refactoring_range[1] < smell_range[0])
 
     @log_execution
     def generate_metadata(self):

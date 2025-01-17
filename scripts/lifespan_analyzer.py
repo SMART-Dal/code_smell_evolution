@@ -19,10 +19,10 @@ class CorpusLifespanAnalyzer:
         
         for file_path in traverse_directory(self.lib_path):
             file_path: str
-            if file_path.endswith('.json'):
+            if file_path.endswith('.json') and not file_path.endswith('_stats.json'):
                 repo_full_name = os.path.basename(file_path).replace('.json', '')
                 repo_data = load_json_file(file_path)
-                
+            
                 avg_commit_span, avg_days_span, smell_metrics = self.generate_repo_metrics(repo_data)
                 self.corpus_metric.add_repo_avg_commit_span(repo_full_name, avg_commit_span)
                 self.corpus_metric.add_repo_avg_days_span(repo_full_name, avg_days_span)
@@ -114,7 +114,7 @@ class CorpusLifespanAnalyzer:
                 if days_span is not None:
                     repo_smells_span_info[smell_name]["days_span"].append(days_span)
                 
-                for refactoring in smell_instance.get('refactorings', []):
+                for refactoring in smell_instance.get('removed_by_refactorings', []):
                     ref_type = refactoring.get('type_name', None)
                     
                     if ref_type:
