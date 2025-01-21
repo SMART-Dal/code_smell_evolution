@@ -52,18 +52,19 @@ def prepare_from_corpus_info(corpus_info: dict):
         print(e)
     
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Clone repositories from corpus list")
-    parser.add_argument("idx", type=int, help="index of the repository to process.")
-    args = parser.parse_args()
-    
-    repo = prepare_corpus(repo_index=args.idx)
-    current_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    corpus_info: dict[str, list[str]] = {}
-    corpus_info_filename = f"corpus_info_{current_time}.json"
-    
-    (username, repo_name, repo_path) = repo
-    corpus_info.update(load_json_file(os.path.join(config.CORPUS_PATH, corpus_info_filename)))
-    if username not in corpus_info:
-        corpus_info[username] = []
-    corpus_info[username].append(repo_name)
-    save_json_file(os.path.join(config.CORPUS_PATH, corpus_info_filename), corpus_info)
+    # parser = argparse.ArgumentParser(description="Clone repositories from corpus list")
+    # parser.add_argument("idx", type=int, help="index of the repository to process.")
+    # args = parser.parse_args()
+  
+    for idx in [4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 23]:  
+        repo = prepare_corpus(repo_index=idx)
+        current_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        corpus_info: dict[str, list[str]] = {}
+        corpus_info_filename = f"corpus_info_{current_time}.json"
+        
+        (username, repo_name, repo_path) = repo
+        corpus_info.update(load_json_file(os.path.join(config.CORPUS_PATH, corpus_info_filename)))
+        if username not in corpus_info:
+            corpus_info[username] = []
+        corpus_info[username].append(repo_name)
+        save_json_file(os.path.join(config.CORPUS_PATH, corpus_info_filename), corpus_info)

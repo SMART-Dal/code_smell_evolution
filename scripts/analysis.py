@@ -4,24 +4,26 @@ from data_analyzer import RepoDataAnalyzer
 from lifespan_analyzer import CorpusLifespanAnalyzer
 from utils import GitManager, ColoredStr
 import traceback
-   
-def analyze_repo_data(username, repo_name, repo_path, branch):
+
+def analyze_repo_data(idx, username, repo_name, repo_path, branch):
     """
     Analyzes the collected data for a given repository.
     """
     try:
-        print(f"\nRepo: {ColoredStr.blue(repo_path)} | Branch: {ColoredStr.green(branch)}")
-        repo_data_analyzer = RepoDataAnalyzer(username, repo_name, repo_path, branch)
+        print(f"\nIDX: {idx} Repo: {ColoredStr.blue(repo_path)} | Branch: {ColoredStr.green(branch)}")
+        repo_data_analyzer = RepoDataAnalyzer(idx, username, repo_name, repo_path, branch)
         repo_data_analyzer.calculate_smells_lifespan()
         repo_data_analyzer.map_refactorings_to_smells()
         repo_data_analyzer.generate_metadata()
         repo_data_analyzer.save_lifespan_to_json(username, repo_name)
+        repo_data_analyzer.flush_repo_dataset()
     except Exception as e:
         print(ColoredStr.red(e))
         traceback.print_exc()
         
 def analyze_corpus_data():
     try:
+        print("\n Analyzing corpus data...")
         lifespan_analyzer = CorpusLifespanAnalyzer()
         avg_smells_span, top_k_ref_4_smells = lifespan_analyzer.process_corpus()
         smell_groups = lifespan_analyzer.active_smell_groups
@@ -38,7 +40,7 @@ def analyze_corpus_data():
 
 if __name__ == "__main__":
     CURR_DIR = os.path.dirname(os.path.realpath(__file__))
-    idxs = [0]
+    idxs = [0, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 23]
     
     for idx in idxs:
         (username, repo_name, repo_path) = prepare_corpus(idx, clone=False)
@@ -47,7 +49,7 @@ if __name__ == "__main__":
         if not default_branch:
             print(ColoredStr.red(f"Failed to get default branch for repo: {repo_path}"))
         else:
-            analyze_repo_data(username, repo_name, repo_path, branch=default_branch)
+            analyze_repo_data(idx, username, repo_name, repo_path, branch=default_branch)
         
-    # analyze_corpus_data()
+    analyze_corpus_data()
     

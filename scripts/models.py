@@ -64,6 +64,7 @@ class SmellInstance:
     def __init__(self, smell):
         self.smell: Union[ArchitectureSmell, DesignSmell, ImplementationSmell, TestabilitySmell, TestSmell] = smell
         self.introduced: CommitInfo = None
+        self.move_sequence: list[CommitInfo] = []  # Commits where the smell was moved
         self.removed: CommitInfo = None
         self.commit_span: int = None
         self.days_span: int = None
@@ -76,12 +77,16 @@ class SmellInstance:
     def removed_at(self, commit_hash, datetime):
         self.removed = CommitInfo(commit_hash, datetime)
         
+    def add_moved_at(self, commit_hash, datetime):
+        self.move_sequence.append(CommitInfo(commit_hash, datetime))
+        
     def to_dict(self):
         return {
             "smell": self.smell.to_dict(),
             "commit_span": self.commit_span,
             "days_span": self.days_span,
             "introduced": self.introduced.to_dict() if self.introduced else None,
+            "move_sequence": [c.to_dict() for c in self.move_sequence],
             "removed": self.removed.to_dict() if self.removed else None,
             "introduced_by_refactorings": [r.to_dict() for r in self.introduced_by_refactorings],
             "removed_by_refactorings": [r.to_dict() for r in self.removed_by_refactorings]
@@ -157,13 +162,22 @@ class ImplementationSmell(_Smell):
             "start_line": self.start_line,
             "range": self.range
         }
+    
+    def get_file_path(self):
+        slash_pkg_path = self.package_name.replace('.', '/') if self.package_name else ''
+        extension = f"{self.type_name}.java" if self.type_name else ''
+        return f"{slash_pkg_path}/{extension}" if slash_pkg_path and extension else ''
         
     def __hash__(self):
-        return hash(tuple(vars(self).values()))
+        # Exclude start_line from the hash calculation
+        return hash(tuple(value for key, value in vars(self).items() if key != 'start_line'))
     
     def __eq__(self, other):
         if isinstance(other, ImplementationSmell):
-            return vars(self) == vars(other)
+            return all(
+                key == 'start_line' or vars(self)[key] == vars(other)[key]
+                for key in vars(self)
+            )
         return False
         
 class TestabilitySmell(_Smell):
