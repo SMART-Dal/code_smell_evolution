@@ -6,7 +6,7 @@ from runners import Designite, RefMiner
 import config
 from utils import GitManager, GitUtils, FileUtils, ColoredStr
 from utils import log_execution
-from models import SmellInstance, Smell, Refactoring, CommitInfo, IMP_SMELL
+from models import SmellInstance, Smell, Refactoring, CommitInfo, ARCH_SMELL, DESIGN_SMELL, IMP_SMELL
 from zip import unzip_file
 
 class RepoDataAnalyzer:
@@ -27,15 +27,15 @@ class RepoDataAnalyzer:
         
         self.pairs_lib: list[SmellInstance] = []               # list of smell instances mapped to refactorings
         
-        #metadata
+        # metadata
         self.present_smell_types = {}
         self.present_refactoring_types = []
         
     @log_execution
     def setup_repo_dataset(self, idx, username, repo_name):
-        ZIP_LIB = os.path.join(config.OUTPUT_PATH, "zips")
-        if not os.path.exists(ZIP_LIB):
-            raise RuntimeError(f"ZIP_LIB directory not found: {ZIP_LIB}")
+        
+        if not os.path.exists(config.ZIP_LIB):
+            raise RuntimeError(f"ZIP_LIB directory not found: {config.ZIP_LIB}")
         
         # Smells dataset setup
         try:
@@ -44,7 +44,7 @@ class RepoDataAnalyzer:
                 os.makedirs(SMELLS_DIR)
 
             target_dir = os.path.join(Designite.output_dir, username, repo_name)
-            unzip_file(os.path.join(ZIP_LIB, f'smells_{idx}.zip'), target_dir)
+            unzip_file(os.path.join(config.ZIP_LIB, f'smells_{idx}.zip'), target_dir)
         except Exception as e:
             raise RuntimeError(f"Failed to set up smells dataset for {username}/{repo_name}: {e}")
         
@@ -55,7 +55,7 @@ class RepoDataAnalyzer:
                 os.makedirs(REFS_DIR)
                 
             target_dir = os.path.join(RefMiner.output_dir, username)
-            unzip_file(os.path.join(ZIP_LIB, f'refs_{idx}.zip'), target_dir)
+            unzip_file(os.path.join(config.ZIP_LIB, f'refs_{idx}.zip'), target_dir)
         except Exception as e:
             raise RuntimeError(f"Failed to set up refactoring dataset for {username}/{repo_name}: {e}")
         
@@ -91,10 +91,29 @@ class RepoDataAnalyzer:
         Load raw smells from Designite output.
         Will load smells for active commits only.
         """
-        smells_count = {"Architecture": 0, "Design": 0, "Implementation": 0}
+        designite_stats = {
+            "smells_collected": {
+                "total_smells": 0,
+                "total_arch_smells": 0,
+                "total_design_smells": 0,
+                "total_imp_smells": 0,
+                ARCH_SMELL: {},
+                DESIGN_SMELL: {}, 
+                IMP_SMELL: {}
+            },
+            "commits_analyzed": {
+                "total": 0,
+                "hashes": []
+            }
+        }
         
         for commit_path in FileUtils.traverse_directory(self.repo_designite_output_path):
             commit_hash = os.path.basename(commit_path)
+            if commit_hash.endswith('.csv'):
+                continue
+            
+            designite_stats["commits_analyzed"]["hashes"].append(commit_hash)
+            designite_stats["commits_analyzed"]["total"] += 1
             commit_datetime = next((dt for ch, dt in self.all_commits if ch == commit_hash), None)
             if commit_datetime:
                 self.active_commits.append((commit_hash, commit_datetime))
@@ -113,6 +132,8 @@ class RepoDataAnalyzer:
                         method_name = smell_row.get("Method Name", None)
                         method_start_line = smell_row.get("Method start line no", None)
                         smell_name = smell_row.get(f"{smell_kind} Smell", None)
+                        designite_stats["smells_collected"][smell_kind][smell_name] = designite_stats["smells_collected"][smell_kind].get(smell_name, 0) + 1
+                        
                         cause = smell_row.get("Cause of the Smell", None)
                         
                         smell_instance = Smell(package_name, smell_kind, smell_name, cause)
@@ -129,13 +150,19 @@ class RepoDataAnalyzer:
                     if commit_hash not in self.smells:
                         self.smells[commit_hash] = []
                     self.smells[commit_hash].extend(smell_instances)
-                    
-                    # Update smells count
-                    smells_count[smell_kind] += len(smell_instances)
 
-            
-        self.repo_stats["smells_count"] = smells_count
-        self.repo_stats["commits_analyzed_for_smells"] = len(self.active_commits)
+        designite_stats["smells_collected"]["total_arch_smells"] = len(designite_stats["smells_collected"][ARCH_SMELL])
+        designite_stats["smells_collected"]["total_arch_smells"] = sum(designite_stats["smells_collected"][ARCH_SMELL].values())
+        designite_stats["smells_collected"]["total_design_smells"] = sum(designite_stats["smells_collected"][DESIGN_SMELL].values())
+        designite_stats["smells_collected"]["total_imp_smells"] = sum(designite_stats["smells_collected"][IMP_SMELL].values())
+        designite_stats["smells_collected"]["total_smells"] = (
+            designite_stats["smells_collected"]["total_arch_smells"] +
+            designite_stats["smells_collected"]["total_design_smells"] +
+            designite_stats["smells_collected"]["total_imp_smells"]
+        )
+        designite_stats["commits_analyzed"]["total"] = len(designite_stats["commits_analyzed"]["hashes"])
+    
+        self.repo_stats["designite_stats"] = designite_stats
                     
     def _get_smell_kind(self, csv_name):
         match = re.match(r"(\w+)Smells\.csv", csv_name)
@@ -242,7 +269,7 @@ class RepoDataAnalyzer:
                     method_end_ln = GitUtils.get_method_end_line_at_commit(self.repo_path, commit_hash, file_path, method_name, method_start_ln)
                     
                     if method_end_ln == -1:
-                        print(ColoredStr.orange(f"Failed to find method_end_ln: {commit_hash} | {file_path} | {method_name}"))
+                        # print(ColoredStr.orange(f"Failed to find method_end_ln: {commit_hash} | {file_path} | {method_name}"))
                         method_end_ln = None
                     
                     methods_data[method_name][1] = method_end_ln
@@ -256,133 +283,192 @@ class RepoDataAnalyzer:
                     method_range = methods_info_map[smell_commit_hash][file_path][smell.method_name]
                     smell_instance.smell_history[smell_idx].method_end_ln = method_range[1] 
         
-    # @log_execution
-    # def load_raw_refactorings(self):
-    #     """
-    #     Load raw refactorings from RefMiner output.
-    #     Will load refactorings for active commits only.
-    #     """
-    #     for commit in load_json_file(self.repo_refminer_output_path).get("commits"):
-    #         if any(commit.get("sha1") == active_commit[0] for active_commit in self.active_commits):
-    #             commit_hash = commit.get("sha1")
-    #             refactorings = commit.get("refactorings")
-    #             url = commit.get("url")
-                
-    #             refactoring_instances = []
-    #             for refactoring in refactorings:
-    #                 refactoring_instance = Refactoring(url, refactoring.get("type"), commit_hash)
-    #                 for location in refactoring.get("rightSideLocations"):
-    #                     refactoring_instance.add_change(
-    #                         file_path=location.get("filePath"), 
-    #                         range=(location.get("startLine"), location.get("endLine")), 
-    #                         code_element_type=location.get("codeElementType"), 
-    #                         code_element=location.get("codeElement")
-    #                     )
-    #                 refactoring_instances.append(refactoring_instance)
-                
-    #             self.refactorings[commit_hash] = refactoring_instances    
-    
-    # @log_execution
-    # def map_refactorings_to_smells(self):
-    #     for smell_instance in self.smells_lib:
-    #         smell_instance.removed_by_refactorings = []
-    #         smell_instance.introduced_by_refactorings = []
-            
-    #         for commit_hash, refs_list in self.refactorings.items():
-    #             if smell_instance.introduced: 
-    #                 if commit_hash == smell_instance.introduced.commit_hash:
-    #                     for ref in refs_list: # current version refactorings
-    #                         ref_change_pairs = []
-    #                         for change in ref.changes:
-    #                             if change.file_path and self._check_file_intersection(smell_instance.smell, target_path=change.file_path):
-    #                                 if not hasattr(smell_instance.smell, "range") or smell_instance.smell.range is None:
-    #                                     ref_change_pairs.append(change)
-    #                                 else:
-    #                                     if self._check_smell_ref_intersection(smell_instance.smell.range, change.range):
-    #                                         ref_change_pairs.append(change)
-    #                         if ref_change_pairs:
-    #                             new_ref = Refactoring(ref.url, ref.type_name, ref.commit_hash)
-    #                             new_ref.changes = ref_change_pairs
-    #                             smell_instance.introduced_by_refactorings.append(new_ref)
-    #                         break
-                
-    #             if smell_instance.removed:        
-    #                 if commit_hash == smell_instance.removed.commit_hash:
-    #                     for ref in refs_list: # current version refactorings
-    #                         ref_change_pairs = []
-    #                         for change in ref.changes:
-    #                             if change.file_path and self._check_file_intersection(smell_instance.smell, target_path=change.file_path):
-    #                                 if not hasattr(smell_instance.smell, "range") or smell_instance.smell.range is None:
-    #                                     ref_change_pairs.append(change)
-    #                                 else:
-    #                                     if self._check_smell_ref_intersection(smell_instance.smell.range, change.range):
-    #                                         ref_change_pairs.append(change)
-    #                         if ref_change_pairs:
-    #                             new_ref = Refactoring(ref.url, ref.type_name, ref.commit_hash)
-    #                             new_ref.changes = ref_change_pairs
-    #                             smell_instance.removed_by_refactorings.append(new_ref)          
-    #                         break
-    
-    # def _check_file_intersection(self, smell, target_path: str):
-    #     """
-    #     Check if the smell file path intersects with the target path.
-    #     """
-    #     is_intersected = False
-    #     slash_pkg_path = smell.package_name.replace('.', '/') if hasattr(smell, 'package_name') and smell.package_name else None
-    #     extension = f"{smell.type_name}.java" if hasattr(smell, 'type_name') and smell.type_name else None
+    @log_execution
+    def load_raw_refactorings(self):
+        """
+        Load raw refactorings from RefMiner output.
+        Will load refactorings for active commits only.
+        """
+        refminer_stats = {
+            "total_refactorings": 0,
+            "refactoring_types": {},
+            "commits_analyzed": {
+                "total": 0,
+                "hashes": []
+            }
+        }
         
-    #     if slash_pkg_path:
-    #         if extension:
-    #             if target_path.endswith(f"{slash_pkg_path}/{extension}"):
-    #                 is_intersected = True
-    #         else:
-    #             if slash_pkg_path == "<All packages>":
-    #                 is_intersected = True
-    #             else:
-    #                 target_pkg_path = '/'.join(target_path.split('/')[:-1])
-    #                 target_extension = target_path.split('.')[-1]
-    #                 if target_pkg_path and target_extension:
-    #                     if target_pkg_path.endswith(slash_pkg_path) and target_extension == "java":
-    #                         is_intersected = True
-    #     else:
-    #         print(ColoredStr.orange(f"Invalid input: 'Package Name' and 'Type Name' is missing."))
-            
-    #     return is_intersected
+        for commit in FileUtils.load_json_file(self.repo_refminer_output_path).get("commits"):
+            if any(commit.get("sha1") == active_commit[0] for active_commit in self.active_commits):
+                commit_hash = commit.get("sha1")
+                refs = commit.get("refactorings")
+                url = commit.get("url")
                 
-    # def _check_smell_ref_intersection(self, smell_range: tuple[int, int], refactoring_range: tuple[int, int]):
-    #     """
-    #     Check if the smell range intersects with the refactoring range.
-    #     """
-    #     return not (smell_range[1] < refactoring_range[0] or refactoring_range[1] < smell_range[0])
-
-    # @log_execution
-    # def generate_metadata(self):
-    #     for smell_instance in self.smells_lib:
-    #         kind = smell_instance.smell.kind
-    #         smell_name = smell_instance.smell.smell_name
-    #         if kind not in self.present_smell_types:
-    #             self.present_smell_types[kind] = []
-    #         if smell_name not in self.present_smell_types[kind]:
-    #             self.present_smell_types[kind].append(smell_name)
-
-    #         for ref in smell_instance.removed_by_refactorings:
-    #             ref_type = ref.type_name
-    #             if ref_type not in self.present_refactoring_types:
-    #                 self.present_refactoring_types.append(ref_type)
+                refactoring_instances = []
+                for ref in refs:
+                    refactoring_instance = Refactoring(url, commit_hash, ref.get("type", None), ref.get("description", None))
+                    for location in ref.get("rightSideLocations"):
+                        refactoring_instance.add_change(
+                            file_path=location.get("filePath"), 
+                            range=(location.get("startLine"), location.get("endLine")), 
+                            code_element_type=location.get("codeElementType"), 
+                            code_element=location.get("codeElement"),
+                            description=location.get("description")
+                        )
+                    refactoring_instances.append(refactoring_instance)
+                    
+                    # Update refminer_stats
+                    ref_type = ref.get("type", None)
+                    if ref_type:
+                        refminer_stats["refactoring_types"][ref_type] = refminer_stats["refactoring_types"].get(ref_type, 0) + 1
+                        refminer_stats["total_refactorings"] += 1
+                
+                if commit_hash not in self.refactorings:
+                    self.refactorings[commit_hash] = refactoring_instances
+                else:
+                    self.refactorings[commit_hash].extend(refactoring_instances)
+                
+                refminer_stats["commits_analyzed"]["hashes"].append(commit_hash)
+        
+        refminer_stats["commits_analyzed"]["total"] = len(refminer_stats["commits_analyzed"]["hashes"])
+        self.repo_stats["refminer_stats"] = refminer_stats
+    
+    @log_execution
+    def map_refactorings_to_smells(self):
+        def add_ref_change_pair(smell_instance_refs_list: list, change_pairs):
+            new_ref = Refactoring(ref.url, ref.commit_hash, ref.type_name, ref.description)
+            new_ref.changes = change_pairs
+            smell_instance_refs_list.append(new_ref)
+        
+        for smell_instance in self.pairs_lib:
+            smell_instance.removed_by_refactorings = []
+            smell_instance.introduced_by_refactorings = []
+            introuced_commit_hash = smell_instance.get_introduced_at()
+            removed_commit_hash = smell_instance.get_removed_at()
+            
+            # Map refactorings that introduced the smell
+            for ref in self.refactorings.get(introuced_commit_hash, []):
+                ref_change_pairs = []
+                for change in ref.changes:
+                    # check if the smell file path intersects with the refactoring file path
+                    if change.file_path and self._check_file_intersection(smell_instance.get_file_path(), target_path=change.file_path):
+                        if smell_instance.get_smell_kind() == IMP_SMELL:
+                            if self._check_smell_ref_intersection(smell_instance.introduced_smell().get_range(), change.range):
+                                ref_change_pairs.append(change)
+                        else: # for other smells Arch and Design, no range check in a file
+                            ref_change_pairs.append(change)
+                                
+                if ref_change_pairs:
+                    add_ref_change_pair(smell_instance.introduced_by_refactorings, ref_change_pairs)
+                break
+                
+            # Map refactorings that removed the smell
+            if not smell_instance.is_alive:
+                for ref in self.refactorings.get(removed_commit_hash, []):
+                    ref_change_pairs = []
+                    for change in ref.changes:
+                        if change.file_path and self._check_file_intersection(smell_instance.get_file_path(), target_path=change.file_path):
+                            if smell_instance.get_smell_kind() == IMP_SMELL:
+                                if self._check_smell_ref_intersection(smell_instance.introduced_smell().get_range(), change.range):
+                                    ref_change_pairs.append(change)
+                            else: # for other smells Arch and Design, no range check in a file
+                                ref_change_pairs.append(change)
+                                    
+                    if ref_change_pairs:
+                        add_ref_change_pair(smell_instance.removed_by_refactorings, ref_change_pairs)          
+                    break
+                
+    def calculate_lifespan_stats(self):
+        """
+        Calculate lifespan statistics for the smell instances.
+        """
+        lifespan_stats = {
+            "resolved_smells": 0,
+            "unresolved_smells": 0,   
+            "never_introduced_by_refactorings": 0,
+            "never_resolved_by_refactorings": 0        
+        }
+        
+        for smell_instance in self.pairs_lib:
+            if smell_instance.is_alive:
+                lifespan_stats["unresolved_smells"] += 1
+            else:
+                lifespan_stats["resolved_smells"] += 1
+                
+                if len(smell_instance.introduced_by_refactorings) == 0:
+                    lifespan_stats["never_introduced_by_refactorings"] += 1
+                if len(smell_instance.removed_by_refactorings) == 0:
+                    lifespan_stats["never_resolved_by_refactorings"] += 1
+        
+        self.repo_stats["lifespan_stats"] = lifespan_stats
+    
+    def _check_file_intersection(self, smell_file_path, target_path: str):
+        """
+        Check if the smell file path intersects with the target path.
+        """
+        is_intersected = False
+        
+        if smell_file_path == "<All packages>":
+            is_intersected = True
+        elif target_path.endswith(smell_file_path):
+            is_intersected = True
+        else:
+            target_pkg_path = '/'.join(target_path.split('/')[:-1])
+            target_extension = target_path.split('.')[-1]
+            if target_pkg_path and target_extension:
+                if target_pkg_path.endswith(smell_file_path) and target_extension == "java":
+                    is_intersected = True
+            
+        return is_intersected
+                
+    def _check_smell_ref_intersection(self, smell_range: tuple[int, int], refactoring_range: tuple[int, int]):
+        """
+        Check if the smell range intersects with the refactoring range.
+        """
+        if smell_range == (None, None):
+            return False
+        
+        smell_start, smell_end = smell_range
+        ref_start, ref_end = refactoring_range
+        
+        if smell_end is None:
+            return ref_start <= smell_start <= ref_end
+        
+        return not (smell_end < ref_start or ref_end < smell_start)
 
     @log_execution
-    def save_lifespan_to_json(self, username, repo_name):
+    def save_data_to_json(self, username, repo_name):
+        """
+        Save the smell lifespan data and its statistics to JSON files.
+        """
+        
         relative_repo_path = os.path.relpath(self.repo_path, start=config.ROOT_PATH)
+        sorted_active_commits = sorted(self.active_commits, key=lambda x: x[1])
+        
+        # save smell lifespan data
         data = {
             "metadata": {
                 "path": relative_repo_path,
                 "branch": self.branch,
-                "smell_types": self.present_smell_types,
-                "refactoring_types": self.present_refactoring_types
+                "commit_range": {
+                    "start": sorted_active_commits[0][0],
+                    "end": sorted_active_commits[-1][0]
+                },
             },
             "smell_instances": [smell_instance.to_dict() for smell_instance in self.pairs_lib]
         }
         FileUtils.save_json_file(
             file_path=os.path.join(config.SMELL_LIFESPANS_PATH, f"{repo_name}@{username}.json"), 
             data=data
+        )
+        
+        # save repo stats data
+        stats_data = {
+            "lifespan_stats": self.repo_stats.get("lifespan_stats", None),
+            "designite_stats": self.repo_stats.get("designite_stats", None),
+            "refminer_stats": self.repo_stats.get("refminer_stats", None)
+        }
+        FileUtils.save_json_file(
+            file_path=os.path.join(config.SMELL_LIFESPANS_PATH, f"{repo_name}@{username}.stats.json"), 
+            data=stats_data
         )

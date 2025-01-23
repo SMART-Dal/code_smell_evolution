@@ -1,5 +1,4 @@
 import os
-from enum import Enum
 
 CURR_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -16,6 +15,7 @@ CORPUS_SPECS_PATH  = os.path.join(BIN_PATH, "data", "corpus_spec.json")
 REPOS_PATH = os.path.join(ROOT_PATH, "repos")
 CORPUS_PATH = os.path.join(ROOT_PATH, "corpus")
 OUTPUT_PATH = os.path.join(ROOT_PATH, "output")
+ZIP_LIB = os.path.join(OUTPUT_PATH, "zips")
 
 SMELL_LIFESPANS_PATH = os.path.join(OUTPUT_PATH, "Smells_lifespan_OP")
 

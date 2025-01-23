@@ -72,6 +72,9 @@ class Smell:
     def _validate_smell_kind(self, smell_kind):
         if smell_kind not in VALID_SMELL_KINDS:
             raise ValueError(f"Invalid smell kind: {smell_kind}.")
+        
+    def get_range(self):
+        return self.method_start_ln, self.method_end_ln
     
     def to_dict(self):
         return {
@@ -111,7 +114,7 @@ class Smell:
 
 class CommitInfo:
     def __init__(self, commit_hash, commit_datetime):
-        self.commit_hash = commit_hash
+        self.commit_hash: str = commit_hash
         self.datetime: dt = commit_datetime
     
     def to_dict(self):
@@ -132,8 +135,14 @@ class SmellInstance:
         self.introduced_by_refactorings: list[Refactoring] = []  # Refactorings that introduced the smell
         self.removed_by_refactorings: list[Refactoring] = []  # Refactorings that helped to remove the smell
     
+    def introduced_smell(self) -> Smell:
+        return self.smell_history[0]
+    
     def latest_smell(self) -> Smell:
         return self.smell_history[-1]
+    
+    def get_smell_kind(self):
+        return self.latest_smell().smell_kind
     
     def add_new_version(self, changed_method_start_ln, commit_info):
         new_smell_version = self.latest_smell().copy()
@@ -145,16 +154,26 @@ class SmellInstance:
     def add_removed_version(self, commit_info):
         self.versions.append(commit_info)
         
-    # def introduced_at(self, commit_hash, datetime):
-    #     self.introduced = CommitInfo(commit_hash, datetime)
+    def get_introduced_at(self):
+        """
+        Returns the commit hash where the smell was introduced.
+        """
+        return self.versions[0].commit_hash
     
-    # def removed_at(self, commit_hash, datetime):
-    #     self.removed = CommitInfo(commit_hash, datetime)
-        
-    # def add_moved_at(self, commit_hash, datetime):
-    #     self.move_sequence.append(CommitInfo(commit_hash, datetime))
+    def get_removed_at(self):
+        """
+        Returns the commit hash where the smell was removed.
+        """
+        if self.is_alive:
+            return None
+        else:
+            return self.versions[-1].commit_hash
+
     def get_file_path(self):
         smell = self.latest_smell()
+        if smell.package_name == "<All packages>":
+            return smell.package_name
+        
         slash_pkg_path = smell.package_name.replace('.', '/') if smell.package_name else ''
         extension = f"{smell.type_name}.java" if smell.type_name else ''
         return f"{slash_pkg_path}/{extension}" if slash_pkg_path and extension else ''
@@ -170,174 +189,39 @@ class SmellInstance:
             "removed_by_refactorings": [r.to_dict() for r in self.removed_by_refactorings]
         }
         
-        
-# class _Smell:
-#     def __init__(self, package_name, smell_name, cause):
-#         self.package_name: str = package_name
-#         self.smell_name: str = smell_name
-#         self.cause: str = cause
-        
-# class ArchitectureSmell(_Smell):
-#     kind = "Architecture Smell"
-#     def __init__(self, package_name, smell_name, cause):
-#         super().__init__(package_name, smell_name, cause)
-        
-#     def to_dict(self):
-#         return {
-#             "smell_type": self.kind,
-#             "smell_name": self.smell_name,
-#             "package_name": self.package_name,
-#             "cause": self.cause
-#         }
-    
-#     def __hash__(self):
-#         return hash(tuple(vars(self).values()))
-    
-#     def __eq__(self, other):
-#         if isinstance(other, ArchitectureSmell):
-#             return vars(self) == vars(other)
-#         return False
-        
-# class DesignSmell(_Smell):
-#     kind = "Design Smell"
-#     def __init__(self, package_name, smell_name, cause):
-#         super().__init__(package_name, smell_name, cause)
-#         self.type_name: str = None
-        
-#     def to_dict(self):
-#         return {
-#             "smell_type": self.kind,
-#             "smell_name": self.smell_name,
-#             "package_name": self.package_name,
-#             "type_name": self.type_name,
-#             "cause": self.cause
-#         }
-        
-#     def __hash__(self):
-#         return hash(tuple(vars(self).values()))
-        
-#     def __eq__(self, other):
-#         if isinstance(other, DesignSmell):
-#             return vars(self) == vars(other)
-#         return False
-        
-# class ImplementationSmell(_Smell):
-#     kind = "Implementation Smell"
-#     def __init__(self, package_name, smell_name, cause):
-#         super().__init__(package_name, smell_name, cause)
-#         self.type_name: str = None
-#         self.method_name: str = None
-#         self.start_line: int = None
-#         self.range: tuple = None
-        
-#     def to_dict(self):
-#         return {
-#             "smell_type": self.kind,
-#             "smell_name": self.smell_name,
-#             "package_name": self.package_name,
-#             "type_name": self.type_name,
-#             "method_name": self.method_name,
-#             "cause": self.cause,
-#             "start_line": self.start_line,
-#             "range": self.range
-#         }
-    
-#     def get_file_path(self):
-#         slash_pkg_path = self.package_name.replace('.', '/') if self.package_name else ''
-#         extension = f"{self.type_name}.java" if self.type_name else ''
-#         return f"{slash_pkg_path}/{extension}" if slash_pkg_path and extension else ''
-        
-#     def __hash__(self):
-#         # Exclude start_line from the hash calculation
-#         return hash(tuple(value for key, value in vars(self).items() if key != 'start_line'))
-    
-#     def __eq__(self, other):
-#         if isinstance(other, ImplementationSmell):
-#             return all(
-#                 key == 'start_line' or vars(self)[key] == vars(other)[key]
-#                 for key in vars(self)
-#             )
-#         return False
-        
-# class TestabilitySmell(_Smell):
-#     kind = "Testability Smell"
-#     def __init__(self, package_name, smell_name, cause):
-#         super().__init__(package_name, smell_name, cause)
-#         self.type_name: str = None
-        
-#     def to_dict(self):
-#         return {
-#             "smell_type": self.kind,
-#             "smell_name": self.smell_name,
-#             "package_name": self.package_name,
-#             "type_name": self.type_name,
-#             "cause": self.cause
-#         }
-        
-#     def __hash__(self):
-#         return hash(tuple(vars(self).values()))
-    
-#     def __eq__(self, other):
-#         if isinstance(other, TestabilitySmell):
-#             return vars(self) == vars(other)
-#         return False
-        
-# class TestSmell(_Smell):
-#     kind = "Test Smell"
-#     def __init__(self, package_name, smell_name, cause):
-#         super().__init__(package_name, smell_name, cause)
-#         self.type_name: str = None
-#         self.method_name: str = None
-#         self.range: tuple = None
-    
-#     def to_dict(self):
-#         return {
-#             "smell_type": self.kind,
-#             "smell_name": self.smell_name,
-#             "package_name": self.package_name,
-#             "type_name": self.type_name,
-#             "method_name": self.method_name,
-#             "cause": self.cause,
-#             "range": self.range
-#         }
-        
-#     def __hash__(self):
-#         return hash(tuple(vars(self).values()))
-        
-#     def __eq__(self, other):
-#         if isinstance(other, TestSmell):
-#             return vars(self) == vars(other)
-#         return False
-        
 class _RefactoringChange:
-    def __init__(self, file_path, range, code_element_type, code_element):
+    def __init__(self, file_path, range, code_element_type, code_element, description):
         self.file_path: str = file_path
         self.range: tuple = range
         self.code_element_type: str = code_element_type
         self.code_element: str = code_element
+        self.description: str = description
     
     def to_dict(self):
         return {
             "file_path": self.file_path,
             "range": self.range,
             "code_element_type": self.code_element_type,
-            "code_element": self.code_element
+            "code_element": self.code_element,
+            "description": self.description
         }
 
 class Refactoring:
-    def __init__(self, url, type_name, commit_hash):
+    def __init__(self, url, commit_hash, type_name, description):
         self.url: str = url
         self.type_name: str = type_name
+        self.description: str = description
         self.commit_hash: str = commit_hash
         self.changes: list[_RefactoringChange] = [] # right side locations
         
-    def add_change(self, file_path, range, code_element_type, code_element):
-        self.changes.append(_RefactoringChange(file_path, range, code_element_type, code_element))
+    def add_change(self, file_path, range, code_element_type, code_element, description):
+        self.changes.append(_RefactoringChange(file_path, range, code_element_type, code_element, description))
         
     def to_dict(self):
         return {
             "url": self.url,
             "type_name": self.type_name,
+            "description": self.description,
             "commit_hash": self.commit_hash,
             "changes": [c.to_dict() for c in self.changes]
         }
