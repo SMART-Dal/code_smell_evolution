@@ -1,8 +1,8 @@
 import os
 import json
 import csv
-import subprocess
 import traceback
+import hashlib
 from git import Repo
 
 def log_execution(func):
@@ -60,57 +60,80 @@ class ColoredStr:
     
     @staticmethod
     def cyan(string): return "\033[96m {}\033[00m" .format(string)
-
-def load_json_file(file_path):
-    """
-    Load a JSON file.
-
-    :param file_path: Path to the JSON file.
-    :return: The JSON data or an empty dictionary if the file is not found.
-    """
-    try:
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-    except FileNotFoundError:
-        data = {}
-    return data
-
-def save_json_file(file_path, data):
-    """
-    Save data to a JSON file. If the directory does not exist, create it.
-
-    :param file_path: Path to the JSON file.
-    :param data: Data to be saved.
-    """
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-    with open(file_path, 'w') as file:
-        json.dump(data, file, indent=2)
-
-def load_csv_file(file_path, skipCols=[]):
-    """
-    Load a CSV file and return its contents as a list of dictionaries, skipping specified columns.
-
-    :param file_path: Path to the CSV file.
-    :param skipCols: List of column names to skip.
-    :return: List of dictionaries containing the CSV data.
-    """
-    with open(file_path, 'r') as file:
-        reader = csv.DictReader(file)
-        data = [{k: v for k, v in row.items() if k not in skipCols} for row in reader]
-    return data
-
-def traverse_directory(dir_path):
-    """
-    Traverse a directory and yield all files and subdirectories.
     
-    :param dir_path: Path to the directory.
-    :yield: Paths of files and subdirectories.
+def hashgen(data: str) -> str:
     """
-    for root, dirs, files in os.walk(dir_path):
-        for name in dirs:
-            yield os.path.join(root, name)
-        for name in files:
-            yield os.path.join(root, name)
+    Generate an MD5 hash for the given data.
+
+    Args:
+        data (any): The input data to hash. Can be of any type (e.g., str, int, tuple).
+
+    Returns:
+        str: The hexadecimal representation of the MD5 hash.
+    """
+    if not isinstance(data, str):
+        data = str(data)
+    
+    # Convert the input data to bytes
+    byte_data = data.encode('utf-8')
+    
+    # Create an MD5 hash object and compute the hash
+    md5_hash = hashlib.md5(byte_data)
+    
+    # Return the hexadecimal representation of the hash
+    return md5_hash.hexdigest()
+
+class FileUtils:
+    def load_json_file(file_path):
+        """
+        Load a JSON file.
+
+        :param file_path: Path to the JSON file.
+        :return: The JSON data or an empty dictionary if the file is not found.
+        """
+        try:
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+        except FileNotFoundError:
+            data = {}
+        return data
+
+    def save_json_file(file_path, data):
+        """
+        Save data to a JSON file. If the directory does not exist, create it.
+
+        :param file_path: Path to the JSON file.
+        :param data: Data to be saved.
+        """
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, 'w') as file:
+            json.dump(data, file, indent=2)
+
+    def load_csv_file(file_path, skipCols=[]):
+        """
+        Load a CSV file and return its contents as a list of dictionaries, skipping specified columns.
+
+        :param file_path: Path to the CSV file.
+        :param skipCols: List of column names to skip.
+        :return: List of dictionaries containing the CSV data.
+        """
+        with open(file_path, 'r') as file:
+            reader = csv.DictReader(file)
+            data = [{k: v for k, v in row.items() if k not in skipCols} for row in reader]
+        return data
+
+    def traverse_directory(dir_path):
+        """
+        Traverse a directory and yield all files and subdirectories.
+        
+        :param dir_path: Path to the directory.
+        :yield: Paths of files and subdirectories.
+        """
+        for root, dirs, files in os.walk(dir_path):
+            for name in dirs:
+                yield os.path.join(root, name)
+            for name in files:
+                yield os.path.join(root, name)
 
 class GitManager:
     BASE_URL = "https://github.com/"
@@ -131,16 +154,6 @@ class GitManager:
         except Exception as e:
             print(f"An error occurred while cloning repo: {ColoredStr.red(repo_full_name)}")
             print(f"Error: {ColoredStr.red(e)}")
-            
-    @staticmethod
-    def get_repo_name(repo_path):
-        """
-        Get the name of the repository folder.
-
-        :param repo_path: Path to the local Git repository.
-        :return: The name of the repository folder.
-        """
-        return os.path.basename(os.path.normpath(repo_path))
     
     @staticmethod
     def get_default_branch(repo_path):
@@ -175,10 +188,75 @@ class GitManager:
         return [(commit.hexsha, commit.committed_datetime) for commit in commits]
     
     @staticmethod
-    def checkout_repo(repo_path, commit_hash) -> bool:
-        try:
-            subprocess.run(["git", "checkout", commit_hash], cwd=repo_path)
-            return True
-        except subprocess.CalledProcessError as e:
-            print(f"Error git checkout for repo - {repo_path}, commit - {commit_hash}: Error: {e.stderr}")
-            return False
+    def get_file_content_at_commit(repo_path, commit_hash, file_path):
+        """
+        Get the content of a file at a specific commit.
+
+        :param repo_path: Path to the local Git repository.
+        :param commit_hash: Hash of the commit.
+        :param file_path: Path to the file.
+        :return: The content of the file at the given commit.
+        """
+        repo = Repo(repo_path)
+        commit = repo.commit(commit_hash)
+        tree = commit.tree
+
+        # Traverse the tree to find the file with the ending path
+        for item in tree.traverse():
+            if item.path.endswith(file_path):
+                file_content = item.data_stream.read().decode("utf-8")
+                return file_content
+
+        return None
+    
+class GitUtils:
+    @staticmethod
+    def get_method_end_line_at_commit(repo_path, commit_hash, file_path, method_name, start_line):
+        """
+        Get the end line number of a method in a Java file at a specific commit.
+
+        :param repo_path: Path to the local Git repository.
+        :param commit_hash: Hash of the commit.
+        :param file_path: Path to the Java file.
+        :param method_name: Name of the method.
+        :param start_line: Starting line number of the method.
+        :return: End line number of the method. Returns -1 if not found.
+        """
+        file_content = GitManager.get_file_content_at_commit(repo_path, commit_hash, file_path)
+        
+        if file_content is None:
+            return -1
+        else:
+            return GitUtils.get_method_end_line(file_content, method_name, start_line)
+    
+    @staticmethod
+    def get_method_end_line(file_content: str, method_name, start_line):
+        """
+        Get the end line number of a method in a Java file using regex.
+        
+        Args:
+            file_path (str): Path to the Java file.
+            method_name (str): Name of the method.
+            start_line (int): Starting line number of the method.
+
+        Returns:
+            int: End line number of the method. Returns -1 if not found.
+        """
+        lines = file_content.splitlines()
+
+        # Extract the method body based on curly braces
+        brace_count = 0
+        inside_method = False
+
+        for i, line in enumerate(lines[start_line:], start=start_line):
+            if '{' in line:
+                inside_method = True
+                brace_count += line.count('{') - line.count('}')
+                continue
+
+            if inside_method:
+                brace_count += line.count('{') - line.count('}')
+                if brace_count == 0:
+                    return i  # Current line is the end of the method
+
+        return -1

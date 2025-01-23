@@ -1,7 +1,7 @@
 import os
 import argparse
 import config
-from utils import GitManager, load_json_file, save_json_file
+from utils import GitManager, FileUtils
 import datetime
 
 def prepare_corpus(repo_index=None, clone=True):
@@ -11,7 +11,7 @@ def prepare_corpus(repo_index=None, clone=True):
     if not os.path.exists(config.CORPUS_PATH):
         os.makedirs(config.CORPUS_PATH)
     
-    repo_items: list = load_json_file(config.CORPUS_SPECS_PATH).get("items", [])
+    repo_items: list = FileUtils.load_json_file(config.CORPUS_SPECS_PATH).get("items", [])
     
     #sort by commits ascending
     repo_items = sorted(repo_items, key=lambda x: x.get("commits", 0))
@@ -63,8 +63,8 @@ if __name__ == "__main__":
         corpus_info_filename = f"corpus_info_{current_time}.json"
         
         (username, repo_name, repo_path) = repo
-        corpus_info.update(load_json_file(os.path.join(config.CORPUS_PATH, corpus_info_filename)))
+        corpus_info.update(FileUtils.load_json_file(os.path.join(config.CORPUS_PATH, corpus_info_filename)))
         if username not in corpus_info:
             corpus_info[username] = []
         corpus_info[username].append(repo_name)
-        save_json_file(os.path.join(config.CORPUS_PATH, corpus_info_filename), corpus_info)
+        FileUtils.save_json_file(os.path.join(config.CORPUS_PATH, corpus_info_filename), corpus_info)

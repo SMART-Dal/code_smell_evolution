@@ -1,6 +1,6 @@
 import os
 import config
-from utils import traverse_directory, load_json_file, save_json_file
+from utils import FileUtils
 import matplotlib.pyplot as plt
 import numpy as np
 from models import CorpusMetrics
@@ -17,11 +17,11 @@ class CorpusLifespanAnalyzer:
 
     def process_corpus(self):
         
-        for file_path in traverse_directory(self.lib_path):
+        for file_path in FileUtils.traverse_directory(self.lib_path):
             file_path: str
             if file_path.endswith('.json') and not file_path.endswith('_stats.json'):
                 repo_full_name = os.path.basename(file_path).replace('.json', '')
-                repo_data = load_json_file(file_path)
+                repo_data = FileUtils.load_json_file(file_path)
             
                 avg_commit_span, avg_days_span, smell_metrics = self.generate_repo_metrics(repo_data)
                 self.corpus_metric.add_repo_avg_commit_span(repo_full_name, avg_commit_span)
@@ -56,7 +56,7 @@ class CorpusLifespanAnalyzer:
             "avg_smell_metrics": corpus_avg_smell_metrics,
             "top_ref_per_smell": corpus_top_ref_per_smell
         }
-        save_json_file(os.path.join(self.lib_path, '_corpus_stats.json'), corpus_stats)
+        FileUtils.save_json_file(os.path.join(self.lib_path, '_corpus_stats.json'), corpus_stats)
         
         return corpus_avg_smell_metrics, corpus_top_ref_per_smell
     
@@ -144,7 +144,7 @@ class CorpusLifespanAnalyzer:
             "avg_days_span": repo_avg_days_span,
             "smells_metrics": repo_smells_metrics
         }
-        save_json_file(os.path.join(self.lib_path, repo_stats_filename), repo_stats)
+        FileUtils.save_json_file(os.path.join(self.lib_path, repo_stats_filename), repo_stats)
         
         return repo_avg_commit_span, repo_avg_days_span, repo_smells_metrics
     

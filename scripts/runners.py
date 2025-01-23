@@ -3,7 +3,6 @@ import subprocess
 import os
 import sys
 import config
-from pydriller import Repository
 from utils import log_execution, ColoredStr
 
 class Designite:
@@ -104,18 +103,18 @@ class RefMiner:
                 
         except Exception as e:
             print(ColoredStr.red(f"An error occurred: {e}"))
-class PyDriller:
+# class PyDriller:
     
-    @staticmethod
-    def get_methods_map(repo_path, branch, commits):
-        map = {}
-        for commit in Repository(path_to_repo=repo_path, only_in_branch=branch, only_commits=commits, only_modifications_with_file_types=['.java']).traverse_commits():
-            file_map = {}
-            for file in commit.modified_files:
-                methods_data_map = {}
-                for m in file.methods:
-                    if m.name is not None:
-                        methods_data_map[m.name] = (m.start_line, m.end_line)
-                file_map[file.new_path] = methods_data_map
-            map[commit.hash] = file_map
-        return map
+#     @staticmethod
+#     def get_methods_map(repo_path, branch, commits):
+#         map = {}
+#         for commit in Repository(path_to_repo=repo_path, only_in_branch=branch, only_commits=commits, only_modifications_with_file_types=['.java']).traverse_commits():
+#             file_map = {}
+#             for file in commit.modified_files:
+#                 methods_data_map = {}
+#                 for m in file.methods:
+#                     if m.name is not None:
+#                         methods_data_map[m.name] = (m.start_line, m.end_line)
+#                 file_map[file.new_path] = methods_data_map
+#             map[commit.hash] = file_map
+#         return map

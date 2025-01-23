@@ -1,44 +1,38 @@
 import os
 import shutil
+import re
 from datetime import datetime
-from runners import Designite, RefMiner, PyDriller
+from runners import Designite, RefMiner
 import config
-from utils import GitManager, ColoredStr
-from utils import log_execution, load_csv_file, traverse_directory, load_json_file, save_json_file
-from models import SmellInstance, ArchitectureSmell, DesignSmell, ImplementationSmell, TestabilitySmell, TestSmell, Refactoring
+from utils import GitManager, GitUtils, FileUtils, ColoredStr
+from utils import log_execution
+from models import SmellInstance, Smell, Refactoring, CommitInfo, IMP_SMELL
 from zip import unzip_file
 
 class RepoDataAnalyzer:
-    def __init__(self, idx: int, username: str, repo_name: str, repo_path: str, branch: str):
-        self.idx = idx
-        self.setup_repo_dataset(username, repo_name)
+    def __init__(self, username: str, repo_name: str, repo_path: str, branch: str):
         
         self.repo_path = repo_path
         self.repo_designite_output_path = os.path.join(Designite.output_dir, username, repo_name)
         self.repo_refminer_output_path = os.path.join(RefMiner.output_dir, username, f"{repo_name}.json")
         
+        self.repo_stats = {}
+        
         self.branch = branch
         self.active_commits: list[tuple[str, datetime]] = []
         self.all_commits: list[tuple[str, datetime]] = GitManager.get_all_commits(repo_path, branch)
         
-        self.architecture_smells: dict[str, list[ArchitectureSmell]] = {}
-        self.design_smells: dict[str, list[DesignSmell]] = {}
-        self.implementation_smells: dict[str, list[ImplementationSmell]] = {}
-        self.testability_smells: dict[str, list[TestabilitySmell]] = {}
-        self.test_smells: dict[str, list[TestSmell]] = {}
+        self.smells: dict[str, list[Smell]] = {}                # smells dictionary for each commit
+        self.refactorings: dict[str, list[Refactoring]] = {}    # refactorings dictionary for each commit
         
-        self.refactorings: dict[str, list[Refactoring]] = {}
-        
-        self.smells_lib: list[SmellInstance] = []
-        self.load_raw_smells()
-        self.load_raw_refactorings()
+        self.pairs_lib: list[SmellInstance] = []               # list of smell instances mapped to refactorings
         
         #metadata
         self.present_smell_types = {}
         self.present_refactoring_types = []
         
     @log_execution
-    def setup_repo_dataset(self, username, repo_name):
+    def setup_repo_dataset(self, idx, username, repo_name):
         ZIP_LIB = os.path.join(config.OUTPUT_PATH, "zips")
         if not os.path.exists(ZIP_LIB):
             raise RuntimeError(f"ZIP_LIB directory not found: {ZIP_LIB}")
@@ -50,7 +44,7 @@ class RepoDataAnalyzer:
                 os.makedirs(SMELLS_DIR)
 
             target_dir = os.path.join(Designite.output_dir, username, repo_name)
-            unzip_file(os.path.join(ZIP_LIB, f'smells_{self.idx}.zip'), target_dir)
+            unzip_file(os.path.join(ZIP_LIB, f'smells_{idx}.zip'), target_dir)
         except Exception as e:
             raise RuntimeError(f"Failed to set up smells dataset for {username}/{repo_name}: {e}")
         
@@ -61,7 +55,7 @@ class RepoDataAnalyzer:
                 os.makedirs(REFS_DIR)
                 
             target_dir = os.path.join(RefMiner.output_dir, username)
-            unzip_file(os.path.join(ZIP_LIB, f'refs_{self.idx}.zip'), target_dir)
+            unzip_file(os.path.join(ZIP_LIB, f'refs_{idx}.zip'), target_dir)
         except Exception as e:
             raise RuntimeError(f"Failed to set up refactoring dataset for {username}/{repo_name}: {e}")
         
@@ -97,302 +91,298 @@ class RepoDataAnalyzer:
         Load raw smells from Designite output.
         Will load smells for active commits only.
         """
-        for commit_path in traverse_directory(self.repo_designite_output_path):
+        smells_count = {"Architecture": 0, "Design": 0, "Implementation": 0}
+        
+        for commit_path in FileUtils.traverse_directory(self.repo_designite_output_path):
             commit_hash = os.path.basename(commit_path)
             commit_datetime = next((dt for ch, dt in self.all_commits if ch == commit_hash), None)
             if commit_datetime:
                 self.active_commits.append((commit_hash, commit_datetime))
             
-            csv_files = [
-                ("ArchitectureSmells.csv", self.architecture_smells, ArchitectureSmell),
-                ("DesignSmells.csv", self.design_smells, DesignSmell),
-                ("ImplementationSmells.csv", self.implementation_smells, ImplementationSmell),
-                ("TestabilitySmells.csv", self.testability_smells, TestabilitySmell),
-                ("TestSmells.csv", self.test_smells, TestSmell),
-            ]
-            
-            for csv_file, smell_dict, smell_model in csv_files:
-                csv_path = os.path.join(commit_path, csv_file)
+            for csv in ["ArchitectureSmells.csv", "DesignSmells.csv", "ImplementationSmells.csv"]:
+                csv_path = os.path.join(commit_path, csv)
+                smell_kind = self._get_smell_kind(csv)
                 if os.path.exists(csv_path):
                     smell_instances = []
                     smell_hashes = set()
-                    smells_data = load_csv_file(csv_path, skipCols=config.SMELL_SKIP_COLS)
+                    
+                    smells_data = FileUtils.load_csv_file(csv_path, skipCols=config.SMELL_SKIP_COLS)
                     for smell_row in smells_data:
-                        pakage_name = smell_row.get("Package Name", None)
-                        smell_name = smell_row.get(smell_model.kind, None)
+                        package_name = smell_row.get("Package Name", None)
+                        type_name = smell_row.get("Type Name", None)
+                        method_name = smell_row.get("Method Name", None)
+                        method_start_line = smell_row.get("Method start line no", None)
+                        smell_name = smell_row.get(f"{smell_kind} Smell", None)
                         cause = smell_row.get("Cause of the Smell", None)
-                        smell_instance = smell_model(pakage_name, smell_name, cause)
                         
-                        if smell_model in [DesignSmell, TestabilitySmell]:
-                            smell_instance.type_name = smell_row.get("Type Name", None)
-                        elif smell_model in [TestSmell]:
-                            smell_instance.type_name = smell_row.get("Type Name", None)
-                            smell_instance.method_name = smell_row.get("Method Name", None)
-                        elif smell_model in [ImplementationSmell]:
-                            smell_instance.type_name = smell_row.get("Type Name", None)
-                            smell_instance.method_name = smell_row.get("Method Name", None)
-                            smell_instance.start_line = smell_row.get("Method start line no", None)
+                        smell_instance = Smell(package_name, smell_kind, smell_name, cause)
+                        smell_instance.type_name = type_name
+                        smell_instance.method_name = method_name
+                        smell_instance.method_start_ln = int(method_start_line) if method_start_line else None
                         
-                        if hash(smell_instance) in smell_hashes: # remove duplicates
+                        if smell_instance.full_hash() in smell_hashes: # to remove duplicates
                             continue
                         
                         smell_instances.append(smell_instance)
-                        smell_hashes.add(hash(smell_instance))
+                        smell_hashes.add(smell_instance.full_hash())
                     
-                    smell_dict[commit_hash] = smell_instances
+                    if commit_hash not in self.smells:
+                        self.smells[commit_hash] = []
+                    self.smells[commit_hash].extend(smell_instances)
+                    
+                    # Update smells count
+                    smells_count[smell_kind] += len(smell_instances)
+
+            
+        self.repo_stats["smells_count"] = smells_count
+        self.repo_stats["commits_analyzed_for_smells"] = len(self.active_commits)
+                    
+    def _get_smell_kind(self, csv_name):
+        match = re.match(r"(\w+)Smells\.csv", csv_name)
+        if match:
+            return match.group(1)
+        else:
+            raise ValueError(f"Invalid smell csv name: {csv_name}")
     
     @log_execution
-    def load_raw_refactorings(self):
-        """
-        Load raw refactorings from RefMiner output.
-        Will load refactorings for active commits only.
-        """
-        for commit in load_json_file(self.repo_refminer_output_path).get("commits"):
-            if any(commit.get("sha1") == active_commit[0] for active_commit in self.active_commits):
-                commit_hash = commit.get("sha1")
-                refactorings = commit.get("refactorings")
-                url = commit.get("url")
-                
-                refactoring_instances = []
-                for refactoring in refactorings:
-                    refactoring_instance = Refactoring(url, refactoring.get("type"), commit_hash)
-                    for location in refactoring.get("rightSideLocations"):
-                        refactoring_instance.add_change(
-                            file_path=location.get("filePath"), 
-                            range=(location.get("startLine"), location.get("endLine")), 
-                            code_element_type=location.get("codeElementType"), 
-                            code_element=location.get("codeElement")
-                        )
-                    refactoring_instances.append(refactoring_instance)
-                
-                self.refactorings[commit_hash] = refactoring_instances
-    
-    @log_execution     
     def calculate_smells_lifespan(self):
         sorted_active_commits = sorted(self.active_commits, key=lambda x: x[1])
-        live_smells = {}
+        live_smells: dict[int, SmellInstance] = {}
         
         previous_commit = None
-        for commit_hash, commit_datetime in sorted_active_commits:
-            if previous_commit:
-                # Process smells for each type of smell dictionary
-                for smell_dict in [self.architecture_smells, self.design_smells, self.implementation_smells, self.testability_smells, self.test_smells]:
-                    smell_dict: dict[str, list]
-                    
-                    # Get smells from the previous and current commit for comparison
-                    previous_smells = smell_dict.get(previous_commit, [])
-                    current_smells = smell_dict.get(commit_hash, [])
-                    
-                    added_smells = []
-                    removed_smells = previous_smells.copy()
-                    
-                    for curr_smell in current_smells:
-                        matched = False
-                        for prev_smell in previous_smells:
-                            if isinstance(curr_smell, ImplementationSmell) and isinstance(prev_smell, ImplementationSmell):
-                                if (
-                                    curr_smell.get_file_path() == prev_smell.get_file_path() 
-                                    and curr_smell.method_name == prev_smell.method_name 
-                                    and curr_smell.smell_name == prev_smell.smell_name
-                                    and curr_smell.cause == prev_smell.cause
-                                ):
-                                    if curr_smell.start_line != prev_smell.start_line:
-                                        smell_hash = hash(curr_smell)
-                                        live_smells[smell_hash].add_moved_at(commit_hash, commit_datetime)
-                                        live_smells[smell_hash].smell.start_line = curr_smell.start_line
-                                    
-                                    matched = True
-                                    break
-                            elif curr_smell == prev_smell:
-                                matched = True
-                                break
-                        
-                        if matched:
-                            # Remove from removed smells if it matches
-                            if curr_smell in removed_smells:
-                                removed_smells.remove(curr_smell)
-                        else:
-                            # Add to added smells if no match is found
-                            added_smells.append(curr_smell)
-
-                    
-                    # Handle newly added smells
-                    for smell in added_smells:
-                        smell_inst = SmellInstance(smell)
-                        smell_inst.introduced_at(commit_hash, commit_datetime)
-                        live_smells[hash(smell_inst.smell)] = smell_inst
-                    
-                    # Handle removed smells
-                    for smell in removed_smells:
-                        smell_hash = hash(smell)
-                        if smell_hash in live_smells:
-                            live_smells[smell_hash].removed_at(commit_hash, commit_datetime)
-                            self.smells_lib.append(live_smells[smell_hash])
-                            del live_smells[smell_hash]
-        
-            else:
-                # Handle the first commit, where there is no previous commit for comparison
-                for smell_dict in [self.architecture_smells, self.design_smells, self.implementation_smells, self.testability_smells, self.test_smells]:
-                    current_smells = smell_dict.get(commit_hash, [])
-                    
-                    # Initialize all smells as newly introduced at this commit
-                    for smell in current_smells:
-                        smell_inst = SmellInstance(smell)
-                        smell_inst.introduced_at(commit_hash, commit_datetime)
-                        live_smells[hash(smell)] = smell_inst
+        for curr_commit, curr_commit_datetime in sorted_active_commits:
+            added_smells: list[Smell] = []
+            removed_smells: list[Smell] = []
             
-            previous_commit = commit_hash
-        
-        # Handle any remaining live smells by adding them to the smells library (probably never removed)
-        for smell in live_smells.values():
-            self.smells_lib.append(smell)
-        
+            if previous_commit:
+                 # Get smells from the previous and current commit for comparison
+                prev_smells = self.smells.get(previous_commit, [])
+                curr_smells = self.smells.get(curr_commit, [])
+                prev_smell_hashes = {smell.hash(): smell for smell in prev_smells}
+                curr_smell_hashes = {smell.hash(): smell for smell in curr_smells}
+                
+                # Find added smells
+                for curr_smell_hash, curr_smell in curr_smell_hashes.items():
+                    if curr_smell_hash not in prev_smell_hashes:
+                        added_smells.append(curr_smell)
+                    else:
+                        prev_smell = prev_smell_hashes[curr_smell_hash]
+                        if curr_smell.smell_kind == IMP_SMELL and prev_smell.smell_kind == IMP_SMELL:
+                            # Check if the smell has moved
+                            if curr_smell.method_start_ln != prev_smell.method_start_ln:
+                                live_smells[curr_smell_hash].add_new_version(
+                                    changed_method_start_ln=curr_smell.method_start_ln, 
+                                    commit_info=CommitInfo(curr_commit, curr_commit_datetime)
+                                )
+
+                # Find removed smells
+                for prev_smell_hash, prev_smell in prev_smell_hashes.items():
+                    if prev_smell_hash not in curr_smell_hashes:
+                        removed_smells.append(prev_smell)
+                
+            else:       # Handle the first commit, where there is no previous commit for comparison
+                added_smells = self.smells.get(curr_commit, [])
+            
+            # Add new added smells to live_smells
+            for smell in added_smells:
+                smell_inst = SmellInstance(smell, CommitInfo(curr_commit, curr_commit_datetime))
+                live_smells[smell_inst.latest_smell().hash()] = smell_inst
+                
+            # Pop removed smells from live_smells
+            for smell in removed_smells:
+                if smell.hash() in live_smells:
+                    smell_inst = live_smells[smell.hash()]
+                    smell_inst.add_removed_version(CommitInfo(curr_commit, curr_commit_datetime))
+                    smell_inst.is_alive = False
+                    self.pairs_lib.append(smell_inst)
+                    live_smells.pop(smell_inst.latest_smell().hash())
+
+            previous_commit = curr_commit
+            
+        # Handle any remaining live smells (probably never removed)
+        for _, smell_inst in live_smells.items():
+            self.pairs_lib.append(smell_inst)
+            
         # NOTE: optional sorting by introduced date
-        self.smells_lib.sort(key=lambda x: x.introduced.datetime)
+        self.pairs_lib.sort(key=lambda x: x.versions[0].datetime)
         
         self._calculate_lifespan_gap()
-        self._calc_smell_range()
+        self._calculate_smell_methods_end_line()
     
     @log_execution
     def _calculate_lifespan_gap(self):
-        for smell in self.smells_lib:
-            if smell.introduced and smell.removed:
-                if smell.introduced.datetime and smell.removed.datetime:
-                    smell.days_span = (smell.removed.datetime - smell.introduced.datetime).days
-                    introduced_index = next(i for i, (ch, _) in enumerate(self.all_commits) if ch == smell.introduced.commit_hash)
-                    removed_index = next(i for i, (ch, _) in enumerate(self.all_commits) if ch == smell.removed.commit_hash)
-                    smell.commit_span =  introduced_index - removed_index
+        for smell_instance in self.pairs_lib:
+            if not smell_instance.is_alive:
+                smell_instance.days_span = (smell_instance.versions[-1].datetime - smell_instance.versions[0].datetime).days
+                introduced_index = next(i for i, (ch, _) in enumerate(self.all_commits) if ch == smell_instance.versions[0].commit_hash)
+                removed_index = next(i for i, (ch, _) in enumerate(self.all_commits) if ch == smell_instance.versions[-1].commit_hash)
+                smell_instance.commit_span =  introduced_index - removed_index
+                
+    @log_execution
+    def _calculate_smell_methods_end_line(self):
+        methods_info_map = {}
+        
+        # collects methods that require end line calculation
+        for smell_instance in self.pairs_lib:
+            for smell_idx, smell in enumerate(smell_instance.smell_history):
+                smell_commit_hash = smell_instance.versions[smell_idx].commit_hash
+                file_path = smell_instance.get_file_path()
+                if smell.method_start_ln and smell.method_name:
+                    if smell_commit_hash not in methods_info_map:
+                        methods_info_map[smell_commit_hash] = {}
+                    if file_path not in methods_info_map[smell_commit_hash]:
+                        methods_info_map[smell_commit_hash][file_path] = {}
+                    methods_info_map[smell_commit_hash][file_path][smell.method_name] = [smell.method_start_ln, None]
                     
-    @log_execution
-    def _calc_smell_range(self):
-        # pydriller missing nested methods
-        
-        commits_to_cover = [commit[0] for commit in self.active_commits]
-        methods_data_map: dict[str, dict] = PyDriller.get_methods_map(self.repo_path, self.branch, commits_to_cover)
-        
-        for smell_instance in self.smells_lib:
-            if isinstance(smell_instance.smell, (ImplementationSmell, TestSmell)):
-                smell_method_name = smell_instance.smell.method_name
-            else:
-                smell_method_name = None
-            
-            if len(smell_instance.move_sequence) > 0:
-                latest_commit_hash = smell_instance.move_sequence[-1].commit_hash
-            else:
-                latest_commit_hash = smell_instance.introduced.commit_hash
-            for file_path, methods_data in methods_data_map.get(latest_commit_hash, {}).items():
-                file_path: str
-                methods_data: dict
-                if file_path and self._check_file_intersection(smell_instance.smell, target_path=file_path):
-                    for method_name, method_range in methods_data.items():
-                        method_name: str
-                        method_range: tuple
-                        method_name_split = method_name.split('::')
-                        if smell_method_name in method_name_split:
-                            smell_instance.smell.range = method_range
-                            break
-        
-    @log_execution
-    def map_refactorings_to_smells(self):
-        for smell_instance in self.smells_lib:
-            smell_instance.removed_by_refactorings = []
-            smell_instance.introduced_by_refactorings = []
-            
-            for commit_hash, refs_list in self.refactorings.items():
-                if smell_instance.introduced: 
-                    if commit_hash == smell_instance.introduced.commit_hash:
-                        for ref in refs_list: # current version refactorings
-                            ref_change_pairs = []
-                            for change in ref.changes:
-                                if change.file_path and self._check_file_intersection(smell_instance.smell, target_path=change.file_path):
-                                    if not hasattr(smell_instance.smell, "range") or smell_instance.smell.range is None:
-                                        ref_change_pairs.append(change)
-                                    else:
-                                        if self._check_smell_ref_intersection(smell_instance.smell.range, change.range):
-                                            ref_change_pairs.append(change)
-                            if ref_change_pairs:
-                                new_ref = Refactoring(ref.url, ref.type_name, ref.commit_hash)
-                                new_ref.changes = ref_change_pairs
-                                smell_instance.introduced_by_refactorings.append(new_ref)
-                            break
+        # calculates end line for each method
+        for commit_hash, methods_data in methods_info_map.items():
+            for file_path, methods_data in methods_data.items():
+                for method_name, method_range in methods_data.items():
+                    method_start_ln = method_range[0]
+                    method_end_ln = GitUtils.get_method_end_line_at_commit(self.repo_path, commit_hash, file_path, method_name, method_start_ln)
+                    
+                    if method_end_ln == -1:
+                        print(ColoredStr.orange(f"Failed to find method_end_ln: {commit_hash} | {file_path} | {method_name}"))
+                        method_end_ln = None
+                    
+                    methods_data[method_name][1] = method_end_ln
                 
-                if smell_instance.removed:        
-                    if commit_hash == smell_instance.removed.commit_hash:
-                        for ref in refs_list: # current version refactorings
-                            ref_change_pairs = []
-                            for change in ref.changes:
-                                if change.file_path and self._check_file_intersection(smell_instance.smell, target_path=change.file_path):
-                                    if not hasattr(smell_instance.smell, "range") or smell_instance.smell.range is None:
-                                        ref_change_pairs.append(change)
-                                    else:
-                                        if self._check_smell_ref_intersection(smell_instance.smell.range, change.range):
-                                            ref_change_pairs.append(change)
-                            if ref_change_pairs:
-                                new_ref = Refactoring(ref.url, ref.type_name, ref.commit_hash)
-                                new_ref.changes = ref_change_pairs
-                                smell_instance.removed_by_refactorings.append(new_ref)          
-                            break
+        # updates smell instances with end line info
+        for smell_instance in self.pairs_lib:
+            for smell_idx, smell in enumerate(smell_instance.smell_history):
+                smell_commit_hash = smell_instance.versions[smell_idx].commit_hash
+                file_path = smell_instance.get_file_path()
+                if smell.method_start_ln and smell.method_name:
+                    method_range = methods_info_map[smell_commit_hash][file_path][smell.method_name]
+                    smell_instance.smell_history[smell_idx].method_end_ln = method_range[1] 
+        
+    # @log_execution
+    # def load_raw_refactorings(self):
+    #     """
+    #     Load raw refactorings from RefMiner output.
+    #     Will load refactorings for active commits only.
+    #     """
+    #     for commit in load_json_file(self.repo_refminer_output_path).get("commits"):
+    #         if any(commit.get("sha1") == active_commit[0] for active_commit in self.active_commits):
+    #             commit_hash = commit.get("sha1")
+    #             refactorings = commit.get("refactorings")
+    #             url = commit.get("url")
+                
+    #             refactoring_instances = []
+    #             for refactoring in refactorings:
+    #                 refactoring_instance = Refactoring(url, refactoring.get("type"), commit_hash)
+    #                 for location in refactoring.get("rightSideLocations"):
+    #                     refactoring_instance.add_change(
+    #                         file_path=location.get("filePath"), 
+    #                         range=(location.get("startLine"), location.get("endLine")), 
+    #                         code_element_type=location.get("codeElementType"), 
+    #                         code_element=location.get("codeElement")
+    #                     )
+    #                 refactoring_instances.append(refactoring_instance)
+                
+    #             self.refactorings[commit_hash] = refactoring_instances    
     
-    def _check_file_intersection(self, smell, target_path: str):
-        """
-        Check if the smell file path intersects with the target path.
-        """
-        is_intersected = False
-        slash_pkg_path = smell.package_name.replace('.', '/') if hasattr(smell, 'package_name') and smell.package_name else None
-        extension = f"{smell.type_name}.java" if hasattr(smell, 'type_name') and smell.type_name else None
-        
-        if slash_pkg_path:
-            if extension:
-                if target_path.endswith(f"{slash_pkg_path}/{extension}"):
-                    is_intersected = True
-            else:
-                if slash_pkg_path == "<All packages>":
-                    is_intersected = True
-                else:
-                    target_pkg_path = '/'.join(target_path.split('/')[:-1])
-                    target_extension = target_path.split('.')[-1]
-                    if target_pkg_path and target_extension:
-                        if target_pkg_path.endswith(slash_pkg_path) and target_extension == "java":
-                            is_intersected = True
-        else:
-            print(ColoredStr.orange(f"Invalid input: 'Package Name' and 'Type Name' is missing."))
+    # @log_execution
+    # def map_refactorings_to_smells(self):
+    #     for smell_instance in self.smells_lib:
+    #         smell_instance.removed_by_refactorings = []
+    #         smell_instance.introduced_by_refactorings = []
             
-        return is_intersected
+    #         for commit_hash, refs_list in self.refactorings.items():
+    #             if smell_instance.introduced: 
+    #                 if commit_hash == smell_instance.introduced.commit_hash:
+    #                     for ref in refs_list: # current version refactorings
+    #                         ref_change_pairs = []
+    #                         for change in ref.changes:
+    #                             if change.file_path and self._check_file_intersection(smell_instance.smell, target_path=change.file_path):
+    #                                 if not hasattr(smell_instance.smell, "range") or smell_instance.smell.range is None:
+    #                                     ref_change_pairs.append(change)
+    #                                 else:
+    #                                     if self._check_smell_ref_intersection(smell_instance.smell.range, change.range):
+    #                                         ref_change_pairs.append(change)
+    #                         if ref_change_pairs:
+    #                             new_ref = Refactoring(ref.url, ref.type_name, ref.commit_hash)
+    #                             new_ref.changes = ref_change_pairs
+    #                             smell_instance.introduced_by_refactorings.append(new_ref)
+    #                         break
                 
-    def _check_smell_ref_intersection(self, smell_range: tuple[int, int], refactoring_range: tuple[int, int]):
-        """
-        Check if the smell range intersects with the refactoring range.
-        """
-        return not (smell_range[1] < refactoring_range[0] or refactoring_range[1] < smell_range[0])
+    #             if smell_instance.removed:        
+    #                 if commit_hash == smell_instance.removed.commit_hash:
+    #                     for ref in refs_list: # current version refactorings
+    #                         ref_change_pairs = []
+    #                         for change in ref.changes:
+    #                             if change.file_path and self._check_file_intersection(smell_instance.smell, target_path=change.file_path):
+    #                                 if not hasattr(smell_instance.smell, "range") or smell_instance.smell.range is None:
+    #                                     ref_change_pairs.append(change)
+    #                                 else:
+    #                                     if self._check_smell_ref_intersection(smell_instance.smell.range, change.range):
+    #                                         ref_change_pairs.append(change)
+    #                         if ref_change_pairs:
+    #                             new_ref = Refactoring(ref.url, ref.type_name, ref.commit_hash)
+    #                             new_ref.changes = ref_change_pairs
+    #                             smell_instance.removed_by_refactorings.append(new_ref)          
+    #                         break
+    
+    # def _check_file_intersection(self, smell, target_path: str):
+    #     """
+    #     Check if the smell file path intersects with the target path.
+    #     """
+    #     is_intersected = False
+    #     slash_pkg_path = smell.package_name.replace('.', '/') if hasattr(smell, 'package_name') and smell.package_name else None
+    #     extension = f"{smell.type_name}.java" if hasattr(smell, 'type_name') and smell.type_name else None
+        
+    #     if slash_pkg_path:
+    #         if extension:
+    #             if target_path.endswith(f"{slash_pkg_path}/{extension}"):
+    #                 is_intersected = True
+    #         else:
+    #             if slash_pkg_path == "<All packages>":
+    #                 is_intersected = True
+    #             else:
+    #                 target_pkg_path = '/'.join(target_path.split('/')[:-1])
+    #                 target_extension = target_path.split('.')[-1]
+    #                 if target_pkg_path and target_extension:
+    #                     if target_pkg_path.endswith(slash_pkg_path) and target_extension == "java":
+    #                         is_intersected = True
+    #     else:
+    #         print(ColoredStr.orange(f"Invalid input: 'Package Name' and 'Type Name' is missing."))
+            
+    #     return is_intersected
+                
+    # def _check_smell_ref_intersection(self, smell_range: tuple[int, int], refactoring_range: tuple[int, int]):
+    #     """
+    #     Check if the smell range intersects with the refactoring range.
+    #     """
+    #     return not (smell_range[1] < refactoring_range[0] or refactoring_range[1] < smell_range[0])
 
-    @log_execution
-    def generate_metadata(self):
-        for smell_instance in self.smells_lib:
-            kind = smell_instance.smell.kind
-            smell_name = smell_instance.smell.smell_name
-            if kind not in self.present_smell_types:
-                self.present_smell_types[kind] = []
-            if smell_name not in self.present_smell_types[kind]:
-                self.present_smell_types[kind].append(smell_name)
+    # @log_execution
+    # def generate_metadata(self):
+    #     for smell_instance in self.smells_lib:
+    #         kind = smell_instance.smell.kind
+    #         smell_name = smell_instance.smell.smell_name
+    #         if kind not in self.present_smell_types:
+    #             self.present_smell_types[kind] = []
+    #         if smell_name not in self.present_smell_types[kind]:
+    #             self.present_smell_types[kind].append(smell_name)
 
-            for ref in smell_instance.removed_by_refactorings:
-                ref_type = ref.type_name
-                if ref_type not in self.present_refactoring_types:
-                    self.present_refactoring_types.append(ref_type)
+    #         for ref in smell_instance.removed_by_refactorings:
+    #             ref_type = ref.type_name
+    #             if ref_type not in self.present_refactoring_types:
+    #                 self.present_refactoring_types.append(ref_type)
 
     @log_execution
     def save_lifespan_to_json(self, username, repo_name):
         relative_repo_path = os.path.relpath(self.repo_path, start=config.ROOT_PATH)
         data = {
             "metadata": {
-            "path": relative_repo_path,
-            "branch": self.branch,
-            "smell_types": self.present_smell_types,
-            "refactoring_types": self.present_refactoring_types
+                "path": relative_repo_path,
+                "branch": self.branch,
+                "smell_types": self.present_smell_types,
+                "refactoring_types": self.present_refactoring_types
             },
-            "smell_instances": [smell_instance.to_dict() for smell_instance in self.smells_lib]
+            "smell_instances": [smell_instance.to_dict() for smell_instance in self.pairs_lib]
         }
-        save_json_file(
+        FileUtils.save_json_file(
             file_path=os.path.join(config.SMELL_LIFESPANS_PATH, f"{repo_name}@{username}.json"), 
             data=data
         )
