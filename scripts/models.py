@@ -52,7 +52,7 @@ class CorpusMetrics:
 ARCH_SMELL = "Architecture"
 DESIGN_SMELL = "Design"
 IMP_SMELL = "Implementation"
-VALID_SMELL_KINDS = frozenset({ARCH_SMELL, DESIGN_SMELL, IMP_SMELL})
+VALID_SMELL_KINDS = frozenset({DESIGN_SMELL, IMP_SMELL})
     
 class Smell:
     def __init__(self, package_name, smell_kind, smell_name, cause):
@@ -65,8 +65,8 @@ class Smell:
         self.method_start_ln: int = None
         self.method_end_ln: int = None
         
-        self.smell_kind: str = smell_kind  # Architecture, Design, Implementation
-        self.smell_name: str = smell_name  # e.g. "God Class", "Feature Envy", "Long Method", "Eager Test"
+        self.smell_kind: str = smell_kind  # Design, Implementation
+        self.smell_name: str = smell_name
         self.cause: str = cause
 
     def _validate_smell_kind(self, smell_kind):
