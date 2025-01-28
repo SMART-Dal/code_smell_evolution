@@ -14,7 +14,7 @@
 repo_name="code_smell_evolution_corpus_analysis"
 
 # Define the list of single integer arguments
-ARG_VALUES=(0 1 2 3 4 5 6 7 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23)
+ARG_VALUES=(22 24 25 26 27 29 31 32 33 34 35 36 37 39)
 
 ARG=${ARG_VALUES[$SLURM_ARRAY_TASK_ID]}
 
@@ -40,16 +40,11 @@ pip install --no-index --upgrade pip
 pip install  --no-index -r requirements.txt
 pip install matplotlib numpy --no-index
 
-# Install pydriller
-echo ">>> Installing pydriller."
-chmod +x install_pydriller.sh
-bash install_pydriller.sh "$SLURM_TMPDIR"
-
 # -------------------------------------------------------
 echo -e "\n\n\n\n\n>>> Executing the script."
 # -u is for unbuffered output so the print statements print it to the slurm out file
 # & at the end is to run the script in background. Unless it's running in background we can't trap the signal
-python -u scripts/analysis.py &
+python -u scripts/analysis.py $ARG &
 
 PID=$!
 wait ${PID}

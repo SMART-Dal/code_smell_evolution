@@ -1,4 +1,5 @@
 import os
+import argparse
 from corpus import prepare_corpus
 from data_analyzer import RepoDataAnalyzer
 from lifespan_analyzer import CorpusLifespanAnalyzer
@@ -43,18 +44,22 @@ def analyze_corpus_data():
         traceback.print_exc()
 
 if __name__ == "__main__":
-    CURR_DIR = os.path.dirname(os.path.realpath(__file__))
-    # idxs = [0, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 23]
-    idxs = [18] # for manual testing
+    parser = argparse.ArgumentParser(description="Run analysis on repo index")
+    parser.add_argument("idx", type=int, help="index of the repository to process.")
+    args = parser.parse_args()
     
-    for idx in idxs:
-        (username, repo_name, repo_path) = prepare_corpus(idx, clone=False)
-        
-        default_branch = GitManager.get_default_branch(repo_path)
-        if not default_branch:
-            print(ColoredStr.red(f"Failed to get default branch for repo: {repo_path}"))
-        else:
-            analyze_repo_data(idx, username, repo_name, repo_path, branch=default_branch)
+    CURR_DIR = os.path.dirname(os.path.realpath(__file__))
+    # idxs = [22, 24, 25, 26, 27, 29, 31, 32, 33, 34, 35, 36, 37, 39]
+    # idxs = [18] # for manual testing
+    
+    # for idx in idxs:
+    (username, repo_name, repo_path) = prepare_corpus(args.idx, clone=False)
+    
+    default_branch = GitManager.get_default_branch(repo_path)
+    if not default_branch:
+        print(ColoredStr.red(f"Failed to get default branch for repo: {repo_path}"))
+    else:
+        analyze_repo_data(args.idx, username, repo_name, repo_path, branch=default_branch)
         
     # analyze_corpus_data()
     

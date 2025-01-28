@@ -4,7 +4,7 @@
 #SBATCH --ntasks-per-node=8
 
 #SBATCH --mem-per-cpu=4G
-#SBATCH --array=0-3             # Array range for 6 tasks
+#SBATCH --array=0-2             # Array range for 6 tasks
 #SBATCH --time=15:00          # Process limit for each task
 
 #SBATCH --account=def-tusharma
@@ -13,7 +13,7 @@
 
 repo_name="code_smell_evolution_CORPUS"
 
-repo_indices=(26 27 28 35)
+repo_indices=(42 43 44)
 
 # Get the argument for this task ID
 ARG=${repo_indices[$SLURM_ARRAY_TASK_ID]}
