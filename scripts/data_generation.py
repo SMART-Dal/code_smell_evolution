@@ -63,7 +63,7 @@ def execute_refminer(idx, username, repo_name, repo_path, branch):
                 print(f"Error: Target path '{target_dir}' does not exist.")
                 exit(1)
             
-            zip_dir(target_dir, os.path.join(config.ZIP_LIB, f'smells_{idx}.zip')) 
+            zip_dir(target_dir, os.path.join(config.ZIP_LIB, f'refs_{idx}.zip')) 
             
             # Flush the refactoring dataset directory after zipping
             if os.path.isdir(target_dir):
@@ -97,6 +97,7 @@ if __name__ == "__main__":
             execute_refminer(REPO_IDX, username, repo_name, repo_path, branch=default_branch)
     else:
         print(ColoredStr.red(f"Failed to get default branch for repo: {repo_path}"))
+        traceback.print_exc()
         
             
         
