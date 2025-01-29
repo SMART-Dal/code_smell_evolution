@@ -16,6 +16,7 @@ REPOS_PATH = os.path.join(ROOT_PATH, "repos")
 CORPUS_PATH = os.path.join(ROOT_PATH, "corpus")
 OUTPUT_PATH = os.path.join(ROOT_PATH, "output")
 ZIP_LIB = os.path.join(OUTPUT_PATH, "zips")
+PLOTS_PATH = os.path.join(OUTPUT_PATH, "plots")
 
 SMELL_REF_MAP_PATH = os.path.join(OUTPUT_PATH, "smell_ref_map")
 

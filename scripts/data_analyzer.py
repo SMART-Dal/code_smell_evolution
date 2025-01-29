@@ -363,30 +363,6 @@ class RepoDataAnalyzer:
                             else: # for other smells Arch and Design, no range check in a file
                                 smell_instance.removed_by_refactorings.append(ref)
                                 break
-                
-    def calculate_lifespan_stats(self):
-        """
-        Calculate lifespan statistics for the smell instances.
-        """
-        lifespan_stats = {
-            "resolved_smells": 0,
-            "unresolved_smells": 0,   
-            "never_introduced_by_refactorings": 0,
-            "never_resolved_by_refactorings": 0
-        }
-        
-        for smell_instance in self.pairs_lib:
-            if smell_instance.is_alive:
-                lifespan_stats["unresolved_smells"] += 1
-            else:
-                lifespan_stats["resolved_smells"] += 1
-                
-                if len(smell_instance.introduced_by_refactorings) == 0:
-                    lifespan_stats["never_introduced_by_refactorings"] += 1
-                if len(smell_instance.removed_by_refactorings) == 0:
-                    lifespan_stats["never_resolved_by_refactorings"] += 1
-        
-        self.repo_stats["lifespan_stats"] = lifespan_stats
     
     def _check_file_intersection(self, smell_file_path, target_path: str):
         """
@@ -450,7 +426,6 @@ class RepoDataAnalyzer:
         
         # save repo stats data
         stats_data = {
-            "lifespan_stats": self.repo_stats.get("lifespan_stats", None),
             "designite_stats": self.repo_stats.get("designite_stats", None),
             "refminer_stats": self.repo_stats.get("refminer_stats", None)
         }
