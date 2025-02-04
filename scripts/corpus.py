@@ -3,6 +3,7 @@ import argparse
 import config
 from utils import GitManager, FileUtils
 import datetime
+import shutil
 
 def prepare_corpus(repo_index=None, clone=True):
     if repo_index is None:
@@ -35,6 +36,16 @@ def prepare_corpus(repo_index=None, clone=True):
     except Exception as e:
         print(e)
         return None
+    
+def flush_repo(repo_index):
+    (_, _, repo_path) = prepare_corpus(repo_index, clone=False)
+    
+    try:
+        if os.path.exists(repo_path):
+            shutil.rmtree(repo_path)
+            print(f"Successfully flushed repository at {repo_path}")
+    except Exception as e:
+        print(e)
 
 def prepare_from_corpus_info(corpus_info: dict):
     if not os.path.exists(config.CORPUS_PATH):
