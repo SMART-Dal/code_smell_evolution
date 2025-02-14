@@ -107,6 +107,6 @@ if __name__ == "__main__":
     sample_generator = SampleGenerator()
     sample_generator.build_samples()
     print(f"Total samples: {len(sample_generator.corpus)}")
-    final_samples = sample_generator.pick_random_samples(num_samples=50)
+    final_samples = sample_generator.pick_random_samples(num_samples=20)
     print(f"Selected samples: {len(final_samples)}")
     sample_generator.save_samples_to_json(final_samples)

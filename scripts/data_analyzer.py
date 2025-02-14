@@ -4,9 +4,9 @@ import re
 from datetime import datetime
 from runners import Designite, RefMiner
 import config
-from utils import GitManager, GitUtils, FileUtils, ColoredStr
+from utils import GitManager, GitUtils, FileUtils
 from utils import log_execution
-from models import SmellInstance, Smell, Refactoring, CommitInfo, ARCH_SMELL, DESIGN_SMELL, IMP_SMELL
+from models import SmellInstance, Smell, Refactoring, CommitInfo, DESIGN_SMELL, IMP_SMELL
 from zip import unzip_file
 
 class RepoDataAnalyzer:
@@ -302,8 +302,16 @@ class RepoDataAnalyzer:
                 refactoring_instances = []
                 for ref in refs:
                     refactoring_instance = Refactoring(url, commit_hash, ref.get("type", None), ref.get("description", None))
+                    for location in ref.get("leftSideLocations"):
+                        refactoring_instance.add_right_change(
+                            file_path=location.get("filePath"), 
+                            range=(location.get("startLine"), location.get("endLine")), 
+                            code_element_type=location.get("codeElementType"), 
+                            code_element=location.get("codeElement"),
+                            description=location.get("description")
+                        )
                     for location in ref.get("rightSideLocations"):
-                        refactoring_instance.add_change(
+                        refactoring_instance.add_right_change(
                             file_path=location.get("filePath"), 
                             range=(location.get("startLine"), location.get("endLine")), 
                             code_element_type=location.get("codeElementType"), 
@@ -339,11 +347,11 @@ class RepoDataAnalyzer:
             # Map refactorings that introduced the smell
             refs = self.refactorings.get(introuced_commit_hash, [])
             for ref in refs:
-                for c in ref.changes:
+                for rc in ref.right_changes:
                     # check if the smell file path intersects with the refactoring file path
-                    if c.file_path and self._check_file_intersection(smell_instance.get_file_path(), target_path=c.file_path):
+                    if rc.file_path and self._check_file_intersection(smell_instance.get_file_path(), target_path=rc.file_path):
                         if smell_instance.get_smell_kind() == IMP_SMELL:
-                            if self._check_smell_ref_intersection(smell_instance.introduced_smell().get_range(), c.range):
+                            if self._check_smell_ref_intersection(smell_instance.introduced_smell().get_range(), rc.range):
                                 smell_instance.introduced_by_refactorings.append(ref)
                                 break
                         else: # for other smells Arch and Design, no range check in a file
@@ -354,10 +362,10 @@ class RepoDataAnalyzer:
             if not smell_instance.is_alive:
                 refs = self.refactorings.get(removed_commit_hash, [])
                 for ref in refs:
-                    for c in ref.changes:
-                        if c.file_path and self._check_file_intersection(smell_instance.get_file_path(), target_path=c.file_path):
+                    for lc in ref.left_changes:
+                        if lc.file_path and self._check_file_intersection(smell_instance.get_file_path(), target_path=lc.file_path):
                             if smell_instance.get_smell_kind() == IMP_SMELL:
-                                if self._check_smell_ref_intersection(smell_instance.introduced_smell().get_range(), c.range):
+                                if self._check_smell_ref_intersection(smell_instance.latest_smell().get_range(), lc.range):
                                     smell_instance.removed_by_refactorings.append(ref)
                                     break
                             else: # for other smells Arch and Design, no range check in a file

@@ -212,10 +212,14 @@ class Refactoring:
         self.type_name: str = type_name
         self.description: str = description
         self.commit_hash: str = commit_hash
-        self.changes: list[_RefactoringChange] = [] # right side locations
+        self.left_changes: list[_RefactoringChange] = []
+        self.right_changes: list[_RefactoringChange] = []
         
-    def add_change(self, file_path, range, code_element_type, code_element, description):
-        self.changes.append(_RefactoringChange(file_path, range, code_element_type, code_element, description))
+    def add_left_change(self, file_path, range, code_element_type, code_element, description):
+        self.left_changes.append(_RefactoringChange(file_path, range, code_element_type, code_element, description))
+        
+    def add_right_change(self, file_path, range, code_element_type, code_element, description):
+        self.right_changes.append(_RefactoringChange(file_path, range, code_element_type, code_element, description))
         
     def to_dict(self):
         return {
@@ -223,5 +227,6 @@ class Refactoring:
             "type_name": self.type_name,
             "description": self.description,
             "commit_hash": self.commit_hash,
-            "changes": [c.to_dict() for c in self.changes]
+            "left_changes": [c.to_dict() for c in self.left_changes],
+            "right_changes": [c.to_dict() for c in self.right_changes]
         }
