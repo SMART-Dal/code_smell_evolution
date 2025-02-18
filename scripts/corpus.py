@@ -46,21 +46,6 @@ def flush_repo(repo_index):
             print(f"Successfully flushed repository at {repo_path}")
     except Exception as e:
         print(e)
-
-def prepare_from_corpus_info(corpus_info: dict):
-    if not os.path.exists(config.CORPUS_PATH):
-        os.makedirs(config.CORPUS_PATH)
-        
-    try:
-        for username, repos in corpus_info.items():
-            for repo in repos:
-                GitManager.clone_repo(
-                    repo_path=os.path.join(config.CORPUS_PATH, username, repo),
-                    repo_full_name=f"{username}/{repo}"
-                )
-                
-    except Exception as e:
-        print(e)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Clone repositories from corpus list")

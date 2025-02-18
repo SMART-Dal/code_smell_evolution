@@ -4,8 +4,8 @@
 #SBATCH --ntasks-per-node=8
 
 #SBATCH --mem-per-cpu=32G
-#SBATCH --array=0-3             # Array range for 6 tasks
-#SBATCH --time=10:00:00          # Process limit for each task
+#SBATCH --array=0-9             # Array range for 6 tasks
+#SBATCH --time=24:00:00          # Process limit for each task
 
 #SBATCH --account=def-tusharma
 #SBATCH --mail-user=gautam@dal.ca
@@ -14,7 +14,7 @@
 repo_name="code_smell_evolution_collect_smell"
 
 # Define the list of single integer arguments for the 6 tasks
-ARG_VALUES=(26 27 28 35)
+ARG_VALUES=(61 62 63 64 65 66 67 68 69 70)
 
 # Get the argument for this task ID
 ARG=${ARG_VALUES[$SLURM_ARRAY_TASK_ID]}
@@ -38,13 +38,7 @@ unset JAVA_TOOL_OPTIONS
 virtualenv --no-download $SLURM_TMPDIR/.venv
 source $SLURM_TMPDIR/.venv/bin/activate
 pip install --no-index --upgrade pip
-pip install  --no-index -r requirements.txt
-
-# Install pydriller
-echo ">>> Installing pydriller."
-chmod +x install_pydriller.sh
-bash install_pydriller.sh "$SLURM_TMPDIR"
-
+pip install GitPython --no-index
 # -------------------------------------------------------
 echo -e "\n\n\n\n\n>>> Executing the script."
 # -u is for unbuffered output so the print statements print it to the slurm out file

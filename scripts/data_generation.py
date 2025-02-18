@@ -3,7 +3,7 @@ import traceback
 import os
 import config
 import shutil
-from corpus import prepare_corpus
+from corpus import prepare_corpus, flush_repo
 from runners import Designite, RefMiner
 from utils import GitManager, ColoredStr
 from zip import zip_dir
@@ -87,17 +87,23 @@ if __name__ == "__main__":
     
     CURR_DIR = os.path.dirname(os.path.realpath(__file__))
     
-    (username, repo_name, repo_path) = prepare_corpus(REPO_IDX, clone=False)
-    default_branch = GitManager.get_default_branch(repo_path)
-    
-    if default_branch:
-        if TOOL == "designite":
-            execute_designite(REPO_IDX, username, repo_name, repo_path, branch=default_branch)
-        elif TOOL == "refminer":
-            execute_refminer(REPO_IDX, username, repo_name, repo_path, branch=default_branch)
-    else:
-        print(ColoredStr.red(f"Failed to get default branch for repo: {repo_path}"))
+    try:
+        (username, repo_name, repo_path) = prepare_corpus(REPO_IDX, clone=True)
+        default_branch = GitManager.get_default_branch(repo_path)
+        
+        if default_branch:
+            if TOOL == "designite":
+                execute_designite(REPO_IDX, username, repo_name, repo_path, branch=default_branch)
+            elif TOOL == "refminer":
+                execute_refminer(REPO_IDX, username, repo_name, repo_path, branch=default_branch)
+        else:
+            print(ColoredStr.red(f"Failed to get default branch for repo: {repo_path}"))
+            traceback.print_exc()
+    except Exception as e:
+        print(ColoredStr.red(e))
         traceback.print_exc()
+    finally:
+        flush_repo(REPO_IDX)
         
             
         
