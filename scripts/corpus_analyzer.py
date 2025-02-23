@@ -23,15 +23,15 @@ class CorpusAnalyzer:
             if file_path.endswith('.json') and not file_path.endswith('.stats.json'):
                 repo_full_name = os.path.basename(file_path).replace('.json', '')
                 repo_data = FileUtils.load_json_file(file_path)
-                repo_data_smell_instances = repo_data.get("smell_instances", [])
+                # repo_data_smell_instances = repo_data.get("smell_instances", [])
                 
                 self.calculate_repo_stats(file_path, repo_full_name, repo_data)
 
         self.top_k_pairs()
         self.save_corpus_stats()
         
-        self.generate_sankey_plot(self.top_k_corpus_stats)
-        self.plot_lifespan()
+        # self.generate_sankey_plot(self.top_k_corpus_stats)
+        # self.plot_lifespan()
             
     def calculate_repo_stats(self, repo_data_path, repo_name, repo_data):
         """

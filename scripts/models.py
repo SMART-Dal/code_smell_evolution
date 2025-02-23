@@ -212,6 +212,7 @@ class Refactoring:
         self.type_name: str = type_name
         self.description: str = description
         self.commit_hash: str = commit_hash
+        self.is_mapped: bool = False # True if the refactoring is mapped to a smell (can be used for smell removal or introduction)
         self.left_changes: list[_RefactoringChange] = []
         self.right_changes: list[_RefactoringChange] = []
         

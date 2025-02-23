@@ -7,7 +7,7 @@ from models import CorpusMetrics
 
 class CorpusLifespanAnalyzer:
     def __init__(self):
-        self.lib_path = config.SMELL_LIFESPANS_PATH
+        self.lib_path = config.SMELL_REF_MAP_PATH
         self.plots_dir = os.path.join(config.OUTPUT_PATH, 'plots')
         if not os.path.exists(self.plots_dir):
             os.makedirs(self.plots_dir)
@@ -19,7 +19,7 @@ class CorpusLifespanAnalyzer:
         
         for file_path in FileUtils.traverse_directory(self.lib_path):
             file_path: str
-            if file_path.endswith('.json') and not file_path.endswith('_stats.json'):
+            if file_path.endswith('.json') and not file_path.endswith('.stats.json'):
                 repo_full_name = os.path.basename(file_path).replace('.json', '')
                 repo_data = FileUtils.load_json_file(file_path)
             
@@ -42,8 +42,8 @@ class CorpusLifespanAnalyzer:
             corpus_avg_commit_span = self.list_avg(metrics["avg_commit_span"])
             corpus_avg_days_span = self.list_avg(metrics["avg_days_span"])
             corpus_avg_smell_metrics[smell] = {
-            "avg_commit_span": corpus_avg_commit_span,
-            "avg_days_span": corpus_avg_days_span
+                "avg_commit_span": corpus_avg_commit_span,
+                "avg_days_span": corpus_avg_days_span
             }
             
             # Calculate top 5 refactorings for each smell
@@ -144,7 +144,7 @@ class CorpusLifespanAnalyzer:
             "avg_days_span": repo_avg_days_span,
             "smells_metrics": repo_smells_metrics
         }
-        FileUtils.save_json_file(os.path.join(self.lib_path, repo_stats_filename), repo_stats)
+        FileUtils.save_json_file(filepath=os.path.join(self.lib_path, repo_stats_filename), data=repo_stats)
         
         return repo_avg_commit_span, repo_avg_days_span, repo_smells_metrics
     

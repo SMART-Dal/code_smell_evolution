@@ -36,9 +36,17 @@ class SampleGenerator:
             if default_v["smell_kind"] == smell_kind and default_v["smell_name"] == smell_name:
                 for ref in sample["removed_by_refactorings"]:
                     if ref["type_name"] == refactoring_type:
-                        grouped.append(sample)
+                        clean_sample = self._clean_sample(sample, refactoring_type)
+                        grouped.append(clean_sample)
         
         return grouped
+    
+    def _clean_sample(self, sample, refactoring_type):
+        sample = sample.copy()
+        sample["removed_by_refactorings"] = [
+            ref for ref in sample["removed_by_refactorings"] if ref["type_name"] == refactoring_type
+        ]
+        return sample
         
     def get_top_k_pairs(self):
         stats_file_path = os.path.join(self.lib_dir, '_TOP_K_CORPUS.stats.json')
@@ -51,7 +59,7 @@ class SampleGenerator:
         removed_by_refactorings_count = stats_data.get("removed_by_refactorings_count", {})
         return removed_by_refactorings_count
     
-    def pick_random_samples(self, num_samples):
+    def pick_random_samples(self, random_seed, num_samples):
         top_k_pairs = self.get_top_k_pairs()
         if not top_k_pairs:
             print("No top K pairs found.")
@@ -78,6 +86,7 @@ class SampleGenerator:
                 print(f"Warning: Limit {limit} exceeds the number of samples for {pair}")
                 limit = len(grouped_samples)
             
+            random.seed(random_seed)
             selected_samples[pair] = random.sample(grouped_samples, limit)
             
         return selected_samples
@@ -107,6 +116,6 @@ if __name__ == "__main__":
     sample_generator = SampleGenerator()
     sample_generator.build_samples()
     print(f"Total samples: {len(sample_generator.corpus)}")
-    final_samples = sample_generator.pick_random_samples(num_samples=20)
-    print(f"Selected samples: {len(final_samples)}")
+    final_samples = sample_generator.pick_random_samples(random_seed=42, num_samples=12)
+    print(f"No. of sample groups: {len(final_samples)}")
     sample_generator.save_samples_to_json(final_samples)

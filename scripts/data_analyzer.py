@@ -26,6 +26,7 @@ class RepoDataAnalyzer:
         self.refactorings: dict[str, list[Refactoring]] = {}    # refactorings dictionary for each commit
         
         self.pairs_lib: list[SmellInstance] = []               # list of smell instances mapped to refactorings
+        self.unmapped_refactorings: list[Refactoring] = []     # list of refactorings that are not mapped to any smell instance
         
         # metadata
         self.present_smell_types = {}
@@ -303,7 +304,7 @@ class RepoDataAnalyzer:
                 for ref in refs:
                     refactoring_instance = Refactoring(url, commit_hash, ref.get("type", None), ref.get("description", None))
                     for location in ref.get("leftSideLocations"):
-                        refactoring_instance.add_right_change(
+                        refactoring_instance.add_left_change(
                             file_path=location.get("filePath"), 
                             range=(location.get("startLine"), location.get("endLine")), 
                             code_element_type=location.get("codeElementType"), 
@@ -352,9 +353,11 @@ class RepoDataAnalyzer:
                     if rc.file_path and self._check_file_intersection(smell_instance.get_file_path(), target_path=rc.file_path):
                         if smell_instance.get_smell_kind() == IMP_SMELL:
                             if self._check_smell_ref_intersection(smell_instance.introduced_smell().get_range(), rc.range):
+                                ref.is_mapped = True
                                 smell_instance.introduced_by_refactorings.append(ref)
                                 break
                         else: # for other smells Arch and Design, no range check in a file
+                            ref.is_mapped = True
                             smell_instance.introduced_by_refactorings.append(ref)
                             break
                 
@@ -366,11 +369,19 @@ class RepoDataAnalyzer:
                         if lc.file_path and self._check_file_intersection(smell_instance.get_file_path(), target_path=lc.file_path):
                             if smell_instance.get_smell_kind() == IMP_SMELL:
                                 if self._check_smell_ref_intersection(smell_instance.latest_smell().get_range(), lc.range):
+                                    ref.is_mapped = True
                                     smell_instance.removed_by_refactorings.append(ref)
                                     break
                             else: # for other smells Arch and Design, no range check in a file
+                                ref.is_mapped = True
                                 smell_instance.removed_by_refactorings.append(ref)
                                 break
+                                
+        # Collect unmapped refactorings
+        for _, refs in self.refactorings.items():
+            for ref in refs:
+                if not ref.is_mapped:
+                    self.unmapped_refactorings.append(ref)
     
     def _check_file_intersection(self, smell_file_path, target_path: str):
         """
@@ -425,7 +436,8 @@ class RepoDataAnalyzer:
                     "end": sorted_active_commits[-1][0]
                 },
             },
-            "smell_instances": [smell_instance.to_dict() for smell_instance in self.pairs_lib]
+            "smell_instances": [smell_instance.to_dict() for smell_instance in self.pairs_lib],
+            "unmapped_refactorings": [ref.to_dict() for ref in self.unmapped_refactorings]
         }
         FileUtils.save_json_file(
             file_path=os.path.join(config.SMELL_REF_MAP_PATH, f"{repo_name}@{username}.json"), 
