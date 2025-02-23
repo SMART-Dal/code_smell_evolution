@@ -1,3 +1,0 @@
-[submodule "bin/packages/pydriller"]
-	path = bin/packages/pydriller
-	url = https://github.com/ishepard/pydriller.git
