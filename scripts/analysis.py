@@ -42,6 +42,8 @@ def analyze_corpus_data():
         print(f"\n {ColoredStr.cyan('Analyzing corpus data...')}")
         analyzer = CorpusAnalyzer()
         analyzer.process()
+        
+        # OLD CODE
         # avg_smells_span, top_k_ref_4_smells = analyzer.process_corpus()
         # smell_groups = analyzer.active_smell_groups
         # # analyzer.plot_avg_lifespan(avg_commit_spans, avg_days_spans)

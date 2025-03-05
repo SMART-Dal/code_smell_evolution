@@ -1,4 +1,5 @@
 import os
+import re
 import random
 import config
 from utils import FileUtils
@@ -111,11 +112,120 @@ class SampleGenerator:
                 output_file_path = os.path.join(output_dir, f'auth_{(idx+1)}_{smell_kind}_{smell_name}_{refactor_type}.json')
                 
                 FileUtils.save_json_file(output_file_path, author_samples)
+                
+    def group_observations(self):
+        top_k_pairs = self.get_top_k_pairs()
+        output_dir = config.MANUAL_ANALYSIS_PATH
+        grouped = []
+        for file_path in FileUtils.traverse_directory(output_dir):
+            file_path: str
+            file_name = os.path.basename(file_path)
+            if file_path.endswith('.json') and file_name.startswith('auth_1_'):
+                name_without_ext = file_name.rsplit('.', 1)[0]
+                parts = re.split(r'_', name_without_ext, maxsplit=2)
+                
+                info_from_file_name = parts[2].split('_', maxsplit=2)
+                
+                file_data = FileUtils.load_json_file(file_path)
+                
+                correct_map = 0
+                incorrect_map = 0
+                reasons = []
+                for item in file_data:
+                    if item["is_the_map_correct?"]:
+                        correct_map += 1
+                    else:
+                        incorrect_map += 1
+                    
+                    if item["reason_for_incorrect_mapping?"] not in reasons and item["reason_for_incorrect_mapping?"] != "":
+                        reasons.append(item["reason_for_incorrect_mapping?"])
+                
+                group = {
+                    "smell_kind": info_from_file_name[0],
+                    "smell_name": info_from_file_name[1],
+                    "refactor_type": info_from_file_name[2],
+                    "correct_map": correct_map*2,
+                    "incorrect_map": incorrect_map*2,
+                    "reasons": reasons
+                }
+                occurance = top_k_pairs.get(group["smell_kind"], {}).get(group["smell_name"], {}).get(group["refactor_type"], "NA")
+                group["occurance"] = occurance
+                
+                
+                grouped.append(group)
+                
+        # Divide the list into two parts by kind
+        kind_a = [item for item in grouped if item["smell_kind"] == "Design"]
+        kind_b = [item for item in grouped if item["smell_kind"] == "Implementation"]
+
+        # Sort each part by smell_name
+        kind_a_sorted = sorted(kind_a, key=lambda x: x["smell_name"])
+        kind_b_sorted = sorted(kind_b, key=lambda x: x["smell_name"])
+
+        # Combine the sorted lists
+        sorted_grouped = kind_a_sorted + kind_b_sorted
+
+        # for latex table generation
+        smells_order = []
+        ref_order = []
+        pairs = {}
+        for group in sorted_grouped:
+            if group["smell_name"] not in pairs:
+                pairs[group["smell_name"]] = []
+                if group["smell_name"] not in smells_order:
+                    smells_order.append(group["smell_name"])
+            pairs[group["smell_name"]].append((group["refactor_type"], group["occurance"]))
+            if group["refactor_type"] not in ref_order:
+                ref_order.append((group["refactor_type"], group["occurance"]))
+        
+        print(f"Total smells: {len(smells_order)}")
+        smell_command_dict = {}
+        for smell_name in smells_order:
+            cleaned_smell_name = smell_name.replace(' ', '').replace('-', '')
+            caps_command_name = f"\\smell{cleaned_smell_name}"
+            smell_command_dict[smell_name] = caps_command_name
+            print(f"\\newcommand{{{caps_command_name}}}{{\srtype{{{smell_name}}}}}")
+            small_caps_command_name = f"\\smell{cleaned_smell_name.lower()}"
+            print(f"\\newcommand{{{small_caps_command_name}}}{{\srtype{{{smell_name.lower()}}}}}")
+            
+        ref_command_dict = {}
+        print(f"\nTotal refs: {len(ref_order)}")
+        for ref, _ in ref_order:
+            caps_command_name = f"\\ref{ref.replace(' ', '')}"
+            print(f"\\newcommand{{{caps_command_name}}}{{\srtype{{{ref}}}}}")
+            ref_command_dict[ref] = caps_command_name
+            small_caps_command_name = f"\\ref{ref.replace(' ', '').lower()}"
+            print(f"\\newcommand{{{small_caps_command_name}}}{{\srtype{{{ref.lower()}}}}}")
+        
+        print("\n\nTABLE\n\n")
+        # for smell_name, refactorings in pairs.items():
+        #     smell_order_id = smells_order.index(smell_name)+1
+        #     print_line = f"s\\textsubscript{{{smell_order_id}}}[{smell_name}]  &   "
+        #     for ref in refactorings:
+        #         print_line += f"r\\textsubscript{{{ref_order.index(ref)+1}}}[{ref}], " if ref != refactorings[-1] else f"r\\textsubscript{{{ref_order.index(ref)+1}}}[{ref}]"
+        #     # ref_order_ids = [ref_order.index(ref) for ref in refactorings]
+        #     # print(f"S{smell_order_id}[{smell_name}] & {', '.join([f'R{ref_order.index(ref)}[{ref}]' for ref in refactorings])} \\\\")
+        #     print(print_line + "    \\\\")
+        
+        for smell_name, refactorings in pairs.items():
+            print_line = f"{smell_command_dict[smell_name]} & "
+            for i, (ref, occ) in enumerate(refactorings):
+                ref_line = f"{ref_command_dict[ref]}({occ})"
+                if i < len(refactorings) - 1:
+                    print_line += f"{ref_line}, "
+                else:
+                    print_line += f"{ref_line}"
+            print(print_line + " \\\\")
+
+        # Save the sorted observations to a JSON file
+        # output_file_path = os.path.join(output_dir, 'observations.json')
+        # FileUtils.save_json_file(output_file_path, sorted_grouped)
                     
 if __name__ == "__main__":
     sample_generator = SampleGenerator()
-    sample_generator.build_samples()
-    print(f"Total samples: {len(sample_generator.corpus)}")
-    final_samples = sample_generator.pick_random_samples(random_seed=42, num_samples=12)
-    print(f"No. of sample groups: {len(final_samples)}")
-    sample_generator.save_samples_to_json(final_samples)
+    # sample_generator.build_samples()
+    # print(f"Total samples: {len(sample_generator.corpus)}")
+    # final_samples = sample_generator.pick_random_samples(random_seed=42, num_samples=12)
+    # print(f"No. of sample groups: {len(final_samples)}")
+    # sample_generator.save_samples_to_json(final_samples)
+    sample_generator.group_observations()

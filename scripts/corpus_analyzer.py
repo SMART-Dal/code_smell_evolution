@@ -2,9 +2,12 @@ import os
 import config
 import pandas as pd
 import seaborn as sns
+from pprint import pprint
 import matplotlib.pyplot as plt
 from utils import FileUtils
 from models import DESIGN_SMELL, IMP_SMELL
+from mlxtend.frequent_patterns import apriori, association_rules
+from mlxtend.preprocessing import TransactionEncoder
 
 class CorpusAnalyzer:
     def __init__(self):
@@ -15,7 +18,27 @@ class CorpusAnalyzer:
         
         self.corpus_stats = {}
         self.top_k_corpus_stats = {}
-        self.corpus_smell_instances = []
+        self.sankey_plot_data = {
+            DESIGN_SMELL: {},
+            IMP_SMELL: {},
+            "refactorings_count": {}, # will always link to removed smells (never to alive ones)
+            "no_refactoring": 0
+        }
+        self.lifespan_plot_data = []
+        self.transactions = []
+        
+        self._ref_type_counts = {
+            DESIGN_SMELL: {},
+            IMP_SMELL: {}
+        }
+        self._smell_types = {
+            DESIGN_SMELL: [],
+            IMP_SMELL: [],
+            f"TOTAL_ALIVE_{DESIGN_SMELL}": 0,
+            f"TOTAL_ALIVE_{IMP_SMELL}": 0,
+            f"TOTAL_REMOVED_{DESIGN_SMELL}": 0,
+            f"TOTAL_REMOVED_{IMP_SMELL}": 0,
+        }
             
     def process(self):
         for file_path in FileUtils.traverse_directory(self.lib_dir):
@@ -28,10 +51,19 @@ class CorpusAnalyzer:
                 self.calculate_repo_stats(file_path, repo_full_name, repo_data)
 
         self.top_k_pairs()
-        self.save_corpus_stats()
+        # self.save_corpus_stats()
         
-        # self.generate_sankey_plot(self.top_k_corpus_stats)
+        # self.generate_sankey_plot()
         # self.plot_lifespan()
+        # self.perform_apriori_analysis()
+        for kind, ref_type_counts in self._ref_type_counts.items():
+            sorted_ref_type_counts = dict(sorted(ref_type_counts.items(), key=lambda item: item[1], reverse=True))
+            print(f"Refactoring counts for {kind}:")
+            print(f"TOTAL_ALIVE_{kind}: {self._smell_types[f'TOTAL_ALIVE_{kind}']}")
+            print(f"TOTAL_REMOVED_{kind}: {self._smell_types[f'TOTAL_REMOVED_{kind}']}")
+            print(f"Smell types: {self._smell_types[kind]}\n")
+            pprint(sorted_ref_type_counts, sort_dicts=False)
+            print("\n")
             
     def calculate_repo_stats(self, repo_data_path, repo_name, repo_data):
         """
@@ -41,10 +73,11 @@ class CorpusAnalyzer:
         map_stats = {
             "detected_design_smells": 0,
             "detected_imp_smells": 0,
+            "deteced_refactorings": 0,
             "total_smell_instances": len(smell_instance_pairs),
             "moved_smells": 0,
             "resolved_smells": 0,
-            "unresolved_smells": 0,   
+            "unresolved_smells": 0,
             "never_introduced_by_refactorings": 0,
             "never_resolved_by_refactorings": 0,
             "introduced_by_refactorings_count": {
@@ -62,36 +95,50 @@ class CorpusAnalyzer:
                 map_stats["moved_smells"] += 1
             smell_kind = smell_instance["smell_versions"][0]["smell_kind"]
             smell_type = smell_instance["smell_versions"][0]["smell_name"]
+            if smell_type not in self.sankey_plot_data[smell_kind]:
+                self.sankey_plot_data[smell_kind][smell_type] = {"alive_smells": 0, "removed_smells": 0}
+                
+            if is_smell_instance_alive:
+                self._smell_types[f"TOTAL_ALIVE_{smell_kind}"] += 1
+            else:
+                self._smell_types[f"TOTAL_REMOVED_{smell_kind}"] += 1
+                
+            if smell_type not in self._smell_types[smell_kind]:
+                self._smell_types[smell_kind].append(smell_type)
+            
             
             introduced_by_refactorings = smell_instance.get("introduced_by_refactorings", [])
             if len(introduced_by_refactorings) == 0:
                 map_stats["never_introduced_by_refactorings"] += 1
-            refs_count_introduced = self.get_refactorings_stats(introduced_by_refactorings)
+            refs_count_introduced = self.get_refactorings_stats(introduced_by_refactorings, mode='introduced', smell_kind=smell_kind)
             self._update_refactoring_counts(map_stats["introduced_by_refactorings_count"], smell_kind, smell_type, refs_count_introduced)
             
             if is_smell_instance_alive:
                 map_stats["unresolved_smells"] += 1
-                
+                self.sankey_plot_data[smell_kind][smell_type]["alive_smells"] += 1
             else:
                 map_stats["resolved_smells"] += 1
+                self.sankey_plot_data[smell_kind][smell_type]["removed_smells"] += 1
+                self.add_transaction(smell_instance)
                 
                 removed_by_refactorings = smell_instance.get("removed_by_refactorings", [])
                 if len(removed_by_refactorings) == 0:
                     map_stats["never_resolved_by_refactorings"] += 1
-                refs_count_removed = self.get_refactorings_stats(removed_by_refactorings)
+                refs_count_removed = self.get_refactorings_stats(removed_by_refactorings, mode='removed', smell_kind=smell_kind)
                 self._update_refactoring_counts(map_stats["removed_by_refactorings_count"], smell_kind, smell_type, refs_count_removed)
                 
                 commit_span = smell_instance.get("commit_span", 0)
-                self.corpus_smell_instances.append({
+                self.lifespan_plot_data.append({
                     'repo_name': repo_name,
                     'smell_kind': smell_kind,
                     'smell_type': smell_type,
                     'commit_span': commit_span
                 })
 
-        (D, I) = self._add_stats('map_stats', map_stats, repo_data_path)
+        (D, I, R) = self._add_stats('map_stats', map_stats, repo_data_path)
         map_stats["detected_design_smells"] = D
         map_stats["detected_imp_smells"] = I
+        map_stats["deteced_refactorings"] = R
         
         self.add_to_corpus_stats(map_stats)
 
@@ -131,13 +178,27 @@ class CorpusAnalyzer:
                 dict1[key] = value
         return dict1
         
-    def get_refactorings_stats(self, refs_list):
+    def get_refactorings_stats(self, refs_list, mode, smell_kind=None):
         """
         Calculate refactoring statistics.
         """
         refs_count = {}
+        
+        if len(refs_list) == 0:
+            self.sankey_plot_data["no_refactoring"] += 1
+        
         for ref in refs_list:
             type_name = ref.get("type_name")
+            
+            if mode == 'removed':
+                if type_name not in self._ref_type_counts[smell_kind]:
+                    self._ref_type_counts[smell_kind][type_name] = 0
+                self._ref_type_counts[smell_kind][type_name] += 1
+                
+                if type_name not in self.sankey_plot_data["refactorings_count"]:
+                    self.sankey_plot_data["refactorings_count"][type_name] = 0
+                self.sankey_plot_data["refactorings_count"][type_name] += 1
+            
             if type_name in refs_count:
                 refs_count[type_name] += 1
             else:
@@ -165,49 +226,129 @@ class CorpusAnalyzer:
             stats_data = FileUtils.load_json_file(stats_file_path)
         else:
             stats_data = {}
-            
+        # Designite stats of repo
+        total_d_smells = stats_data["designite_stats"]["smells_collected"]["total_design_smells"]
+        total_i_smells = stats_data["designite_stats"]["smells_collected"]["total_imp_smells"]
+        # RefMiner stats of repo
+        total_refactorings = stats_data["refminer_stats"]["total_refactorings"]
+        
+        new_data_dict["detected_design_smells"] = total_d_smells
+        new_data_dict["detected_imp_smells"] = total_i_smells
+        new_data_dict["deteced_refactorings"] = total_refactorings
+        
         # Insert the new data at the top of the existing data
         updated_stats_data = {new_data_key: new_data_dict}
         if new_data_key in stats_data:
             del stats_data[new_data_key]
         updated_stats_data.update(stats_data)
         
-        # Designite stats of repo
-        total_d_smells = stats_data["designite_stats"]["smells_collected"]["total_design_smells"]
-        total_i_smells = stats_data["designite_stats"]["smells_collected"]["total_imp_smells"]
-        
         FileUtils.save_json_file(stats_file_path, updated_stats_data)
-        return total_d_smells, total_i_smells
+        return total_d_smells, total_i_smells, total_refactorings
     
-    def generate_sankey_plot(self, data):
-        for smell_kind, smell_ref_dict in data["introduced_by_refactorings_count"].items():
-            introduced_lines = ["//introduced pairs"]
-            for smell_type, ref_counts in smell_ref_dict.items():
-                other_count = ref_counts.pop('other', None)
-                for ref_type, count in ref_counts.items():
-                    introduced_lines.append(f"{ref_type} [{count}] {smell_type}")
-                if other_count is not None:
-                    introduced_lines.append(f"other [{other_count}] {smell_type}")
+    def generate_sankey_plot(self):
+        # for smell_kind, smell_ref_dict in data["removed_by_refactorings_count"].items():
+        #     introduced_lines = ["//introduced pairs"]
+        #     for smell_type, ref_counts in smell_ref_dict.items():
+        #         other_count = ref_counts.pop('other', None)
+        #         for ref_type, count in ref_counts.items():
+        #             introduced_lines.append(f"{ref_type} [{count}] {smell_type}")
+        #         if other_count is not None:
+        #             introduced_lines.append(f"other [{other_count}] {smell_type}")
             
-            removed_lines = ["//removed pairs"]
-            for smell_type, ref_counts in data["removed_by_refactorings_count"][smell_kind].items():
-                other_count = ref_counts.pop('other', None)
-                for ref_type, count in ref_counts.items():
-                    removed_lines.append(f"{smell_type} [{count}] {ref_type}\\n")
-                if other_count is not None:
-                    removed_lines.append(f"{smell_type} [{other_count}] other\\n")
+        #     removed_lines = ["//removed pairs"]
+        #     for smell_type, ref_counts in data["removed_by_refactorings_count"][smell_kind].items():
+        #         other_count = ref_counts.pop('other', None)
+        #         for ref_type, count in ref_counts.items():
+        #             removed_lines.append(f"{smell_type} [{count}] {ref_type}\\n")
+        #         if other_count is not None:
+        #             removed_lines.append(f"{smell_type} [{other_count}] other\\n")
+        
+        def is_ref_type_in_top_k(self, smell_kind, target_ref_type):
+            found = False
+            for _, smell_ref_count in self.top_k_corpus_stats["removed_by_refactorings_count"][smell_kind].items():
+                if target_ref_type in smell_ref_count:
+                    found = True
+                    break
+            return found
+        
+        for smell_kind in [DESIGN_SMELL, IMP_SMELL]:
+            plot_data = "//smells\n"
+            for smell_type, smell_status in self.sankey_plot_data[smell_kind].items():
+                alive_count = smell_status["alive_smells"]
+                removed_count = smell_status["removed_smells"]
+                plot_data += f"{smell_type} [{alive_count}] Alive smells\n"
+                plot_data += f"{smell_type} [{removed_count}] Removed smells\n"
+                
+            plot_data += "//refactorings\n"
+            for ref_type, count in self.sankey_plot_data["refactorings_count"].items():
+                
+                if is_ref_type_in_top_k(self, smell_kind, ref_type):
+                    plot_data += f"Removed smells [{count}] {ref_type}\n"
+                else:
+                    plot_data += f"Removed smells [{count}] other\n"
+            plot_data += f"Removed smells [{self.sankey_plot_data['no_refactoring']}] No Refactoring\n"
+                
             
             output_file = os.path.join(self.plots_dir, f'sankey_data_{smell_kind}.txt')
             with open(output_file, 'w') as f:
-                f.write("\n".join(introduced_lines + [""] + removed_lines))
+                f.write(plot_data)
             print(f"Sankey data for {smell_kind} saved to {output_file}")
+            
+    def add_transaction(self, smell_instance):
+        """
+        Add a smell instance to the apriori analysis dataframe.
+        """
+        if len(smell_instance["removed_by_refactorings"]) == 0:
+            return
+        smell_type = smell_instance["smell_versions"][0]["smell_name"]
+        refactoring_types = [ref["type_name"] for ref in smell_instance.get("removed_by_refactorings", [])]
+        
+        # Append the new row to the apriori analysis dataframe
+        self.transactions.append([smell_type] + refactoring_types)
+    
+    def perform_apriori_analysis(self):
+        """
+        Perform apriori analysis on the transactions to find frequent itemsets.
+        """
+        if not self.transactions:
+            print("No data available for analysis.")
+            return
+        else:
+            print(f"Total transactions: {len(self.transactions)}")
+            
+        
+        # Prepare the data for apriori algorithm
+        te = TransactionEncoder()
+        te_ary = te.fit(self.transactions).transform(self.transactions)
+        df = pd.DataFrame(te_ary, columns=te.columns_)
+
+        # Apply the apriori algorithm
+        frequent_itemsets = apriori(df, min_support=0.01, use_colnames=True)
+        if frequent_itemsets.empty:
+            print("No frequent itemsets found.")
+            return
+        
+        # Generate association rules
+        rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.1)
+        if rules.empty:
+            print("No association rules found.")
+            return
+        
+        # Print the rules
+        print("Association rules:")
+        pprint(rules)
+        
+        # Save the rules to a file
+        rules_path = os.path.join(self.plots_dir, 'apriori_rules.csv')
+        rules.to_csv(rules_path, index=False)
+        print(f"Apriori rules saved to {rules_path}")
         
         
     def plot_lifespan(self):
         """
-        Plot the lifespan of smell instances with high-quality pixel density.
+        Plot the lifespan of smell instances with high-quality pixel density using boxen plot.
         """
-        df = pd.DataFrame(self.corpus_smell_instances)
+        df = pd.DataFrame(self.lifespan_plot_data)
         
         # Remove outliers based on commit_span with a looser threshold
         Q1 = df['commit_span'].quantile(0.25)
@@ -218,24 +359,24 @@ class CorpusAnalyzer:
         # Create different plots for different smell kinds
         for smell_kind in df['smell_kind'].unique():
             plt.figure(figsize=(14, 8), dpi=300)  # Set dpi for high-quality plot
-            sns.violinplot(data=df[df['smell_kind'] == smell_kind], 
-                           x='smell_type', y='commit_span', hue='smell_type', 
-                           inner='box', linewidth=1.5, palette='Set2', legend=False)
+            sns.boxenplot(data=df[df['smell_kind'] == smell_kind], 
+                          x='smell_type', y='commit_span', 
+                          orient='v',
+                          palette='husl', hue='smell_type')
 
             # Customize the plot
             plt.xlabel('Smell Name', fontsize=14)
             plt.ylabel('Commit Span', fontsize=14)
             plt.xticks(rotation=45, ha='right')  # Rotate x-axis labels for better readability
-            plt.grid(axis='y', alpha=0.7)
             plt.ylim(bottom=0)  # Set the lower limit of y-axis to 0 to avoid negative values
 
             # Save the plot to the plots directory
-            plot_path = os.path.join(self.plots_dir, f'commit_span_violinplot_{smell_kind}.png')
+            plot_path = os.path.join(self.plots_dir, f'commit_span_boxenplot_{smell_kind}_QUANTILED.png')
             plt.tight_layout()
             plt.savefig(plot_path, dpi=300)  # Save with high dpi for better quality
             plt.close()
 
-            print(f"violin plot for {smell_kind} saved to {plot_path}")
+            print(f"Boxen plot for {smell_kind} saved to {plot_path}")
 
     def top_k_pairs(self, k=5):
         def get_top_k_with_other(ref_counts: dict, k):
