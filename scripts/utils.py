@@ -204,7 +204,11 @@ class GitManager:
         # Traverse the tree to find the file with the ending path
         for item in tree.traverse():
             if item.path.endswith(file_path):
-                file_content = item.data_stream.read().decode("utf-8")
+                encoding = item.data_stream.read()
+                if encoding:
+                    file_content = item.data_stream.read().decode(encoding, errors="replace")
+                else:
+                    file_content = item.data_stream.read().decode("utf-8", errors="replace")
                 return file_content
 
         return None
