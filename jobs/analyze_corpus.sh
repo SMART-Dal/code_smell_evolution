@@ -32,14 +32,7 @@ unset JAVA_TOOL_OPTIONS
 virtualenv --no-download $SLURM_TMPDIR/.venv
 source $SLURM_TMPDIR/.venv/bin/activate
 pip install --no-index --upgrade pip
-pip install  --no-index -r requirements.txt
-pip install matplotlib numpy --no-index
-
-# Install pydriller
-echo ">>> Installing pydriller."
-chmod +x install_pydriller.sh
-bash install_pydriller.sh "$SLURM_TMPDIR"
-
+pip install GitPython matplotlib numpy pandas seaborn  --no-index
 # -------------------------------------------------------
 echo -e "\n\n\n\n\n>>> Executing the script."
 # -u is for unbuffered output so the print statements print it to the slurm out file

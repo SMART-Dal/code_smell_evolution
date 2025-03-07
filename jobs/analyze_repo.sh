@@ -3,9 +3,9 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
 
-#SBATCH --mem-per-cpu=8G
-#SBATCH --array=0-22             # Array range for 6 tasks
-#SBATCH --time=30:00          # Process limit for each task
+#SBATCH --mem-per-cpu=16G
+#SBATCH --array=0-19             # Array range for 6 tasks
+#SBATCH --time=9:00:00          # Process limit for each task
 
 #SBATCH --account=def-tusharma
 #SBATCH --mail-user=gautam@dal.ca
@@ -14,11 +14,20 @@
 repo_name="code_smell_evolution_corpus_analysis"
 
 # Define the list of single integer arguments
-ARG_VALUES=(22 24 25 26 27 29 31 32 33 34 35 36 37 39)
+ARG_VALUES=(60 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80)
+
+# 31 32 33 34 35 36 37 39 40 #DONE
+# 42 43 44 45 94 95 96 97 #DONE
+# 47 49 50 52 53 54 55 56 58 59 #DONE
+# 60 62 63 64 65 66 67 68 69 70 
+# 71 72 73 74 75 76 77 78 79 80 
+# 81 82 84 87 88 89 90
 
 ARG=${ARG_VALUES[$SLURM_ARRAY_TASK_ID]}
 
 echo ">>> JOB STARTED FOR $repo_name"
+export $SLURM_TMPDIR
+
 handle_signal() 
 {
     echo 'Trapped - Moving File'
@@ -37,8 +46,7 @@ unset JAVA_TOOL_OPTIONS
 virtualenv --no-download $SLURM_TMPDIR/.venv
 source $SLURM_TMPDIR/.venv/bin/activate
 pip install --no-index --upgrade pip
-pip install  --no-index -r requirements.txt
-pip install matplotlib numpy --no-index
+pip install GitPython matplotlib numpy pandas seaborn chardet --no-index
 
 # -------------------------------------------------------
 echo -e "\n\n\n\n\n>>> Executing the script."

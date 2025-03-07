@@ -9,8 +9,16 @@ def prepare_corpus(repo_index=None, clone=True):
     if repo_index is None:
         raise ValueError("repo_index must be provided")
     
-    if not os.path.exists(config.CORPUS_PATH):
-        os.makedirs(config.CORPUS_PATH)
+    slurm_dir = os.environ.get("SLURM_TMPDIR", None)
+    if slurm_dir is None:
+        raise RuntimeError("No slurm tmep dir available")
+    
+    CORPUS_PATH = os.path.join(slurm_dir, "corpus")
+        
+    if os.path.exists(CORPUS_PATH):
+        shutil.rmtree(CORPUS_PATH)
+        
+    os.makedirs(CORPUS_PATH)
     
     repo_items: list = FileUtils.load_json_file(config.CORPUS_SPECS_PATH).get("items", [])
     
@@ -24,7 +32,7 @@ def prepare_corpus(repo_index=None, clone=True):
     
     try:
         username, repo_name = repo_item.get("name").split("/")
-        repo_path = os.path.join(config.CORPUS_PATH, username, repo_name)
+        repo_path = os.path.join(CORPUS_PATH, username, repo_name)
         if clone:
             GitManager.clone_repo(
                 repo_path=repo_path,

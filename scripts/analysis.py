@@ -58,13 +58,15 @@ def analyze_corpus_data():
         traceback.print_exc()
 
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser(description="Run analysis on repo index")
-    # parser.add_argument("idx", type=int, help="index of the repository to process.")
-    # args = parser.parse_args()
+    parser = argparse.ArgumentParser(description="Run analysis on repo index")
+    parser.add_argument("idx", type=int, help="index of the repository to process.")
+    args = parser.parse_args()
     
-    # CURR_DIR = os.path.dirname(os.path.realpath(__file__))
-    idxs = [0, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 23, 24, 25, 26, 27, 28, 29, 99, 103, 109, 111]
-    # # idxs = [18] # for manual testing
+    CURR_DIR = os.path.dirname(os.path.realpath(__file__))
+    analyze_repo_data(args.idx)
+    
+    # idxs = [0, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 23, 24, 25, 26, 27, 28, 29, 99, 103, 109, 111] # FINISHED
+    # idxs = [47, 49, 50, 52, 53, 54, 55, 56, 58, 59, 60, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 84, 87, 88, 89, 90, 91, 92, 93]
     
     # for idx in idxs:
     #     (username, repo_name, repo_path) = prepare_corpus(idx, clone=False)
@@ -85,5 +87,5 @@ if __name__ == "__main__":
     #         task.result()
     # print("All repositories data analyzed parallelly.")
         
-    analyze_corpus_data()
+    # analyze_corpus_data()
     

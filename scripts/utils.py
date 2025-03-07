@@ -3,6 +3,7 @@ import json
 import csv
 import traceback
 import hashlib
+import chardet
 from git import Repo
 
 def log_execution(func):
@@ -204,11 +205,10 @@ class GitManager:
         # Traverse the tree to find the file with the ending path
         for item in tree.traverse():
             if item.path.endswith(file_path):
-                encoding = item.data_stream.read()
-                if encoding:
-                    file_content = item.data_stream.read().decode(encoding, errors="replace")
-                else:
-                    file_content = item.data_stream.read().decode("utf-8", errors="replace")
+                file_bytes = item.data_stream.read()
+                detected = chardet.detect(file_bytes)
+                encoding = detected["encoding"] if detected["encoding"] else "utf-8"
+                file_content = file_bytes.decode(encoding, errors="replace")
                 return file_content
 
         return None

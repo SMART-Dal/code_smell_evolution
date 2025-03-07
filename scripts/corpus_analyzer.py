@@ -6,8 +6,8 @@ from pprint import pprint
 import matplotlib.pyplot as plt
 from utils import FileUtils
 from models import DESIGN_SMELL, IMP_SMELL
-from mlxtend.frequent_patterns import apriori, association_rules
-from mlxtend.preprocessing import TransactionEncoder
+# from mlxtend.frequent_patterns import apriori, association_rules
+# from mlxtend.preprocessing import TransactionEncoder
 
 class CorpusAnalyzer:
     def __init__(self):
@@ -294,54 +294,54 @@ class CorpusAnalyzer:
                 f.write(plot_data)
             print(f"Sankey data for {smell_kind} saved to {output_file}")
             
-    def add_transaction(self, smell_instance):
-        """
-        Add a smell instance to the apriori analysis dataframe.
-        """
-        if len(smell_instance["removed_by_refactorings"]) == 0:
-            return
-        smell_type = smell_instance["smell_versions"][0]["smell_name"]
-        refactoring_types = [ref["type_name"] for ref in smell_instance.get("removed_by_refactorings", [])]
+    # def add_transaction(self, smell_instance):
+    #     """
+    #     Add a smell instance to the apriori analysis dataframe.
+    #     """
+    #     if len(smell_instance["removed_by_refactorings"]) == 0:
+    #         return
+    #     smell_type = smell_instance["smell_versions"][0]["smell_name"]
+    #     refactoring_types = [ref["type_name"] for ref in smell_instance.get("removed_by_refactorings", [])]
         
-        # Append the new row to the apriori analysis dataframe
-        self.transactions.append([smell_type] + refactoring_types)
+    #     # Append the new row to the apriori analysis dataframe
+    #     self.transactions.append([smell_type] + refactoring_types)
     
-    def perform_apriori_analysis(self):
-        """
-        Perform apriori analysis on the transactions to find frequent itemsets.
-        """
-        if not self.transactions:
-            print("No data available for analysis.")
-            return
-        else:
-            print(f"Total transactions: {len(self.transactions)}")
+    # def perform_apriori_analysis(self):
+    #     """
+    #     Perform apriori analysis on the transactions to find frequent itemsets.
+    #     """
+    #     if not self.transactions:
+    #         print("No data available for analysis.")
+    #         return
+    #     else:
+    #         print(f"Total transactions: {len(self.transactions)}")
             
         
-        # Prepare the data for apriori algorithm
-        te = TransactionEncoder()
-        te_ary = te.fit(self.transactions).transform(self.transactions)
-        df = pd.DataFrame(te_ary, columns=te.columns_)
+    #     # Prepare the data for apriori algorithm
+    #     te = TransactionEncoder()
+    #     te_ary = te.fit(self.transactions).transform(self.transactions)
+    #     df = pd.DataFrame(te_ary, columns=te.columns_)
 
-        # Apply the apriori algorithm
-        frequent_itemsets = apriori(df, min_support=0.01, use_colnames=True)
-        if frequent_itemsets.empty:
-            print("No frequent itemsets found.")
-            return
+    #     # Apply the apriori algorithm
+    #     frequent_itemsets = apriori(df, min_support=0.01, use_colnames=True)
+    #     if frequent_itemsets.empty:
+    #         print("No frequent itemsets found.")
+    #         return
         
-        # Generate association rules
-        rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.1)
-        if rules.empty:
-            print("No association rules found.")
-            return
+    #     # Generate association rules
+    #     rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.1)
+    #     if rules.empty:
+    #         print("No association rules found.")
+    #         return
         
-        # Print the rules
-        print("Association rules:")
-        pprint(rules)
+    #     # Print the rules
+    #     print("Association rules:")
+    #     pprint(rules)
         
-        # Save the rules to a file
-        rules_path = os.path.join(self.plots_dir, 'apriori_rules.csv')
-        rules.to_csv(rules_path, index=False)
-        print(f"Apriori rules saved to {rules_path}")
+    #     # Save the rules to a file
+    #     rules_path = os.path.join(self.plots_dir, 'apriori_rules.csv')
+    #     rules.to_csv(rules_path, index=False)
+    #     print(f"Apriori rules saved to {rules_path}")
         
         
     def plot_lifespan(self):

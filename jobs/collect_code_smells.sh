@@ -4,7 +4,7 @@
 #SBATCH --ntasks-per-node=8
 
 #SBATCH --mem-per-cpu=32G
-#SBATCH --array=0-9             # Array range for 6 tasks
+#SBATCH --array=0-2             # Array range for 6 tasks
 #SBATCH --time=24:00:00          # Process limit for each task
 
 #SBATCH --account=def-tusharma
@@ -14,7 +14,7 @@
 repo_name="code_smell_evolution_collect_smell"
 
 # Define the list of single integer arguments for the 6 tasks
-ARG_VALUES=(61 62 63 64 65 66 67 68 69 70)
+ARG_VALUES=(91 92 93)
 
 # Get the argument for this task ID
 ARG=${ARG_VALUES[$SLURM_ARRAY_TASK_ID]}

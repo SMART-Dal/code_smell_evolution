@@ -11,9 +11,12 @@ from zip import unzip_file
 
 class RepoDataAnalyzer:
     def __init__(self, username: str, repo_name: str, repo_path: str, branch: str):
+        self.slurm_dir = os.environ.get("SLURM_TMPDIR", None)
+        if self.slurm_dir is None:
+            raise RuntimeError("No slurm tmep dir available")
         
         self.repo_path = repo_path
-        self.repo_designite_output_path = os.path.join(Designite.output_dir, username, repo_name)
+        self.repo_designite_output_path = os.path.join(self.slurm_dir, "output", "Designite_OP", username, repo_name)
         self.repo_refminer_output_path = os.path.join(RefMiner.output_dir, username, f"{repo_name}.json")
         
         self.repo_stats = {}
@@ -40,11 +43,13 @@ class RepoDataAnalyzer:
         
         # Smells dataset setup
         try:
-            SMELLS_DIR = os.path.join(Designite.output_dir, username, repo_name)
-            if not os.path.exists(SMELLS_DIR):
-                os.makedirs(SMELLS_DIR)
+            SMELLS_DIR = os.path.join(self.slurm_dir, "output", "Designite_OP",  username, repo_name)
+            if os.path.exists(SMELLS_DIR):
+                shutil.rmtree(SMELLS_DIR)
+                
+            os.makedirs(SMELLS_DIR)
 
-            target_dir = os.path.join(Designite.output_dir, username, repo_name)
+            target_dir = os.path.join(self.slurm_dir, "output", "Designite_OP",  username, repo_name)
             unzip_file(os.path.join(config.ZIP_LIB, f'smells_{idx}.zip'), target_dir)
         except Exception as e:
             raise RuntimeError(f"Failed to set up smells dataset for {username}/{repo_name}: {e}")
