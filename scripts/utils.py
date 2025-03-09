@@ -62,7 +62,7 @@ class ColoredStr:
     @staticmethod
     def cyan(string): return "\033[96m {}\033[00m" .format(string)
     
-def hashgen(data: str) -> str:
+def hashgen(data: any) -> str:
     """
     Generate an MD5 hash for the given data.
 
@@ -72,8 +72,11 @@ def hashgen(data: str) -> str:
     Returns:
         str: The hexadecimal representation of the MD5 hash.
     """
-    if not isinstance(data, str):
-        data = str(data)
+    try:
+        if not isinstance(data, str):
+            data = str(data)
+    except RecursionError:
+        raise ValueError("Recursive structures detected in data. Please check for self-references.")
     
     # Convert the input data to bytes
     byte_data = data.encode('utf-8')
