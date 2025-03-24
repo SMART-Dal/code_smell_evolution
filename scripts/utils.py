@@ -181,7 +181,8 @@ class GitManager:
     @staticmethod
     def get_all_commits(repo_path, branch):
         """
-        Get all commits in a Git repository.
+        Get all commits in a Git repository. 
+        It will be sorted by commit date in ascending order.
 
         :param repo_path: Path to the local Git repository.
         :param branch: Branch name.
@@ -189,7 +190,9 @@ class GitManager:
         """
         repo = Repo(repo_path)
         commits = list(repo.iter_commits(branch))
-        return [(commit.hexsha, commit.committed_datetime) for commit in commits]
+        commit_pairs = [(commit.hexsha, commit.committed_datetime) for commit in commits]
+        commit_pairs.sort(key=lambda x: x[1])
+        return commit_pairs
     
     @staticmethod
     def get_file_content_at_commit(repo_path, commit_hash, file_path):

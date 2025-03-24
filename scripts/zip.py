@@ -2,7 +2,7 @@ import os
 import argparse
 import zipfile
 import config
-from corpus import prepare_corpus
+from corpus import prepare_repo
 
 def zip_dir(dir_path, zip_path):
     """
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     DESIGNITE_OP_DIR = os.path.join(config.OUTPUT_PATH, 'Designite_OP')
     REFMINER_OP_DIR = os.path.join(config.OUTPUT_PATH, 'RefMiner_OP')
     
-    (username, repo_name, _) = prepare_corpus(args.idx, clone=False)
+    (username, repo_name, _) = prepare_repo(args.idx, clone=False)
     
     if args.action == "unzip":
         P = os.path.join(DESIGNITE_OP_DIR, username, repo_name) if args.type == "smells" else os.path.join(REFMINER_OP_DIR, username)

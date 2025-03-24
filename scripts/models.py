@@ -212,7 +212,8 @@ class Refactoring:
         self.type_name: str = type_name
         self.description: str = description
         self.commit_hash: str = commit_hash
-        self.is_mapped: bool = False # True if the refactoring is mapped to a smell (can be used for smell removal or introduction)
+        self.is_mapped_to_introduction: bool = False
+        self.is_mapped_to_removal: bool = False
         self.left_changes: list[_RefactoringChange] = []
         self.right_changes: list[_RefactoringChange] = []
         
@@ -226,6 +227,8 @@ class Refactoring:
         return {
             "url": self.url,
             "type_name": self.type_name,
+            "is_mapped_to_introduction": self.is_mapped_to_introduction,
+            "is_mapped_to_removal": self.is_mapped_to_removal,
             "description": self.description,
             "commit_hash": self.commit_hash,
             "left_changes": [c.to_dict() for c in self.left_changes],

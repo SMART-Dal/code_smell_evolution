@@ -5,7 +5,7 @@ from utils import GitManager, FileUtils
 import datetime
 import shutil
 
-def prepare_corpus(repo_index=None, clone=True):
+def prepare_repo(repo_index=None, clone=True):
     if repo_index is None:
         raise ValueError("repo_index must be provided")
     
@@ -46,7 +46,7 @@ def prepare_corpus(repo_index=None, clone=True):
         return None
     
 def flush_repo(repo_index):
-    (_, _, repo_path) = prepare_corpus(repo_index, clone=False)
+    (_, _, repo_path) = prepare_repo(repo_index, clone=False)
     
     try:
         if os.path.exists(repo_path):
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     parser.add_argument("idx", type=int, help="index of the repository to process.")
     args = parser.parse_args()
   
-    repo = prepare_corpus(repo_index=args.idx)
+    repo = prepare_repo(repo_index=args.idx)
     current_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     corpus_info: dict[str, list[str]] = {}
     corpus_info_filename = f"corpus_info_{current_time}.json"

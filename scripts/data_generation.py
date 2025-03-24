@@ -3,7 +3,7 @@ import traceback
 import os
 import config
 import shutil
-from corpus import prepare_corpus, flush_repo
+from corpus import prepare_repo, flush_repo
 from runners import Designite, RefMiner
 from utils import GitManager, ColoredStr
 from zip import zip_dir
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     CURR_DIR = os.path.dirname(os.path.realpath(__file__))
     
     try:
-        (username, repo_name, repo_path) = prepare_corpus(REPO_IDX, clone=True)
+        (username, repo_name, repo_path) = prepare_repo(REPO_IDX, clone=True)
         default_branch = GitManager.get_default_branch(repo_path)
         
         if default_branch:

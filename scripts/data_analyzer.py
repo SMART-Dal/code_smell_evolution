@@ -244,7 +244,8 @@ class RepoDataAnalyzer:
                 smell_instance.days_span = (smell_instance.versions[-1].datetime - smell_instance.versions[0].datetime).days
                 introduced_index = next(i for i, (ch, _) in enumerate(self.all_commits) if ch == smell_instance.versions[0].commit_hash)
                 removed_index = next(i for i, (ch, _) in enumerate(self.all_commits) if ch == smell_instance.versions[-1].commit_hash)
-                smell_instance.commit_span =  introduced_index - removed_index
+                commit_span = removed_index - introduced_index
+                smell_instance.commit_span = commit_span if commit_span >= 0 else 0
                 
     @log_execution
     def _calculate_smell_methods_end_line(self):
@@ -358,11 +359,11 @@ class RepoDataAnalyzer:
                     if rc.file_path and self._check_file_intersection(smell_instance.get_file_path(), target_path=rc.file_path):
                         if smell_instance.get_smell_kind() == IMP_SMELL:
                             if self._check_smell_ref_intersection(smell_instance.introduced_smell().get_range(), rc.range):
-                                ref.is_mapped = True
+                                ref.is_mapped_to_introduction = True
                                 smell_instance.introduced_by_refactorings.append(ref)
                                 break
-                        else: # for other smells Arch and Design, no range check in a file
-                            ref.is_mapped = True
+                        else: # for Design smells, no range check in a file
+                            ref.is_mapped_to_introduction = True
                             smell_instance.introduced_by_refactorings.append(ref)
                             break
                 
@@ -374,18 +375,18 @@ class RepoDataAnalyzer:
                         if lc.file_path and self._check_file_intersection(smell_instance.get_file_path(), target_path=lc.file_path):
                             if smell_instance.get_smell_kind() == IMP_SMELL:
                                 if self._check_smell_ref_intersection(smell_instance.latest_smell().get_range(), lc.range):
-                                    ref.is_mapped = True
+                                    ref.is_mapped_to_removal = True
                                     smell_instance.removed_by_refactorings.append(ref)
                                     break
-                            else: # for other smells Arch and Design, no range check in a file
-                                ref.is_mapped = True
+                            else: # for Design smells, no range check in a file
+                                ref.is_mapped_to_removal = True
                                 smell_instance.removed_by_refactorings.append(ref)
                                 break
                                 
         # Collect unmapped refactorings
         for _, refs in self.refactorings.items():
             for ref in refs:
-                if not ref.is_mapped:
+                if not ref.is_mapped_to_removal or not ref.is_mapped_to_introduction:
                     self.unmapped_refactorings.append(ref)
     
     def _check_file_intersection(self, smell_file_path, target_path: str):
