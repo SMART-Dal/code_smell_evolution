@@ -7,7 +7,7 @@ class CorpusAnalyzer:
     def __init__(self):
         self.lib_dir = config.SMELL_REF_MAP_PATH
         self.maps_finsihed = 1
-        self.TOTAL_MAPS = 75
+        self.TOTAL_MAPS = 20
         self.total_smells = 0
         self.smells_merged = 0
         self.alive_smells = 0
