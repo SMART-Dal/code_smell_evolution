@@ -49,11 +49,11 @@ def analyze_corpus_data():
         traceback.print_exc()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run analysis on repo index")
-    parser.add_argument("idx", type=int, help="index of the repository to process.")
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser(description="Run analysis on repo index")
+    # parser.add_argument("idx", type=int, help="index of the repository to process.")
+    # args = parser.parse_args()
     
-    analyze_repo_data(args.idx)
+    # analyze_repo_data(args.idx)
         
-    # analyze_corpus_data()
+    analyze_corpus_data()
     

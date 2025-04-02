@@ -9,7 +9,10 @@ from utils import FileUtils
 DF_COLS = [
     "repo_name", "smell_kind", "smell_type", "is_alive",
     "movements", "chain_length",
-    "total_span", "introduced_commit_hash", "introduced_commit_date", "removed_commit_hash", "removed_commit_date"
+    "total_commits_span", "total_days_span",
+    "introduced_commit_hash", "introduced_commit_date",
+    "removed_commit_hash", "removed_commit_date",
+    "introduction_refactorings", "removal_refactorings",
 ]
 
 BATCH_SIZE = 10
@@ -20,7 +23,6 @@ class CorpusAnalyzer:
         self.plots_dir = config.PLOTS_PATH
         os.makedirs(self.plots_dir, exist_ok=True)
         self.corpus_bin = os.path.join(self.lib_dir, "corpus.csv")
-        # self.corpus = self.load_corpus()
             
     def load_corpus(self):
         maps = [
@@ -69,14 +71,14 @@ class CorpusAnalyzer:
             
             si["smell_kind"] = si["smell_versions"][-1]["smell_kind"]
             si["smell_type"] = si["smell_versions"][-1]["smell_name"]
-            del si["smell_versions"]
+            # del si["smell_versions"]
             
             # commit info
             si["introduced_commit_hash"] = si["commit_versions"][0]["commit_hash"]
             si["introduced_commit_date"] = si["commit_versions"][0]["datetime"]
             si["removed_commit_hash"] = si["commit_versions"][-1]["commit_hash"]
             si["removed_commit_date"] = si["commit_versions"][-1]["datetime"]
-            del si["commit_versions"]
+            # del si["commit_versions"]
             
             # refactorings pairs
             if si.get("introduced_by_refactorings"):
@@ -103,7 +105,8 @@ class CorpusAnalyzer:
             
             # commit info
             # total commits span, introudced hash and date, removed hash and date
-            t, i_h, i_d, r_h, r_d = self._get_commit_info(smell_instances, c)
+            i_h, i_d, r_h, r_d, span_c, span_d = self._get_commit_info(smell_instances, c)
+            i_refs, r_refs = self._get_refactoring_info(smell_instances, c)
            
             data.append({
                 "repo_name": repo_name,
@@ -112,11 +115,14 @@ class CorpusAnalyzer:
                 "is_alive": is_alive,
                 "movements": len(si["smell_versions"]), # number of movements soley based on smell info
                 "chain_length": len(c.get("chain")),
-                "total_span": t,
+                "total_commits_span": span_c,
+                "total_days_span": span_d,
                 "introduced_commit_hash": i_h,
                 "introduced_commit_date": i_d,
                 "removed_commit_hash": r_h,
-                "removed_commit_date": r_d
+                "removed_commit_date": r_d,
+                "introduction_refactorings": i_refs,
+                "removal_refactorings": r_refs,
             })
         
         return data
@@ -135,6 +141,8 @@ class CorpusAnalyzer:
         introduced_commit_date = None
         removed_commit_hash = None
         removed_commit_date = None
+        span_c = 0
+        span_d = 0
         
         for i, c in enumerate(chain.get("chain", [])):
             si = self._get_smell_instance(smell_instance_pairs, c)
@@ -144,5 +152,21 @@ class CorpusAnalyzer:
             if i == len(chain.get("chain")) - 1:
                 removed_commit_hash = si["commit_versions"][-1]["commit_hash"]
                 removed_commit_date = si["commit_versions"][-1]["datetime"]
+            span_c += int(si["commit_span"]) if si["commit_span"] is not None else 0
+            span_d += int(si["days_span"]) if si["days_span"] is not None else 0
                 
-        return introduced_commit_hash, introduced_commit_date, removed_commit_hash, removed_commit_date
+        return introduced_commit_hash, introduced_commit_date, removed_commit_hash, removed_commit_date, span_c, span_d
+    
+    def _get_refactoring_info(self, smell_instance_pairs, chain):
+        """
+        Get the refactoring info of a smell instance.
+        """
+        DELIMITER = ";"
+                
+        first_chain_item = chain.get("chain")[0]
+        first_si = self._get_smell_instance(smell_instance_pairs, first_chain_item)
+        
+        last_chain_item = chain.get("chain")[-1]
+        last_si = self._get_smell_instance(smell_instance_pairs, last_chain_item)
+        
+        return DELIMITER.join(set(first_si.get("introduced_by_refactorings", []))), DELIMITER.join(set(last_si.get("removed_by_refactorings", [])))
