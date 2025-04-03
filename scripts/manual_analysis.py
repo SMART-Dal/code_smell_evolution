@@ -164,58 +164,69 @@ class SampleGenerator:
 
         # Combine the sorted lists
         sorted_grouped = kind_a_sorted + kind_b_sorted
-
-        # for latex table generation
-        smells_order = []
-        ref_order = []
-        pairs = {}
-        for group in sorted_grouped:
-            if group["smell_name"] not in pairs:
-                pairs[group["smell_name"]] = []
-                if group["smell_name"] not in smells_order:
-                    smells_order.append(group["smell_name"])
-            pairs[group["smell_name"]].append((group["refactor_type"], group["occurance"]))
-            if group["refactor_type"] not in ref_order:
-                ref_order.append((group["refactor_type"], group["occurance"]))
         
-        print(f"Total smells: {len(smells_order)}")
-        smell_command_dict = {}
-        for smell_name in smells_order:
-            cleaned_smell_name = smell_name.replace(' ', '').replace('-', '')
-            caps_command_name = f"\\smell{cleaned_smell_name}"
-            smell_command_dict[smell_name] = caps_command_name
-            print(f"\\newcommand{{{caps_command_name}}}{{\srtype{{{smell_name}}}}}")
-            small_caps_command_name = f"\\smell{cleaned_smell_name.lower()}"
-            print(f"\\newcommand{{{small_caps_command_name}}}{{\srtype{{{smell_name.lower()}}}}}")
-            
-        ref_command_dict = {}
-        print(f"\nTotal refs: {len(ref_order)}")
-        for ref, _ in ref_order:
-            caps_command_name = f"\\ref{ref.replace(' ', '')}"
-            print(f"\\newcommand{{{caps_command_name}}}{{\srtype{{{ref}}}}}")
-            ref_command_dict[ref] = caps_command_name
-            small_caps_command_name = f"\\ref{ref.replace(' ', '').lower()}"
-            print(f"\\newcommand{{{small_caps_command_name}}}{{\srtype{{{ref.lower()}}}}}")
+        # latex generation
+        pass
         
         print("\n\nTABLE\n\n")
-        # for smell_name, refactorings in pairs.items():
-        #     smell_order_id = smells_order.index(smell_name)+1
-        #     print_line = f"s\\textsubscript{{{smell_order_id}}}[{smell_name}]  &   "
-        #     for ref in refactorings:
-        #         print_line += f"r\\textsubscript{{{ref_order.index(ref)+1}}}[{ref}], " if ref != refactorings[-1] else f"r\\textsubscript{{{ref_order.index(ref)+1}}}[{ref}]"
-        #     # ref_order_ids = [ref_order.index(ref) for ref in refactorings]
-        #     # print(f"S{smell_order_id}[{smell_name}] & {', '.join([f'R{ref_order.index(ref)}[{ref}]' for ref in refactorings])} \\\\")
-        #     print(print_line + "    \\\\")
+        print("Smell Name, Refactor Type, Occurence")
+        for group in sorted_grouped:
+            smell_name = group["smell_name"]
+            ref_type = group["refactor_type"]
+            occurence = group["occurance"]
+            print(f"{smell_name}, {ref_type}, {occurence}")
+
+        # for latex table generation
+        # smells_order = []
+        # ref_order = []
+        # pairs = {}
+        # for group in sorted_grouped:
+        #     if group["smell_name"] not in pairs:
+        #         pairs[group["smell_name"]] = []
+        #         if group["smell_name"] not in smells_order:
+        #             smells_order.append(group["smell_name"])
+        #     pairs[group["smell_name"]].append((group["refactor_type"], group["occurance"]))
+        #     if group["refactor_type"] not in ref_order:
+        #         ref_order.append((group["refactor_type"], group["occurance"]))
         
-        for smell_name, refactorings in pairs.items():
-            print_line = f"{smell_command_dict[smell_name]} & "
-            for i, (ref, occ) in enumerate(refactorings):
-                ref_line = f"{ref_command_dict[ref]}({occ})"
-                if i < len(refactorings) - 1:
-                    print_line += f"{ref_line}, "
-                else:
-                    print_line += f"{ref_line}"
-            print(print_line + " \\\\")
+        # print(f"Total smells: {len(smells_order)}")
+        # smell_command_dict = {}
+        # for smell_name in smells_order:
+        #     cleaned_smell_name = smell_name.replace(' ', '').replace('-', '')
+        #     caps_command_name = f"\\smell{cleaned_smell_name}"
+        #     smell_command_dict[smell_name] = caps_command_name
+        #     print(f"\\newcommand{{{caps_command_name}}}{{\srtype{{{smell_name}}}}}")
+        #     small_caps_command_name = f"\\smell{cleaned_smell_name.lower()}"
+        #     print(f"\\newcommand{{{small_caps_command_name}}}{{\srtype{{{smell_name.lower()}}}}}")
+            
+        # ref_command_dict = {}
+        # print(f"\nTotal refs: {len(ref_order)}")
+        # for ref, _ in ref_order:
+        #     caps_command_name = f"\\ref{ref.replace(' ', '')}"
+        #     print(f"\\newcommand{{{caps_command_name}}}{{\srtype{{{ref}}}}}")
+        #     ref_command_dict[ref] = caps_command_name
+        #     small_caps_command_name = f"\\ref{ref.replace(' ', '').lower()}"
+        #     print(f"\\newcommand{{{small_caps_command_name}}}{{\srtype{{{ref.lower()}}}}}")
+        
+        # print("\n\nTABLE\n\n")
+        # # for smell_name, refactorings in pairs.items():
+        # #     smell_order_id = smells_order.index(smell_name)+1
+        # #     print_line = f"s\\textsubscript{{{smell_order_id}}}[{smell_name}]  &   "
+        # #     for ref in refactorings:
+        # #         print_line += f"r\\textsubscript{{{ref_order.index(ref)+1}}}[{ref}], " if ref != refactorings[-1] else f"r\\textsubscript{{{ref_order.index(ref)+1}}}[{ref}]"
+        # #     # ref_order_ids = [ref_order.index(ref) for ref in refactorings]
+        # #     # print(f"S{smell_order_id}[{smell_name}] & {', '.join([f'R{ref_order.index(ref)}[{ref}]' for ref in refactorings])} \\\\")
+        # #     print(print_line + "    \\\\")
+        
+        # for smell_name, refactorings in pairs.items():
+        #     print_line = f"{smell_command_dict[smell_name]} & "
+        #     for i, (ref, occ) in enumerate(refactorings):
+        #         ref_line = f"{ref_command_dict[ref]}({occ})"
+        #         if i < len(refactorings) - 1:
+        #             print_line += f"{ref_line}, "
+        #         else:
+        #             print_line += f"{ref_line}"
+        #     print(print_line + " \\\\")
 
         # Save the sorted observations to a JSON file
         # output_file_path = os.path.join(output_dir, 'observations.json')
