@@ -23,8 +23,32 @@ class CorpusAnalyzer:
         self.plots_dir = config.PLOTS_PATH
         os.makedirs(self.plots_dir, exist_ok=True)
         self.corpus_bin = os.path.join(self.lib_dir, "corpus.csv")
-            
+        self.corpus_df = pd.DataFrame(columns=DF_COLS)
+        
     def load_corpus(self):
+        """
+        Load the corpus if it exists, otherwise generate it.
+        """
+        if os.path.exists(self.corpus_bin):
+            self.corpus_df = self.read_corpus()
+            print(f"Loaded corpus with {len(self.corpus_df)} records.")
+            print(f"Shape: {self.corpus_df.shape}")
+        else:
+            print(f"Corpus file not found: {self.corpus_bin}. Generating corpus...")
+            self.generate_corpus()
+            self.corpus_df = self.read_corpus()
+        
+    def read_corpus(self):
+        """
+        Read the corpus from the CSV file.
+        """
+        if not os.path.exists(self.corpus_bin):
+            raise FileNotFoundError(f"Corpus file not found: {self.corpus_bin}")
+        
+        df = pd.read_csv(self.corpus_bin)
+        return df
+            
+    def generate_corpus(self):
         maps = [
             file_path for file_path in FileUtils.traverse_directory(self.lib_dir)
             if file_path.endswith('.json') and not file_path.endswith('.stats.json') and not file_path.endswith('.chain.json')
