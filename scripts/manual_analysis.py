@@ -1,11 +1,9 @@
 import os
-import re
 import random
 import config
 import pandas as pd
 from utils import FileUtils
 from corpus_analyzer import DF_COLS
-from concurrent.futures import ThreadPoolExecutor
 
 class SampleGenerator:
     def __init__(self):
@@ -51,48 +49,44 @@ class SampleGenerator:
         print(f"Top {k} pairs saved to {output_file}")
     
     def generate_analysis_samples(self):
-
-        def process_row(row):
-            smell_type = row['smell_type']
-            refactoring_type = row['removal_refactorings']
-            count = row['count']
-            print(f"Generating samples for smell type: {smell_type}, refactoring type: {refactoring_type}, count: {count}")
-            samples = self.pick_random_samples(smell_type, refactoring_type)
-            
-            updated_samples = []
-            for s in samples:
-                s: dict
-                updated_sample = {
-                    "human_analysis": {
-                        "correct_mapping?": False,
-                        "decreases_severity?": False,
-                        "reason?": ""
-                    },
-                    "llm_analysis": {
-                        "correct_mapping?": False,
-                        "decreases_severity?": False,
-                        "reason?": ""
-                    },
-                    **s
-                }
-                updated_samples.append(updated_sample)
-            
-            self.save_samples_to_json(updated_samples, smell_type, refactoring_type)
-
-        with ThreadPoolExecutor(max_workers=4) as executor:
-            futures = [executor.submit(process_row, row) for _, row in self.top_k.iterrows()]
-            
-            # Wait for all threads to complete
-            for future in futures:
-                future.result()
         
-    def pick_random_samples(self, smell_type, refactoring_type):
-        SEED = 42
-        SELECT_SAMPLES = 6
+        top_k_pairs = {}
+        for _, row in self.top_k.iterrows():
+            if row['smell_type'] not in top_k_pairs:
+                top_k_pairs[row['smell_type']] = []
+            if row['removal_refactorings'] not in top_k_pairs[row['smell_type']]:
+                top_k_pairs[row['smell_type']].append(row['removal_refactorings'])
+
+        all_samples = self.get_all_samples(top_k_pairs)
         
+        for smell_type, refactoring_types in top_k_pairs.items():
+            for ref in refactoring_types:
+                samples_subset = all_samples.get(f"{smell_type}_{ref}", [])
+                picked_samples = self.pick_random_samples(smell_type, ref, samples_subset)
+                
+                updated_samples = []
+                for s in picked_samples:
+                    s: dict
+                    updated_sample = {
+                        "human_analysis": {
+                            "correct_mapping?": False,
+                            "decreases_severity?": False,
+                            "reason?": ""
+                        },
+                        "llm_analysis": {
+                            "correct_mapping?": False,
+                            "decreases_severity?": False,
+                            "reason?": ""
+                        },
+                        **s
+                    }
+                    updated_samples.append(updated_sample)
+                
+                self.save_samples_to_json(updated_samples, smell_type, ref)
+    
+    def get_all_samples(self, top_k_pairs):
+        all_samples = {}
         paths = list(FileUtils.traverse_directory(self.lib_dir))
-        
-        samples = []
         for file_path in random.sample(paths, len(paths)):
             file_path: str
             if file_path.endswith('.json') and not file_path.endswith('.stats.json') and not file_path.endswith('.chain.json'):
@@ -104,29 +98,34 @@ class SampleGenerator:
                 
                 for c in map_chain_data:
                     c: dict
-                    if len(samples) >= SELECT_SAMPLES*5:
-                        break
                     
                     latest_chain_item = c.get("chain")[-1]
                     si = self._get_smell_instance(smell_instances, latest_chain_item)
                     
                     si_smell_type = si["smell_versions"][-1]["smell_name"]
-                    if si_smell_type == smell_type:
+                    if si_smell_type in top_k_pairs:
+                        if "introduced_by_refactorings" in si:
+                            del si["introduced_by_refactorings"]
                         for ref in si["removed_by_refactorings"]:
                             ref: dict
-                            if ref["type_name"] == refactoring_type:
-                                if "introduced_by_refactorings" in si:
-                                    del si["introduced_by_refactorings"]
+                            if ref["type_name"] in top_k_pairs[si_smell_type]:
                                 si["removed_by_refactorings"] = [
-                                    r for r in si["removed_by_refactorings"] if r["type_name"] == refactoring_type
+                                    r for r in si["removed_by_refactorings"] if r["type_name"] == ref["type_name"]
                                 ]
                                 
-                                samples.append({
+                                if f"{si_smell_type}_{ref['type_name']}" not in all_samples:
+                                    all_samples[f"{si_smell_type}_{ref['type_name']}"] = []
+                                all_samples[f"{si_smell_type}_{ref['type_name']}"].append({
                                     "repo_full_name": repo_full_name,
                                     "branch": metadata.get("branch", ""),
                                     **si
                                 })
-                                break
+        
+        return all_samples
+        
+    def pick_random_samples(self, smell_type, refactoring_type, samples):
+        SEED = 42
+        SELECT_SAMPLES = 6
     
         print(f"Total samples collected for {smell_type} and {refactoring_type}: {len(samples)}")
         
