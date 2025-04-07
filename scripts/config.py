@@ -31,6 +31,8 @@ class OpenAI:
         "Authorization" : f"Bearer {API_KEY}",
         "Content-Type" : "application/json"
     }
+    TPM = 200000
+    RPM = 500
 
 class DeepSeek:
     MODEL = "deepseek-chat"
