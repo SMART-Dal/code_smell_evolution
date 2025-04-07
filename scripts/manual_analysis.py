@@ -5,6 +5,7 @@ import config
 import pandas as pd
 from utils import FileUtils
 from corpus_analyzer import DF_COLS
+import threading
 
 class SampleGenerator:
     def __init__(self):
@@ -50,7 +51,8 @@ class SampleGenerator:
         print(f"Top {k} pairs saved to {output_file}")
     
     def generate_analysis_samples(self):
-        for _, row in self.top_k.iterrows():
+
+        def process_row(row):
             smell_type = row['smell_type']
             refactoring_type = row['removal_refactorings']
             count = row['count']
@@ -76,13 +78,31 @@ class SampleGenerator:
                 updated_samples.append(updated_sample)
             
             self.save_samples_to_json(updated_samples, smell_type, refactoring_type)
+
+        threads = []
+        for _, row in self.top_k.iterrows():
+            thread = threading.Thread(target=process_row, args=(row,))
+            threads.append(thread)
+            thread.start()
+
+            # Limit to 4 threads at a time
+            if len(threads) >= 4:
+                for t in threads:
+                    t.join()
+                threads = []
+
+        # Join any remaining threads
+        for t in threads:
+            t.join()
         
     def pick_random_samples(self, smell_type, refactoring_type):
         SEED = 42
         SELECT_SAMPLES = 6
         
+        paths = list(FileUtils.traverse_directory(self.lib_dir))
+        
         samples = []
-        for file_path in FileUtils.traverse_directory(self.lib_dir):
+        for file_path in random.sample(paths, len(paths)):
             file_path: str
             if file_path.endswith('.json') and not file_path.endswith('.stats.json') and not file_path.endswith('.chain.json'):
                 repo_full_name = os.path.basename(file_path).replace('.json', '')
@@ -93,6 +113,9 @@ class SampleGenerator:
                 
                 for c in map_chain_data:
                     c: dict
+                    if len(samples) >= SELECT_SAMPLES*15:
+                        break
+                    
                     latest_chain_item = c.get("chain")[-1]
                     si = self._get_smell_instance(smell_instances, latest_chain_item)
                     
