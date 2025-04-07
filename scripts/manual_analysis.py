@@ -5,7 +5,7 @@ import config
 import pandas as pd
 from utils import FileUtils
 from corpus_analyzer import DF_COLS
-import threading
+from concurrent.futures import ThreadPoolExecutor
 
 class SampleGenerator:
     def __init__(self):
@@ -79,21 +79,12 @@ class SampleGenerator:
             
             self.save_samples_to_json(updated_samples, smell_type, refactoring_type)
 
-        threads = []
-        for _, row in self.top_k.iterrows():
-            thread = threading.Thread(target=process_row, args=(row,))
-            threads.append(thread)
-            thread.start()
-
-            # Limit to 4 threads at a time
-            if len(threads) >= 4:
-                for t in threads:
-                    t.join()
-                threads = []
-
-        # Join any remaining threads
-        for t in threads:
-            t.join()
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            futures = [executor.submit(process_row, row) for _, row in self.top_k.iterrows()]
+            
+            # Wait for all threads to complete
+            for future in futures:
+                future.result()
         
     def pick_random_samples(self, smell_type, refactoring_type):
         SEED = 42
@@ -113,7 +104,7 @@ class SampleGenerator:
                 
                 for c in map_chain_data:
                     c: dict
-                    if len(samples) >= SELECT_SAMPLES*15:
+                    if len(samples) >= SELECT_SAMPLES*5:
                         break
                     
                     latest_chain_item = c.get("chain")[-1]
