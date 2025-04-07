@@ -87,6 +87,7 @@ class SampleGenerator:
             if file_path.endswith('.json') and not file_path.endswith('.stats.json') and not file_path.endswith('.chain.json'):
                 repo_full_name = os.path.basename(file_path).replace('.json', '')
                 map_data = FileUtils.load_json_file(file_path)
+                metadata = map_data.get("metadata", {})
                 map_chain_data = FileUtils.load_json_file(file_path.replace('.json', '.chain.json'))
                 smell_instances = map_data.get("smell_instances", [])
                 
@@ -108,7 +109,7 @@ class SampleGenerator:
                                 
                                 samples.append({
                                     "repo_full_name": repo_full_name,
-                                    "branch": c.get("branch"),
+                                    "branch": metadata.get("branch", ""),
                                     **si
                                 })
                                 break
