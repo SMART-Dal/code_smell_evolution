@@ -108,18 +108,20 @@ class SampleGenerator:
                             del si["introduced_by_refactorings"]
                         for ref in si["removed_by_refactorings"]:
                             ref: dict
-                            if ref["type_name"] in top_k_pairs[si_smell_type]:
-                                si["removed_by_refactorings"] = [
-                                    r for r in si["removed_by_refactorings"] if r["type_name"] == ref["type_name"]
-                                ]
-                                
-                                if f"{si_smell_type}_{ref['type_name']}" not in all_samples:
-                                    all_samples[f"{si_smell_type}_{ref['type_name']}"] = []
-                                all_samples[f"{si_smell_type}_{ref['type_name']}"].append({
-                                    "repo_full_name": repo_full_name,
-                                    "branch": metadata.get("branch", ""),
-                                    **si
-                                })
+                            for top_k_r in top_k_pairs[si_smell_type]:
+                                if top_k_r==ref["type_name"]:
+                                    removed_by_refactorings = [
+                                        r for r in si["removed_by_refactorings"] if r["type_name"] == top_k_r
+                                    ]
+                                    
+                                    if f"{si_smell_type}_{top_k_r}" not in all_samples:
+                                        all_samples[f"{si_smell_type}_{top_k_r}"] = []
+                                    all_samples[f"{si_smell_type}_{top_k_r}"].append({
+                                        "repo_full_name": repo_full_name,
+                                        "branch": metadata.get("branch", ""),
+                                        "smell_versions": si["smell_versions"],
+                                        "removed_by_refactorings": removed_by_refactorings,
+                                    })
         
         return all_samples
         
