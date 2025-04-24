@@ -18,6 +18,7 @@ OUTPUT_PATH = os.path.join(ROOT_PATH, "output")
 ZIP_LIB = os.path.join(OUTPUT_PATH, "zips")
 PLOTS_PATH = os.path.join(OUTPUT_PATH, "plots")
 MANUAL_ANALYSIS_PATH = os.path.join(OUTPUT_PATH, "manual_analysis")
+MANUAL_ANALYSIS_FOR_UNMAPPED_PATH = os.path.join(OUTPUT_PATH, "manual_analysis_for_unmapped")
 
 SMELL_REF_MAP_PATH = os.path.join(OUTPUT_PATH, "smell_ref_map")
 
