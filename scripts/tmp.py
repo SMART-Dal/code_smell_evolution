@@ -43,9 +43,7 @@ def calculate_kappa():
     kappa_score = cohen_kappa_score(human_res, llm_res)
     print(f"Cohen's Kappa Score: {kappa_score}")
 
-def survival_analysis():
-    CUTOFF_COMMITS = 15000
-    CUTOFF_DAYS = 3650  # 10 years as a cutoff for days
+def survival_analysis():    
     FIGSIZE_PER_PLOT = (7, 6)
     
     corpus_path = os.path.join(config.SMELL_REF_MAP_PATH, 'corpus.csv')
@@ -60,10 +58,13 @@ def survival_analysis():
     ###############
     ### COMMITS ###
     ###############
+    CUTOFF_COMMITS = 15000
+    CHECKPOINTS_COMMITS = [10, 100]
     fig_commits, axes_commits = plt.subplots(1, len(smell_kinds), figsize=(FIGSIZE_PER_PLOT[0]*len(smell_kinds), FIGSIZE_PER_PLOT[1]), squeeze=False)
     for idx, smell_kind in enumerate(smell_kinds):
         ax = axes_commits[0, idx]
         kind_df = df[df["smell_kind"] == smell_kind]
+        survival_table = []
 
         # Plot by smell_type within the smell_kind
         for smell in kind_df["smell_type"].unique():
@@ -80,20 +81,31 @@ def survival_analysis():
             if len(durations) > 0:
                 kmf.fit(durations=durations, event_observed=events, label=smell)
                 kmf.plot_survival_function(ax=ax, ci_show=False, show_censors=True)
+                survival_probs = {cp: kmf.predict(cp) for cp in CHECKPOINTS_COMMITS}
+                survival_probs["smell_type"] = smell
+                survival_table.append(survival_probs)
                 
         ax.set_title(f"{smell_kind} Smells")
-        ax.set_xlabel("Commits")
-        # ax.set_xscale("log")
+        ax.set_xlabel("Commits (Log Scale)")
+        ax.set_xscale("log")
         ax.set_ylabel("Survival Probability")
-        ax.set_yscale("log")
         ax.grid(True)
         ax.legend(title="Smell Type")
         
-        # Format y-axis ticks to show up to 4 decimal points
-        ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y:.4f}'))
+        # Show x-axis ticks explicitly
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{x:.0f}'))
+
+        survival_table_df = pd.DataFrame(survival_table).set_index("smell_type")
+        print(f"\nSurvival Table for {smell_kind} Smells:")
+        print(survival_table_df)
+        
+        # Calculate the average survival probabilities across all smell types
+        avg_survival_probs = survival_table_df.mean()
+        print("\nAverage Survival Probabilities:")
+        print(avg_survival_probs)
 
     plt.tight_layout()
-    commits_plot_path = os.path.join(plot_path, f"kaplan_meier_commits_y_scaled.png")
+    commits_plot_path = os.path.join(plot_path, f"kaplan_meier_commits_x_scaled.png")
     plt.savefig(commits_plot_path)
     plt.close()
     print(f"Kaplan-Meier plot (by commits) for saved to {commits_plot_path}")
@@ -101,11 +113,14 @@ def survival_analysis():
     ###############
     #### DAYS #####
     ###############
+    CUTOFF_DAYS = 3650  # 10 years as a cutoff for days
+    CHECKPOINTS_DAYS = [10, 100]
     fig_days, axes_days = plt.subplots(1, len(smell_kinds), figsize=(FIGSIZE_PER_PLOT[0]*len(smell_kinds), FIGSIZE_PER_PLOT[1]), squeeze=False)
         
     for idx, smell_kind in enumerate(smell_kinds):
         ax = axes_days[0, idx]
         kind_df = df[df["smell_kind"] == smell_kind]
+        survival_table = []
 
         for smell in kind_df["smell_type"].unique():
             kmf = KaplanMeierFitter()
@@ -121,20 +136,31 @@ def survival_analysis():
             if len(durations) > 0:
                 kmf.fit(durations=durations, event_observed=events, label=smell)
                 kmf.plot_survival_function(ax=ax, ci_show=False, show_censors=True)
+                survival_probs = {cp: kmf.predict(cp) for cp in CHECKPOINTS_DAYS}
+                survival_probs["smell_type"] = smell
+                survival_table.append(survival_probs)
         
         ax.set_title(f"{smell_kind} Smells")
-        ax.set_xlabel("Days")
-        # ax.set_xscale("log")
+        ax.set_xlabel("Days (Log Scale)")
+        ax.set_xscale("log")
         ax.set_ylabel("Survival Probability")
-        ax.set_yscale("log")
         ax.grid(True)
         ax.legend(title="Smell Type")
         
-        # Format y-axis ticks to show up to 4 decimal points
-        ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y:.4f}'))
+        # Show x-axis ticks explicitly
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{x:.0f}'))
+        
+        survival_table_df = pd.DataFrame(survival_table).set_index("smell_type")
+        print(f"\nSurvival Table for {smell_kind} Smells:")
+        print(survival_table_df)
+        
+        # Calculate the average survival probabilities across all smell types
+        avg_survival_probs = survival_table_df.mean()
+        print("\nAverage Survival Probabilities:")
+        print(avg_survival_probs)
 
     plt.tight_layout()
-    days_plot_path = os.path.join(plot_path, f"kaplan_meier_days_y_scaled.png")
+    days_plot_path = os.path.join(plot_path, f"kaplan_meier_days_x_scaled.png")
     plt.savefig(days_plot_path)
     plt.close()
     print(f"Kaplan-Meier plot (by days) for saved to {days_plot_path}")
@@ -265,5 +291,41 @@ def sankey_info():
     for _, row in grouped2.iterrows():
         print(f"{row['moved']} [{row['count']}] {row['mapping']}")
 
+def group_unmapped_manual_analysis_results():
+    target_dir = config.MANUAL_ANALYSIS_FOR_UNMAPPED_PATH
+    reason_to_files = {}
+
+    for f in FileUtils.traverse_directory(target_dir):
+        f_data = FileUtils.load_json_file(f)
+        for d in f_data:
+            reason = d["human_analysis"]["reason?"]
+            if reason and reason.strip():  # Skip empty or whitespace-only reasons
+                file_basename = os.path.basename(f).split('.')[0]
+                if reason not in reason_to_files:
+                    reason_to_files[reason] = {}
+                if file_basename not in reason_to_files[reason]:
+                    reason_to_files[reason][file_basename] = 0
+                reason_to_files[reason][file_basename] += 1
+
+    # Create a DataFrame where reasons are columns and smell names are rows
+    all_smell_names = sorted({smell for smells in reason_to_files.values() for smell in smells})
+    all_reasons = sorted(reason_to_files.keys())
+
+    table_data = []
+    for smell_name in all_smell_names:
+        row = []
+        for reason in all_reasons:
+            row.append(reason_to_files.get(reason, {}).get(smell_name, 0))
+        table_data.append(row)
+
+    reason_smell_table = pd.DataFrame(table_data, index=all_smell_names, columns=all_reasons)
+    print("\nReason-Smell Table:")
+    print(reason_smell_table)
+
+    # Save the table to a CSV file
+    output_csv_path = os.path.join(config.OUTPUT_PATH, "reason_unmapped_smell_table.csv")
+    reason_smell_table.to_csv(output_csv_path)
+    print(f"Reason-Smell Table saved to {output_csv_path}")
+
 if __name__ == "__main__":
-    sankey_info()
+    survival_analysis()

@@ -17,6 +17,9 @@ def no_removal_refs():
     # Group by smell_type
     total_by_type = df.groupby('smell_type').size()
     no_removal_by_type = no_removal_refactorings.groupby('smell_type').size()
+    
+    print(f"total no_removal_by_type: {no_removal_by_type.sum()}")
+    print(f"Percentage of total no_removal_by_type compared to total: {(no_removal_by_type.sum() / total_by_type.sum()) * 100:.2f}%")
 
     # Calculate percentage
     percent_no_removal = (no_removal_by_type / total_by_type * 100).sort_values(ascending=True)
@@ -59,7 +62,7 @@ def no_removal_refs():
     plt_save_dir = os.path.join(config.PLOTS_PATH)
     os.makedirs(plt_save_dir, exist_ok=True)
     plot_path = os.path.join(plt_save_dir, 'unmapped_smell_instances.png')
-    plt.savefig(plot_path)
+    # plt.savefig(plot_path)
     plt.close()
 
 def unmapped_refactorings():
@@ -105,4 +108,4 @@ def unmapped_refactorings():
             f.write(f"{r.replace('_', ' ')} & ${count}$ & ${percentage:.2f}\\%$ \\\\\n")
 
 if __name__ == "__main__":
-    unmapped_refactorings()
+    no_removal_refs()
