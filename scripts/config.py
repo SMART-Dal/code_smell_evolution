@@ -27,14 +27,10 @@ SMELL_SKIP_COLS = ["Project Name"]
 class OpenAI:
     MODEL = "gpt-4o-mini"
     ENDPOINT = "https://api.openai.com/v1/chat/completions"
-    API_KEY = "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"
+    API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     HEADERS = {
         "Authorization" : f"Bearer {API_KEY}",
         "Content-Type" : "application/json"
     }
     TPM = 200000
     RPM = 500
-
-class DeepSeek:
-    MODEL = "deepseek-chat"
-    API_KEY = "sk-b2d8f377c49a4af79d4e99526e074bd9"

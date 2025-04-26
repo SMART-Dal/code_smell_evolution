@@ -2,6 +2,7 @@ import os
 import random
 import config
 import pandas as pd
+from sklearn.metrics import cohen_kappa_score
 from utils import FileUtils
 from corpus_analyzer import DF_COLS
 
@@ -269,10 +270,57 @@ class UnmappedSampleGenerator:
         output_file_path = os.path.join(output_dir, f'{smell_type}.json')
         FileUtils.save_json_file(output_file_path, samples)
 
-if __name__ == "__main__":
-    # sample_generator = SampleGenerator()
-    # sample_generator.top_k_pairs(k=5)
-    # sample_generator.generate_analysis_samples()
-    unmapped_sample_generator = UnmappedSampleGenerator()
-    unmapped_sample_generator.get_smell_types()
-    unmapped_sample_generator.generate_analysis_samples()
+def group_unmapped_manual_analysis_results():
+    target_dir = config.MANUAL_ANALYSIS_FOR_UNMAPPED_PATH
+    reason_to_files = {}
+
+    for f in FileUtils.traverse_directory(target_dir):
+        f_data = FileUtils.load_json_file(f)
+        for d in f_data:
+            reason = d["human_analysis"]["reason?"]
+            if reason and reason.strip():  # Skip empty or whitespace-only reasons
+                file_basename = os.path.basename(f).split('.')[0]
+                if reason not in reason_to_files:
+                    reason_to_files[reason] = {}
+                if file_basename not in reason_to_files[reason]:
+                    reason_to_files[reason][file_basename] = 0
+                reason_to_files[reason][file_basename] += 1
+
+    # Create a DataFrame where reasons are columns and smell names are rows
+    all_smell_names = sorted({smell for smells in reason_to_files.values() for smell in smells})
+    all_reasons = sorted(reason_to_files.keys())
+
+    table_data = []
+    for smell_name in all_smell_names:
+        row = []
+        for reason in all_reasons:
+            row.append(reason_to_files.get(reason, {}).get(smell_name, 0))
+        table_data.append(row)
+
+    reason_smell_table = pd.DataFrame(table_data, index=all_smell_names, columns=all_reasons)
+    print("\nReason-Smell Table:")
+    print(reason_smell_table)
+
+    # Save the table to a CSV file
+    output_csv_path = os.path.join(config.OUTPUT_PATH, "reason_unmapped_smell_table.csv")
+    reason_smell_table.to_csv(output_csv_path)
+    print(f"Reason-Smell Table saved to {output_csv_path}")
+
+def calculate_kappa():
+    human_res = []
+    llm_res = []
+    
+    target_dir = config.MANUAL_ANALYSIS_PATH
+    for f in FileUtils.traverse_directory(target_dir):        
+        f_data = FileUtils.load_json_file(f)
+        
+        for d in f_data:
+            try:
+                human_res.append(d["human_analysis"]["correct_mapping?"])
+                llm_res.append(d["llm_analysis"]["correct_mapping?"])
+            except Exception as e:
+                print(f"An error occurred: {e}")
+        
+    # Calculate Cohen's Kappa score
+    kappa_score = cohen_kappa_score(human_res, llm_res)
+    print(f"Cohen's Kappa Score: {kappa_score}")

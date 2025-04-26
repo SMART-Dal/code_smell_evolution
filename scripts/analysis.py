@@ -40,20 +40,17 @@ def analyze_corpus_data():
         print(f"\n {ColoredStr.cyan('Analyzing corpus data...')}")
         analyzer = CorpusAnalyzer()
         analyzer.load_corpus()
-        # analyzer.generate_top_k_plots()
-        # analyzer.total_commits_analyzed()
-        # analyzer.process_unmapped_refactorigns()
-        # analyzer.process_unmapped_smells()
     except Exception as e:
         print(ColoredStr.red(e))
         traceback.print_exc()
 
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser(description="Run analysis on repo index")
-    # parser.add_argument("idx", type=int, help="index of the repository to process.")
-    # args = parser.parse_args()
+    parser = argparse.ArgumentParser(description="Run analysis on repo index or entire corpus")
+    parser.add_argument("idx", type=int, nargs="?", help="index of the repository to process. If not provided, corpus analysis will be performed.")
+    args = parser.parse_args()
     
-    # analyze_repo_data(args.idx)
-        
-    analyze_corpus_data()
+    if args.idx is not None:
+        analyze_repo_data(args.idx)
+    else:
+        analyze_corpus_data()
     
