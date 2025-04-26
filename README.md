@@ -1,7 +1,5 @@
 # Code smell evolution and refactoring: Empirical study
 
-![GitHub](https://img.shields.io/github/license/SMART-Dal/code_smell_evolution)
-
 Code smells serve as indicators of underlying quality issues that negatively impact software maintainability. Refactoring is a widely recognized technique for improving code quality by restructuring code. This study aims to shed light, to the best of our knowledge for the first time in the literature, on code smells and the types of refactorings that one can apply to address such smells. In this empirical study, we aim to investigate the evolution of code smells and the impact of applied refactoring techniques to offer developers actionable advice to make better decisions about when and how to refactor code. This study examines $87$ open-source Java repositories to investigate the lifespan of code smells, the effectiveness of refactorings in resolving them, and their broader relationship with refactoring practices. Our findings provide a detailed mapping between specific refactoring techniques and various design and implementation smell categories. We combine automated detection with manual analysis to deepen our understanding of the interactions between code smells and refactoring.
 
 **<div style="text-align: center">Approach Overview</div>**

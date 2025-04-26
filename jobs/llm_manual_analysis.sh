@@ -6,8 +6,8 @@
 #SBATCH --mem-per-cpu=8G
 #SBATCH --time=2:00:00          # Process limit for each task
 
-#SBATCH --account=def-tusharma
-#SBATCH --mail-user=gautam@dal.ca
+#SBATCH --account=xxxxx
+#SBATCH --mail-user=xxxxx
 #SBATCH --mail-type=ALL
 
 repo_name="code_smell_evolution_postprocess"

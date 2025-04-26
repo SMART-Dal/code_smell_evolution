@@ -7,8 +7,8 @@
 #SBATCH --array=0-2             # Array range for 6 tasks
 #SBATCH --time=15:00          # Process limit for each task
 
-#SBATCH --account=def-tusharma
-#SBATCH --mail-user=gautam@dal.ca
+#SBATCH --account=xxxxx
+#SBATCH --mail-user=xxxxx
 #SBATCH --mail-type=ALL
 
 repo_name="code_smell_evolution_CORPUS"
