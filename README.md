@@ -127,4 +127,4 @@ Make changes to the `scripts/config.py` file to change the configuration of the 
 
 ### License
 
-[Apache-2.0](https://github.com/SMART-Dal/extract-method-identification/blob/main/LICENSE)
+[Apache-2.0](https://anonymous.4open.science/r/code_smell_evolution/LICENSE)
