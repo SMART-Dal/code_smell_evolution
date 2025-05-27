@@ -6,7 +6,7 @@ IMP_SMELL = "Implementation"
 VALID_SMELL_KINDS = frozenset({DESIGN_SMELL, IMP_SMELL})
     
 class Smell:
-    def __init__(self, package_name, smell_kind, smell_name, cause):
+    def __init__(self, package_name, smell_kind, smell_name):
         self._validate_smell_kind(smell_kind)
         
         self.package_name: str = package_name
@@ -18,7 +18,7 @@ class Smell:
         
         self.smell_kind: str = smell_kind  # Design, Implementation
         self.smell_name: str = smell_name
-        self.cause: str = cause
+        # self.cause: str = cause
 
     def _validate_smell_kind(self, smell_kind):
         if smell_kind not in VALID_SMELL_KINDS:
@@ -36,7 +36,7 @@ class Smell:
             "method_end_ln": self.method_end_ln,
             "smell_kind": self.smell_kind,
             "smell_name": self.smell_name,
-            "cause": self.cause
+            # "cause": self.cause
         }
         
     def hash(self):
@@ -55,7 +55,7 @@ class Smell:
             self.package_name,
             self.smell_kind,
             self.smell_name,
-            self.cause
+            # self.cause
         )
         new_smell.type_name = self.type_name
         new_smell.method_name = self.method_name

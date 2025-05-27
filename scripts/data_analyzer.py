@@ -13,7 +13,7 @@ class RepoDataAnalyzer:
     def __init__(self, username: str, repo_name: str, repo_path: str, branch: str):
         self.slurm_dir = os.environ.get("SLURM_TMPDIR", None)
         if self.slurm_dir is None:
-            raise RuntimeError("No slurm tmep dir available")
+            raise RuntimeError("No slurm tmp dir available")
         
         self.repo_path = repo_path
         self.repo_designite_output_path = os.path.join(self.slurm_dir, "output", "Designite_OP", username, repo_name)
@@ -24,7 +24,6 @@ class RepoDataAnalyzer:
         self.branch = branch
         self.active_commits: list[tuple[str, datetime]] = []
         self.all_commits: list[tuple[str, datetime]] = GitManager.get_all_commits(repo_path, branch)
-        
         self.smells: dict[str, list[Smell]] = {}                # smells dictionary for each commit
         self.refactorings: dict[str, list[Refactoring]] = {}    # refactorings dictionary for each commit
         
@@ -138,9 +137,9 @@ class RepoDataAnalyzer:
                         smell_name = smell_row.get(f"{smell_kind} Smell", None)
                         designite_stats["smells_collected"][smell_kind][smell_name] = designite_stats["smells_collected"][smell_kind].get(smell_name, 0) + 1
                         
-                        cause = smell_row.get("Cause of the Smell", None)
+                        # cause = smell_row.get("Cause of the Smell", None)
                         
-                        smell_instance = Smell(package_name, smell_kind, smell_name, cause)
+                        smell_instance = Smell(package_name, smell_kind, smell_name)
                         smell_instance.type_name = type_name
                         smell_instance.method_name = method_name
                         smell_instance.method_start_ln = int(method_start_line) if method_start_line else None
