@@ -1,13 +1,13 @@
 #!/bin/bash
-#SBATCH --job-name=evo-anlys-corpus
+#SBATCH --job-name=evo-postprocess
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
 
 #SBATCH --mem-per-cpu=32G
 #SBATCH --time=4:00:00          # Process limit for each task
 
-#SBATCH --account=xxxxx
-#SBATCH --mail-user=xxxxx
+#SBATCH --account=def-tusharma
+#SBATCH --mail-user=gautam@dal.ca
 #SBATCH --mail-type=ALL
 
 repo_name="code_smell_evolution_postprocess"
