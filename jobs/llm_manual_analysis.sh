@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --job-name=evo-llm-anlys-corpus
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=8
+#SBATCH --ntasks-per-node=4
 
 #SBATCH --mem-per-cpu=8G
-#SBATCH --time=2:00:00          # Process limit for each task
+#SBATCH --time=3:00:00          # Process limit for each task
 
 #SBATCH --account=def-tusharma
 #SBATCH --mail-user=gautam@dal.ca
@@ -28,13 +28,13 @@ trap 'handle_signal' SIGUSR1
 # -------------------------------------------------------
 echo ">>> Loading modules and activating virtual environment."
 module --force purge
-module load StdEnv/2020 java/17.0.2 python/3.10
+module load StdEnv/2020 rust java/17.0.2 python/3.10
 unset JAVA_TOOL_OPTIONS
 
 virtualenv --no-download $SLURM_TMPDIR/.venv
 source $SLURM_TMPDIR/.venv/bin/activate
 pip install --no-index --upgrade pip
-pip install GitPython matplotlib numpy pandas seaborn openai tiktoken  --no-index
+pip install --no-index GitPython chardet tiktoken openai
 
 # -------------------------------------------------------
 echo -e "\n\n\n\n\n>>> Executing the script."
@@ -52,5 +52,5 @@ rsync -axvH --no-g --no-p $SLURM_TMPDIR/$repo_name/output/*  $refresearch/data/o
 # -------------------------------------------------------
 echo ">>> Unloading modules and deactivating virtual environment."
 deactivate
-module unload python/3.10 java/17.0.2 StdEnv/2020
+module unload python/3.10 java/17.0.2 rust StdEnv/2020
 echo ">>> JOB ENDED FOR $repo_name"

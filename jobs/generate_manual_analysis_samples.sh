@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --job-name=evo-anlys-manual-analysis-generate-samples
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=8
+#SBATCH --ntasks-per-node=4
 
-#SBATCH --mem-per-cpu=64G
-#SBATCH --time=3:00:00          # Process limit for each task
+#SBATCH --mem-per-cpu=48G
+#SBATCH --time=1:00:00          # Process limit for each task
 
 #SBATCH --account=def-tusharma
 #SBATCH --mail-user=gautam@dal.ca
@@ -34,13 +34,13 @@ unset JAVA_TOOL_OPTIONS
 virtualenv --no-download $SLURM_TMPDIR/.venv
 source $SLURM_TMPDIR/.venv/bin/activate
 pip install --no-index --upgrade pip
-pip install GitPython matplotlib numpy pandas seaborn  --no-index
+pip install GitPython matplotlib numpy pandas seaborn openai chardet tiktoken --no-index
 
 # -------------------------------------------------------
 echo -e "\n\n\n\n\n>>> Executing the script."
 # -u is for unbuffered output so the print statements print it to the slurm out file
 # & at the end is to run the script in background. Unless it's running in background we can't trap the signal
-python -u scripts/llm_analysis.py &
+python -u scripts/manual_analysis.py &
 
 PID=$!
 wait ${PID}

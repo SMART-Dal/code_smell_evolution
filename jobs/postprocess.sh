@@ -4,7 +4,7 @@
 #SBATCH --ntasks-per-node=8
 
 #SBATCH --mem-per-cpu=32G
-#SBATCH --time=4:00:00          # Process limit for each task
+#SBATCH --time=3:00:00          # Process limit for each task
 
 #SBATCH --account=def-tusharma
 #SBATCH --mail-user=gautam@dal.ca

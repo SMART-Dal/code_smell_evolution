@@ -16,7 +16,7 @@ DF_COLS = [
 ]
 
 BATCH_SIZE = 10
-MAX_THREADS = 2
+MAX_THREADS = 4
 class CorpusAnalyzer:
     def __init__(self):
         self.lib_dir = config.SMELL_REF_MAP_PATH
@@ -63,7 +63,7 @@ class CorpusAnalyzer:
             smell_instances, map_chain_data = self.get_repo_data(file_path)
             result = self.convert_to_rows(repo_full_name, smell_instances, map_chain_data)
             count = next(processed)
-            print(f"\rProcessed {count}/{total_maps} maps.", end="", flush=True)
+            # print(f"\rProcessed {count}/{total_maps} maps.", end="", flush=True)
             return result
         
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:

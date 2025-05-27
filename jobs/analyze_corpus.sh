@@ -3,8 +3,8 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
 
-#SBATCH --mem-per-cpu=32G
-#SBATCH --time=2:00:00          # Process limit for each task
+#SBATCH --mem-per-cpu=64G
+#SBATCH --time=3:00:00          # Process limit for each task
 
 #SBATCH --account=def-tusharma
 #SBATCH --mail-user=gautam@dal.ca
@@ -32,7 +32,7 @@ unset JAVA_TOOL_OPTIONS
 virtualenv --no-download $SLURM_TMPDIR/.venv
 source $SLURM_TMPDIR/.venv/bin/activate
 pip install --no-index --upgrade pip
-pip install GitPython matplotlib numpy pandas seaborn  --no-index
+pip install GitPython matplotlib numpy pandas seaborn chardet --no-index
 # -------------------------------------------------------
 echo -e "\n\n\n\n\n>>> Executing the script."
 # -u is for unbuffered output so the print statements print it to the slurm out file

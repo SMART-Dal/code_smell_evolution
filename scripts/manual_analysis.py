@@ -102,8 +102,7 @@ class SampleGenerator:
                     
                     latest_chain_item = c.get("chain")[-1]
                     si = self._get_smell_instance(smell_instances, latest_chain_item)
-                    if si["is_alive"]:
-                        continue
+            
                     si_smell_type = si["smell_versions"][-1]["smell_name"]
                     if si_smell_type in top_k_pairs:
                         if "introduced_by_refactorings" in si:
@@ -217,6 +216,8 @@ class UnmappedSampleGenerator:
                     
                     latest_chain_item = c.get("chain")[-1]
                     si = self._get_smell_instance(smell_instances, latest_chain_item)
+                    if si["is_alive"]:
+                        continue
                     
                     si_smell_type = si["smell_versions"][-1]["smell_name"]
                     

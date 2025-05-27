@@ -7,7 +7,7 @@ class CorpusAnalyzer:
     def __init__(self):
         self.lib_dir = config.SMELL_REF_MAP_PATH
         self.maps_finsihed = 1
-        self.TOTAL_MAPS = 20
+        self.TOTAL_MAPS = 87
         self.total_smells = 0
         self.smells_merged = 0
         self.alive_smells = 0
@@ -71,7 +71,7 @@ class CorpusAnalyzer:
         
         total_smell_instances = len(smell_instances)
         for idx, smell_inst in enumerate(smell_instances):
-            print(f"\rSmells progress: {idx}/{total_smell_instances}", end="", flush=True)
+            # print(f"\rSmells progress: {idx}/{total_smell_instances}", end="", flush=True)
             if not smell_inst.get("is_alive"):
                 if idx not in chain_data and idx in smell_space:
                     chain_data[idx] = {
