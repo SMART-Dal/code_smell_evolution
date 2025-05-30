@@ -7,7 +7,7 @@ class CorpusAnalyzer:
     def __init__(self):
         self.lib_dir = config.SMELL_REF_MAP_PATH
         self.maps_finsihed = 1
-        self.TOTAL_MAPS = 87
+        self.TOTAL_MAPS = 86
         self.total_smells = 0
         self.smells_merged = 0
         self.alive_smells = 0
@@ -44,7 +44,7 @@ class CorpusAnalyzer:
         
         recursion_start_time = time.time()
         recursion_limit = 10
-        def find_chain(p_smell_kind: str, p_smell_type: str, p_smell_cause: str, p_removed_hash, p_removed_refs: list[tuple]):
+        def find_chain(p_smell_kind: str, p_smell_type: str, p_removed_hash, p_removed_refs: list[tuple]):
             """
             Find the chain of smell instances that are related to each other.
             """
@@ -54,17 +54,17 @@ class CorpusAnalyzer:
             
             # check if the removed hash is in the introduced map
             for idx in introduced_map.get(p_removed_hash, []):
-                smell_kind, smell_type, smell_cause = self._get_smell_info(smell_instances[idx])
+                smell_kind, smell_type = self._get_smell_info(smell_instances[idx])
                 removed_hash = self._get_removed_commit_hash(smell_instances[idx])
                 introduced_by_refs = smell_instances[idx]["introduced_by_refactorings"]
                 removed_by_refs = smell_instances[idx]["removed_by_refactorings"]
-                if smell_kind == p_smell_kind and smell_type == p_smell_type and smell_cause == p_smell_cause:
+                if smell_kind == p_smell_kind and smell_type == p_smell_type:
                     for ref in p_removed_refs:
                         if ref in introduced_by_refs:
                             chain.append(idx)
                             if idx in smell_space:
                                 smell_space.remove(idx)
-                            chain.extend(find_chain(smell_kind, smell_type, smell_cause, removed_hash, removed_by_refs))
+                            chain.extend(find_chain(smell_kind, smell_type, removed_hash, removed_by_refs))
                         break
             
             return chain
@@ -81,13 +81,13 @@ class CorpusAnalyzer:
                     smell_space.remove(idx)
     
                     # check for chain
-                    smell_kind, smell_type, smell_cause = self._get_smell_info(smell_inst)
+                    smell_kind, smell_type = self._get_smell_info(smell_inst)
                     
                     removed_hash = self._get_removed_commit_hash(smell_inst)
                     removed_by_refs = smell_inst["removed_by_refactorings"]
                     
                     if len(removed_by_refs) > 0:
-                        chain = find_chain(smell_kind, smell_type, smell_cause, removed_hash, removed_by_refs)
+                        chain = find_chain(smell_kind, smell_type, removed_hash, removed_by_refs)
                         chain_data[idx]["chain"] = chain
                         
                         if chain != []:
@@ -137,8 +137,8 @@ class CorpusAnalyzer:
         default_smell_v = smell_instance["smell_versions"][-1]
         smell_kind = default_smell_v["smell_kind"]
         smell_type = default_smell_v["smell_name"]
-        smell_cause = default_smell_v["cause"]
-        return smell_kind, smell_type, smell_cause
+        # smell_cause = default_smell_v["cause"]
+        return smell_kind, smell_type
     
     def _get_introduced_commit_hash(self, smell_instance):
         commit_versions = smell_instance["commit_versions"]
