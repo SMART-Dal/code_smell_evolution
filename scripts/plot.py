@@ -1,9 +1,13 @@
 import os
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from lifelines import KaplanMeierFitter
+from collections import defaultdict
 import config
-from utils import FileUtils
+from corpus import prepare_repo, flush_repo
+from data_analyzer import RepoDataAnalyzer
+from utils import FileUtils, GitManager
 
 def no_removal_refs():
     # Read CSV
@@ -278,3 +282,178 @@ def sankey_plot_input():
     grouped3 = df.groupby(['is_alive', 'mapping']).size().reset_index(name='value')
     for _, row in grouped3.iterrows():
         print(f"{row['is_alive']} [{row['value']}] {row['mapping']}")
+
+def time_series_plot_aggregated():
+    corpus_path = os.path.join(config.SMELL_REF_MAP_PATH, 'corpus.csv')
+    df = pd.read_csv(corpus_path, low_memory=False)
+
+    NUM_POINTS = 100  # Normalize to 100 points per repo
+    aggregated_introduced = np.zeros(NUM_POINTS)
+    aggregated_removed = np.zeros(NUM_POINTS)
+    aggregated_net = np.zeros(NUM_POINTS)
+
+    IDXs= [0, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 39, 40, 42, 43, 44, 45, 47, 49, 50, 52, 53, 54, 55, 56, 58, 59, 60, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 84, 87, 88, 89, 90, 91, 92, 93, 94, 95, 97, 99, 103, 109, 111]
+    repo_count = len(IDXs)
+
+    for IDX in IDXs:
+        try:
+            (username, repo_name, repo_path) = prepare_repo(IDX, clone=True)
+            branch = GitManager.get_default_branch(repo_path)
+            analyzer = RepoDataAnalyzer(username, repo_name, repo_path, branch)
+            repo_all_commits = analyzer.all_commits
+            total_commits = len(repo_all_commits)
+            if total_commits < 2:
+                continue  # skip repos with insufficient history
+
+            unique_repo_name = f"{repo_name}@{username}"
+            repo_df = df[df['repo_name'] == unique_repo_name]
+            commit_hash_to_index = {commit_hash: idx for idx, (commit_hash, _) in enumerate(repo_all_commits)}
+
+            introduced_smells = defaultdict(int)
+            removed_smells = defaultdict(int)
+
+            for _, row in repo_df.iterrows():
+                intro_hash = row['introduced_commit_hash']
+                remove_hash = row['removed_commit_hash']
+                if intro_hash in commit_hash_to_index:
+                    introduced_smells[commit_hash_to_index[intro_hash]] += 1
+                if pd.notna(remove_hash) and remove_hash in commit_hash_to_index:
+                    removed_smells[commit_hash_to_index[remove_hash]] += 1
+
+            introduced = []
+            removed = []
+            net_smells = []
+            alive_count = 0
+
+            for i in range(total_commits):
+                intro = introduced_smells[i]
+                rem = removed_smells[i]
+                valid_rem = min(rem, alive_count)
+                alive_count += intro - valid_rem
+
+                introduced.append(intro)
+                removed.append(valid_rem)
+                net_smells.append(alive_count)
+
+            # Normalize to common scale
+            normalized_T = np.linspace(0, 1, NUM_POINTS)
+            x_raw = np.linspace(0, 1, total_commits)
+            introduced_interp = np.interp(normalized_T, x_raw, introduced)
+            removed_interp = np.interp(normalized_T, x_raw, removed)
+            net_interp = np.interp(normalized_T, x_raw, net_smells)
+
+            aggregated_introduced += introduced_interp
+            aggregated_removed += removed_interp
+            aggregated_net += net_interp
+            repo_count += 1
+
+        except Exception as e:
+            print(f"Skipping repo {IDX} due to error: {e}")
+            continue
+
+    if repo_count == 0:
+        print("No valid repos found.")
+        return
+
+    avg_introduced = aggregated_introduced / repo_count
+    avg_removed = aggregated_removed / repo_count
+    avg_net = aggregated_net / repo_count
+    
+    # Plot
+    plt.figure(figsize=(12, 6))
+    plt.plot(normalized_T, avg_introduced, label='Introduced Smells', color='green')
+    plt.plot(normalized_T, avg_removed, label='Removed Smells', color='red')
+    plt.plot(normalized_T, avg_net, label='Net Alive Smells (Smells(T))', color='blue')
+    plt.xlabel("Normalized Commit Index (T ∈ [0, 1])")
+    plt.ylabel("Smell Count")
+    plt.title(f"Smell Evolution Over Normalized Time - {unique_repo_name}")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt_save_dir = os.path.join(config.PLOTS_PATH)
+    os.makedirs(plt_save_dir, exist_ok=True)
+    plot_path = os.path.join(plt_save_dir, f"time_series_{unique_repo_name}.png")
+    plt.savefig(plot_path)
+    plt.close()
+    print(f"Time series plot saved to {plot_path}")
+        
+def time_series_plot_OLD():
+    corpus_path = os.path.join(config.SMELL_REF_MAP_PATH, 'corpus.csv')
+    df = pd.read_csv(corpus_path, low_memory=False)
+    
+    IDX = 6
+    (username, repo_name, repo_path) = prepare_repo(IDX, clone=True)
+    branch = GitManager.get_default_branch(repo_path)
+    analyzer = RepoDataAnalyzer(username, repo_name, repo_path, branch)
+    repo_all_commits = analyzer.all_commits
+    unique_repo_name = f"{repo_name}@{username}"
+    
+    # Filter only rows for this repo
+    repo_df = df[df['repo_name'] == unique_repo_name]
+    
+    # Map from commit hash to index
+    commit_hash_to_index = {commit_hash: idx for idx, (commit_hash, _) in enumerate(repo_all_commits)}
+    total_commits = len(repo_all_commits)
+
+    # Initialize counters
+    introduced_smells = defaultdict(int)
+    removed_smells = defaultdict(int)
+    
+    # Fill the introduced and removed smells
+    for _, row in repo_df.iterrows():
+        intro_hash = row['introduced_commit_hash']
+        remove_hash = row['removed_commit_hash']
+        
+        if intro_hash in commit_hash_to_index:
+            introduced_smells[commit_hash_to_index[intro_hash]] += 1
+        if pd.notna(remove_hash) and remove_hash in commit_hash_to_index:
+            removed_smells[commit_hash_to_index[remove_hash]] += 1
+    
+    # Time series data
+    introduced = []
+    removed = []
+    net_smells = []
+    T_normalized = []
+    
+    alive_count = 0
+    # current_smells = 0
+    
+    for i in range(total_commits):
+        intro = introduced_smells[i]
+        rem = removed_smells[i]
+        # current_smells += (intro - rem)
+        
+        # Prevent negative alive smells
+        valid_removal = min(rem, alive_count)
+        alive_count += intro - valid_removal
+        
+        
+        introduced.append(intro)
+        removed.append(valid_removal)
+        net_smells.append(alive_count)
+        T_normalized.append(i / (total_commits - 1))  # Normalize T from 0 to 1
+    
+    # Plot
+    plt.figure(figsize=(12, 6))
+    plt.plot(T_normalized, introduced, label='Introduced Smells', color='green')
+    plt.plot(T_normalized, removed, label='Removed Smells', color='red')
+    plt.plot(T_normalized, net_smells, label='Net Alive Smells (Smells(T))', color='blue')
+    plt.xlabel("Normalized Commit Index (T ∈ [0, 1])")
+    plt.ylabel("Smell Count")
+    plt.title(f"Smell Evolution Over Normalized Time - {unique_repo_name}")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt_save_dir = os.path.join(config.PLOTS_PATH)
+    os.makedirs(plt_save_dir, exist_ok=True)
+    plot_path = os.path.join(plt_save_dir, f"time_series_{unique_repo_name}.png")
+    plt.savefig(plot_path)
+    plt.close()
+    print(f"Time series plot saved to {plot_path}")
+
+if __name__ == "__main__":
+    # Uncomment the function you want to run
+    # no_removal_refs()
+    # unmapped_refactorings()
+    # survival_analysis()
+    time_series_plot_aggregated()
