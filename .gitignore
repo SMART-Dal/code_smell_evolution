@@ -168,3 +168,5 @@ bin/executables/.config
 temp_log**.txt
 **.out
 DesigniteLog**.txt
+notes**.txt
+prompt**.txt
