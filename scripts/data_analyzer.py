@@ -5,13 +5,14 @@ from datetime import datetime
 from runners import Designite, RefMiner
 import config
 from utils import GitManager, GitUtils, FileUtils
-from utils import log_execution
+from utils import log_execution, merge_ranges
 from models import SmellInstance, Smell, Refactoring, CommitInfo, DESIGN_SMELL, IMP_SMELL
 from zip import unzip_file
 
 class RepoDataAnalyzer:
     def __init__(self, username: str, repo_name: str, repo_path: str, branch: str):
         self.slurm_dir = os.environ.get("SLURM_TMPDIR", None)
+        # self.slurm_dir = "tmp/"
         if self.slurm_dir is None:
             raise RuntimeError("No slurm tmp dir available")
         
@@ -24,6 +25,7 @@ class RepoDataAnalyzer:
         self.branch = branch
         self.active_commits: list[tuple[str, datetime]] = []
         self.all_commits: list[tuple[str, datetime]] = GitManager.get_all_commits(repo_path, branch)
+        self.all_commits_order = {commit_hash: index for index, (commit_hash, _) in enumerate(self.all_commits)}
         self.smells: dict[str, list[Smell]] = {}                # smells dictionary for each commit
         self.refactorings: dict[str, list[Refactoring]] = {}    # refactorings dictionary for each commit
         
@@ -173,7 +175,7 @@ class RepoDataAnalyzer:
     
     @log_execution
     def calculate_smells_lifespan(self):
-        sorted_active_commits = sorted(self.active_commits, key=lambda x: x[1])
+        sorted_active_commits = sorted(self.active_commits, key=lambda x: self.all_commits_order.get(x[0], float('inf')))
         live_smells: dict[int, SmellInstance] = {}
         
         previous_commit = None
@@ -241,8 +243,8 @@ class RepoDataAnalyzer:
         for smell_instance in self.pairs_lib:
             if not smell_instance.is_alive:
                 smell_instance.days_span = (smell_instance.versions[-1].datetime - smell_instance.versions[0].datetime).days
-                introduced_index = next(i for i, (ch, _) in enumerate(self.all_commits) if ch == smell_instance.versions[0].commit_hash)
-                removed_index = next(i for i, (ch, _) in enumerate(self.all_commits) if ch == smell_instance.versions[-1].commit_hash)
+                introduced_index = self.all_commits_order.get(smell_instance.versions[0].commit_hash, -1)
+                removed_index = self.all_commits_order.get(smell_instance.versions[-1].commit_hash, -1)
                 commit_span = removed_index - introduced_index
                 smell_instance.commit_span = commit_span if commit_span >= 0 else 0
                 
@@ -341,6 +343,85 @@ class RepoDataAnalyzer:
         
         refminer_stats["commits_analyzed"]["total"] = len(refminer_stats["commits_analyzed"]["hashes"])
         self.repo_stats["refminer_stats"] = refminer_stats
+    
+    def commits_analysis(self):
+        """
+        Analyze the commits to identify refactorings vs feature developments.
+        """
+        commits_info: dict = {}
+        # Collect commit messages and changes for all commits
+        for commit_hash, _ in self.all_commits:
+            changes = GitManager.get_changes_at_commit(self.repo_path, commit_hash)
+            commit_msg = GitManager.get_commit_message(self.repo_path, commit_hash)
+            
+            commits_info[commit_hash] = {
+                "commit_message": commit_msg,
+                "changes": changes,
+                "ref_changes": {},
+                "is_refactoring": False,
+                "detected_by_refminer": False
+            }
+        
+        # Collect refactoring changes for each commit
+        for commit_hash, _ in self.all_commits:
+            refs = self.refactorings.get(commit_hash, [])
+            T = {}
+            for r in refs:
+                for rc in r.left_changes:
+                    if rc.file_path not in T:
+                        T[rc.file_path] = []
+                    T[rc.file_path].append(rc.range)
+            for t in T:
+                T[t] = merge_ranges(T[t])
+            commits_info[commit_hash]["ref_changes"] = T
+            if T:
+                commits_info[commit_hash]["is_refactoring"] = True
+                commits_info[commit_hash]["detected_by_refminer"] = True
+        
+        for hash, info in commits_info.items():
+            if "refactor" in info.get("commit_message", "").lower():
+                info["is_refactoring"] = True
+                
+            for file in info["changes"]:
+                total_change_lines = 0
+                total_ref_change_lines = 0
+                if file in info["ref_changes"]:
+                    total_change_lines += sum(end - start + 1 for start, end in info["changes"][file])
+                    total_ref_change_lines += sum(end - start + 1 for start, end in info["ref_changes"][file])
+                    
+                diff = total_change_lines - total_ref_change_lines
+                if diff > 0.5 * total_change_lines:  # if more than 50% of the changes are not refactoring
+                    info["is_refactoring"] = False                             
+            
+        # Count cases where is_refactoring is True but detected_by_refminer is False, and vice versa
+        only_is_refactoring = 0
+        only_detected_by_refminer = 0
+        both = 0
+        neither = 0
+        total_non_empty_commits = 0
+
+        for commit_hash, info in commits_info.items():
+            if not info.get("changes") and not info.get("ref_changes"):
+                total_non_empty_commits += 1
+            
+            is_ref = info.get("is_refactoring", False)
+            detected = info.get("detected_by_refminer", False)
+            if is_ref and not detected:
+                only_is_refactoring += 1
+            elif not is_ref and detected:
+                only_detected_by_refminer += 1
+            elif is_ref and detected:
+                both += 1
+            else:
+                neither += 1
+                # print(f"{commit_hash} | {info}")
+                
+        print(f"Total commits analyzed: {len(commits_info)}")
+        print(f"Total non-empty commits: {total_non_empty_commits}")
+        print(f"Commits where is_refactoring=True but detected_by_refminer=False (missed by refminer): {only_is_refactoring}")
+        print(f"Commits where is_refactoring=False but detected_by_refminer=True (wrong detection by refminer): {only_detected_by_refminer}")
+        print(f"Commits where both are True: {both}")
+        print(f"Commits where both are False (excluding non-empty commits): {neither - total_non_empty_commits}")
     
     @log_execution
     def map_refactorings_to_smells(self):
@@ -450,9 +531,14 @@ class RepoDataAnalyzer:
         )
         
         # save repo stats data
+        serializable_commits = [
+            (commit_hash, commit_datetime.isoformat() if hasattr(commit_datetime, "isoformat") else str(commit_datetime))
+            for commit_hash, commit_datetime in self.all_commits
+        ]
         stats_data = {
             "designite_stats": self.repo_stats.get("designite_stats", None),
-            "refminer_stats": self.repo_stats.get("refminer_stats", None)
+            "refminer_stats": self.repo_stats.get("refminer_stats", None),
+            "repo_commits": serializable_commits
         }
         FileUtils.save_json_file(
             file_path=os.path.join(config.SMELL_REF_MAP_PATH, f"{repo_name}@{username}.stats.json"), 

@@ -1,10 +1,11 @@
 import os
+import re
 import json
 import csv
 import traceback
 import hashlib
 import chardet
-from git import Repo
+from git import Repo, NULL_TREE
 
 def log_execution(func):
     def wrapper(*args, **kwargs):
@@ -189,7 +190,7 @@ class GitManager:
         :return: A list of commit objects.
         """
         repo = Repo(repo_path)
-        commits = list(repo.iter_commits(branch))
+        commits = list(repo.iter_commits(branch))[::-1]
         commit_pairs = [(commit.hexsha, commit.committed_datetime) for commit in commits]
         commit_pairs.sort(key=lambda x: x[1])
         return commit_pairs
@@ -218,6 +219,61 @@ class GitManager:
                 return file_content
 
         return None
+    
+    @staticmethod
+    def get_changes_at_commit(repo_path, commit_hash):
+        """
+        Get the changed line numbers for each file in a specific commit.
+
+        :param repo_path: Path to the local Git repository.
+        :param commit_hash: Hash of the commit.
+        :return: A dict mapping file paths to sets of changed line numbers.
+        """
+        repo = Repo(repo_path)
+        commit = repo.commit(commit_hash)
+        parent = commit.parents[0] if commit.parents else None
+        changes = {}
+
+        diffs = commit.diff(parent or NULL_TREE, create_patch=True)
+
+        hunk_header_regex = re.compile(r"@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
+
+        for diff in diffs:
+            if not diff.diff:
+                continue
+
+            file_path = diff.b_path or diff.a_path
+            if not file_path or not file_path.endswith(".java"):
+                continue
+
+            ranges = []
+
+            diff_text = diff.diff.decode("utf-8", errors="replace")
+            for line in diff_text.splitlines():
+                if line.startswith("@@"):
+                    match = hunk_header_regex.match(line)
+                    if match:
+                        start = int(match.group(1))
+                        count = int(match.group(2)) if match.group(2) else 1
+                        ranges.append((start, start + count - 1))
+
+            if ranges:
+                changes[file_path] = ranges
+
+        return changes
+    
+    @staticmethod
+    def get_commit_message(repo_path, commit_hash):
+        """
+        Get the commit message for a specific commit.
+
+        :param repo_path: Path to the local Git repository.
+        :param commit_hash: Hash of the commit.
+        :return: The commit message.
+        """
+        repo = Repo(repo_path)
+        commit = repo.commit(commit_hash)
+        return commit.message.strip()
     
 class GitUtils:
     @staticmethod
@@ -270,3 +326,22 @@ class GitUtils:
                     return i  # Current line is the end of the method
 
         return -1
+
+def merge_ranges(ranges: list[tuple[int, int]]) -> list[tuple[int, int]]:
+    if not ranges:
+        return []
+
+    # Sort by start value
+    ranges.sort(key=lambda r: r[0])
+    merged = [ranges[0]]
+
+    for current in ranges[1:]:
+        last = merged[-1]
+        # Check if current range overlaps or is a subset of the last merged range
+        if current[0] <= last[1]:  # Overlapping or touching
+            # Merge the two ranges
+            merged[-1] = (last[0], max(last[1], current[1]))
+        else:
+            merged.append(current)
+
+    return merged

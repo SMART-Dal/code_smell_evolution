@@ -22,6 +22,7 @@ def analyze_repo_data(idx):
                 analyzer.load_raw_smells()
                 analyzer.calculate_smells_lifespan()
                 analyzer.load_raw_refactorings()
+                analyzer.commits_analysis()
                 analyzer.map_refactorings_to_smells()
                 analyzer.save_data_to_json(username, repo_name)
             except Exception as e:

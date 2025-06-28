@@ -10,6 +10,8 @@ def prepare_repo(repo_index=None, clone=True):
         raise ValueError("repo_index must be provided")
     
     slurm_dir = os.environ.get("SLURM_TMPDIR", None)
+    # slurm_dir = "tmp/"
+    
     if slurm_dir is None:
         raise RuntimeError("No slurm tmep dir available")
     

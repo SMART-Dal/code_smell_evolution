@@ -125,6 +125,9 @@ class CorpusAnalyzer:
             # smells info
             smell_kind = si["smell_versions"][-1]["smell_kind"]
             smell_type = si["smell_versions"][-1]["smell_name"]
+            package_name = si["smell_versions"][-1]["package_name"]
+            type_name = si["smell_versions"][-1]["type_name"]
+            method_name = si["smell_versions"][-1]["method_name"]
             is_alive = c.get("is_alive")
             
             # commit info
@@ -134,6 +137,9 @@ class CorpusAnalyzer:
            
             data.append({
                 "repo_name": repo_name,
+                "package": package_name,
+                "type": type_name,
+                "method": method_name,
                 "smell_kind": smell_kind,
                 "smell_type": smell_type,
                 "is_alive": is_alive,
