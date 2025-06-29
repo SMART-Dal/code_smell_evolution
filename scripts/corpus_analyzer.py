@@ -149,10 +149,10 @@ class CorpusAnalyzer:
                 "total_days_span": span_d,
                 "introduced_commit_hash": i_h,
                 "introduced_commit_date": i_d,
-                "removed_commit_hash": r_h,
-                "removed_commit_date": r_d,
+                "removed_commit_hash": None if is_alive else r_h,
+                "removed_commit_date": None if is_alive else r_d,
                 "introduction_refactorings": i_refs,
-                "removal_refactorings": r_refs,
+                "removal_refactorings": None if is_alive else r_refs,
             })
         
         return data
