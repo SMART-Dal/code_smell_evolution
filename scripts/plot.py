@@ -3,13 +3,15 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from lifelines import KaplanMeierFitter
-from collections import defaultdict
+from collections import defaultdict, Counter
 import config
-from corpus import prepare_repo, flush_repo
-from data_analyzer import RepoDataAnalyzer
-from utils import FileUtils, GitManager
+from utils import FileUtils
+from matplotlib.ticker import FixedLocator, FuncFormatter
 
 def no_removal_refs():
+    '''
+    Dangling code smells that have no removal refactorings
+    '''
     # Read CSV
     df = pd.read_csv(os.path.join(config.SMELL_REF_MAP_PATH, 'corpus.csv'), low_memory=False)
 
@@ -22,7 +24,7 @@ def no_removal_refs():
     # Group by smell_type
     total_by_type = df.groupby('smell_type').size()
     no_removal_by_type = no_removal_refactorings.groupby('smell_type').size()
-    
+
     print(f"total no_removal_by_type: {no_removal_by_type.sum()}")
     print(f"Percentage of total no_removal_by_type compared to total: {(no_removal_by_type.sum() / total_by_type.sum()) * 100:.2f}%")
 
@@ -32,7 +34,6 @@ def no_removal_refs():
     # Create new labels: "smell_type (total count)"
     labels_with_counts = [f"{stype} ({total_by_type[stype]})" for stype in percent_no_removal.index]
 
-   
     # Plot the bars
     fig, ax = plt.subplots(figsize=(10, 12))
     bars = ax.barh(labels_with_counts, percent_no_removal.values, color='#1f77b4')  # Classic "paper blue"
@@ -55,7 +56,7 @@ def no_removal_refs():
         )
 
     # Set x-axis range to zoom from 80 to 100
-    ax.set_xlim(85, 101)
+    ax.set_xlim(60, 101)
     ax.set_ylim(-0.4, len(labels_with_counts) - 0.4)
     # Show x-axis ticks and labels on both top and bottom
     ax.tick_params(axis='x', which='both', labeltop=True, labelbottom=True)
@@ -77,6 +78,7 @@ def no_removal_refs():
 
 def unmapped_refactorings():
     '''
+    Dangling refactorings identification 
     this function will generate latex table for the refactorings that are not mapped to any smell
     '''
     table = {}
@@ -124,17 +126,45 @@ def survival_analysis():
     plot_path = os.path.join(config.PLOTS_PATH)
     # Load your CSV file
     df = pd.read_csv(corpus_path, low_memory=False)  # Replace with your actual file path
+    
+    # Load corpus commits mapping
+    corpus_commits = FileUtils.load_json_file(os.path.join(config.BIN_PATH, 'data', 'corpus_commits.json'))
+    
+    corpus_commits_idx = {
+        repo: {commit_hash: i for i, (commit_hash, _) in enumerate(commits)}
+        for repo, commits in corpus_commits.items()
+    }
+
+    # Define a function to calculate commit span using repo-specific commit list
+    def compute_commit_span(row):
+        repo = row["repo_name"]
+        introduced = row["introduced_commit_hash"]
+        removed = row["removed_commit_hash"]
+        commit_idx_map = corpus_commits_idx.get(repo, {})
+        try:
+            start_idx = commit_idx_map[introduced]
+            if pd.isna(removed) or removed not in commit_idx_map:
+                end_idx = max(commit_idx_map.values())  # assume still alive
+            else:
+                end_idx = commit_idx_map[removed]
+            return end_idx - start_idx
+        except KeyError:
+            return None  # one of the hashes not found
 
     # Use all rows and determine event observed
     df["event_observed"] = df["is_alive"].apply(lambda alive: 0 if alive else 1)
+    
+    df["total_commits_span"] = df.apply(compute_commit_span, axis=1)
+    
     smell_kinds = ["Design", "Implementation"]
     
     ###############
     ### COMMITS ###
     ###############
     CUTOFF_COMMITS = 1200
-    CHECKPOINTS_COMMITS = [10, 100, 500]
+    CHECKPOINTS_COMMITS = [10, 100]
     fig_commits, axes_commits = plt.subplots(1, len(smell_kinds), figsize=(FIGSIZE_PER_PLOT[0]*len(smell_kinds), FIGSIZE_PER_PLOT[1]), squeeze=False)
+    
     for idx, smell_kind in enumerate(smell_kinds):
         ax = axes_commits[0, idx]
         kind_df = df[df["smell_kind"] == smell_kind]
@@ -144,6 +174,8 @@ def survival_analysis():
         for smell in kind_df["smell_type"].unique():
             kmf = KaplanMeierFitter()
             smell_df = kind_df[kind_df["smell_type"] == smell]
+            
+            # Apply the commit span computation
             durations = pd.to_numeric(smell_df["total_commits_span"], errors='coerce').dropna()
             events = smell_df.loc[durations.index, "event_observed"] 
 
@@ -179,8 +211,13 @@ def survival_analysis():
         ax.tick_params(axis='y', which='both', length=0, labelsize=10)  # Remove all tick markers but keep labels
 
         survival_table_df = pd.DataFrame(survival_table).set_index("smell_type")
+        survival_table_df = survival_table_df.sort_index()  # Sort by smell_type alphabetically
         print(f"\nSurvival Table for {smell_kind} Smells:")
         print(survival_table_df)
+        # Print each row in LaTeX table format, rounded to 2 decimal places
+        for idx, row in survival_table_df.iterrows():
+            row_str = " & ".join([str(idx)] + [f"{v:.2f}" for v in row.values]) + " & "
+            print(row_str)
         
         # Calculate the average survival probabilities across all smell types
         avg_survival_probs = survival_table_df.mean()
@@ -244,8 +281,13 @@ def survival_analysis():
         ax.tick_params(axis='y', which='both', length=0, labelsize=10)  # Remove all tick markers but keep labels
         
         survival_table_df = pd.DataFrame(survival_table).set_index("smell_type")
+        survival_table_df = survival_table_df.sort_index()  # Sort by smell_type alphabetically
         print(f"\nSurvival Table for {smell_kind} Smells:")
         print(survival_table_df)
+        # Print each row in LaTeX table format, rounded to 2 decimal places (omit smell_type column)
+        for _, row in survival_table_df.iterrows():
+            row_str = " & ".join([f"{v:.2f}" for v in row.values]) + r" \\"
+            print(row_str)
         
         # Calculate the average survival probabilities across all smell types
         avg_survival_probs = survival_table_df.mean()
@@ -283,172 +325,185 @@ def sankey_plot_input():
     for _, row in grouped3.iterrows():
         print(f"{row['is_alive']} [{row['value']}] {row['mapping']}")
 
+def sankey_plot__manual_analysis():
+    valid_pairs = {
+        'Broken Modularization': ['Move Attribute'],
+        'Deficient Encapsulation': ['Change Attribute Access Modifier'],
+        'Insufficient Modularization': ['Extract Method'],
+        'Multifaceted Abstraction': ['Extract Method'],
+        'Complex Method': ['Extract Method'],
+        'Imperative Abstraction': ['Extract Method', 'Change Attribute Access Modifier'],
+        'Complex Conditional': ['Extract Method', 'Extract Variable'],
+        'Long Method': ['Extract Method', 'Extract and Move Method'],
+        'Unexploited Encapsulation': ['Change Parameter Type', 'Change Variable Type'],
+        'Long Statement': ['Change Variable Type', 'Rename Variable'],
+        'Long Identifier': ['Rename Variable'],
+        'Abstract Function Call From Constructor': ['Remove Class Modifier', 'Add Parameter'],
+        'Empty Catch Block': ['Assert Throw'],
+        'Long Parameter List': ['Remove Parameter']
+    }
+    
+    df = pd.read_csv(os.path.join(config.SMELL_REF_MAP_PATH, 'corpus.csv'), low_memory=False)
+    # Track valid smell-refactoring counts
+    pair_counter = Counter()
+
+    for _, row in df.iterrows():
+        smell = row['smell_type']
+        if pd.isna(row['removal_refactorings']):
+            continue
+        refactorings = [r.strip() for r in row['removal_refactorings'].split(';') if r.strip()]
+        for ref in refactorings:
+            if smell in valid_pairs and ref in valid_pairs[smell]:
+                pair_counter[(smell, ref)] += 1
+
+    # Format output
+    sankey_input = [f"{smell} [{count}] {ref}" for (smell, ref), count in pair_counter.items()]
+    
+    for line in sankey_input:
+        print(line)
+
 def time_series_plot_aggregated():
+    # Load commit mapping
+    corpus_commits_map = os.path.join(config.BIN_PATH, 'data', 'corpus_commits.json')
+    corpus_commits = FileUtils.load_json_file(corpus_commits_map)
+
+    # Load corpus with smell annotations
     corpus_path = os.path.join(config.SMELL_REF_MAP_PATH, 'corpus.csv')
     df = pd.read_csv(corpus_path, low_memory=False)
+    repos = df['repo_name'].unique()
 
     NUM_POINTS = 100  # Normalize to 100 points per repo
     aggregated_introduced = np.zeros(NUM_POINTS)
     aggregated_removed = np.zeros(NUM_POINTS)
     aggregated_net = np.zeros(NUM_POINTS)
+    aggregated_cumulative_removed = np.zeros(NUM_POINTS)
 
-    IDXs= [0, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 24, 25, 26, 27, 28, 29, 31, 32, 33, 34, 35, 36, 37, 39, 40, 42, 43, 44, 45, 47, 49, 50, 52, 53, 54, 55, 56, 58, 59, 60, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 84, 87, 88, 89, 90, 91, 92, 93, 94, 95, 97, 99, 103, 109, 111]
-    repo_count = len(IDXs)
+    repo_count = 0
 
-    for IDX in IDXs:
-        try:
-            (username, repo_name, repo_path) = prepare_repo(IDX, clone=True)
-            branch = GitManager.get_default_branch(repo_path)
-            analyzer = RepoDataAnalyzer(username, repo_name, repo_path, branch)
-            repo_all_commits = analyzer.all_commits
-            total_commits = len(repo_all_commits)
-            if total_commits < 2:
-                continue  # skip repos with insufficient history
+    for repo in repos:
+        repo_all_commits = corpus_commits.get(repo, [])
+        total_commits = len(repo_all_commits)
+        if total_commits < 2:
+            continue  # Skip short histories
 
-            unique_repo_name = f"{repo_name}@{username}"
-            repo_df = df[df['repo_name'] == unique_repo_name]
-            commit_hash_to_index = {commit_hash: idx for idx, (commit_hash, _) in enumerate(repo_all_commits)}
+        repo_df: pd.DataFrame = df[df['repo_name'] == repo]
+        commit_hash_to_index = {commit_hash: idx for idx, (commit_hash, _) in enumerate(repo_all_commits)}
 
-            introduced_smells = defaultdict(int)
-            removed_smells = defaultdict(int)
+        introduced_smells = defaultdict(int)
+        removed_smells = defaultdict(int)
 
-            for _, row in repo_df.iterrows():
-                intro_hash = row['introduced_commit_hash']
-                remove_hash = row['removed_commit_hash']
-                if intro_hash in commit_hash_to_index:
-                    introduced_smells[commit_hash_to_index[intro_hash]] += 1
-                if pd.notna(remove_hash) and remove_hash in commit_hash_to_index:
-                    removed_smells[commit_hash_to_index[remove_hash]] += 1
+        for _, row in repo_df.iterrows():
+            intro_hash = row['introduced_commit_hash']
+            remove_hash = row['removed_commit_hash']
+            if intro_hash in commit_hash_to_index:
+                introduced_smells[commit_hash_to_index[intro_hash]] += 1
+            if pd.notna(remove_hash) and remove_hash in commit_hash_to_index:
+                removed_smells[commit_hash_to_index[remove_hash]] += 1
 
-            introduced = []
-            removed = []
-            net_smells = []
-            alive_count = 0
+        introduced = []
+        removed = []
+        net_smells = []
+        cumulative_removed = []
+        alive_count = 0
+        removed_sum = 0
 
-            for i in range(total_commits):
-                intro = introduced_smells[i]
-                rem = removed_smells[i]
-                valid_rem = min(rem, alive_count)
-                alive_count += intro - valid_rem
+        for i in range(total_commits):
+            intro = introduced_smells[i]
+            rem = removed_smells[i]
+            valid_rem = min(rem, alive_count)
+            alive_count += intro - valid_rem
+            removed_sum += valid_rem
 
-                introduced.append(intro)
-                removed.append(valid_rem)
-                net_smells.append(alive_count)
+            introduced.append(intro)
+            removed.append(valid_rem)
+            net_smells.append(alive_count)
+            cumulative_removed.append(removed_sum)
 
-            # Normalize to common scale
-            normalized_T = np.linspace(0, 1, NUM_POINTS)
-            x_raw = np.linspace(0, 1, total_commits)
-            introduced_interp = np.interp(normalized_T, x_raw, introduced)
-            removed_interp = np.interp(normalized_T, x_raw, removed)
-            net_interp = np.interp(normalized_T, x_raw, net_smells)
+        # Normalize commit history
+        normalized_T = np.linspace(0, 1, NUM_POINTS)
+        x_raw = np.linspace(0, 1, total_commits)
+        introduced_interp = np.interp(normalized_T, x_raw, introduced)
+        removed_interp = np.interp(normalized_T, x_raw, removed)
+        net_interp = np.interp(normalized_T, x_raw, net_smells)
+        cumulative_removed_interp = np.interp(normalized_T, x_raw, cumulative_removed)
 
-            aggregated_introduced += introduced_interp
-            aggregated_removed += removed_interp
-            aggregated_net += net_interp
-            repo_count += 1
+        aggregated_introduced += introduced_interp
+        aggregated_removed += removed_interp
+        aggregated_net += net_interp
+        aggregated_cumulative_removed += cumulative_removed_interp
 
-        except Exception as e:
-            print(f"Skipping repo {IDX} due to error: {e}")
-            continue
+        repo_count += 1
+        print(f"Processed repo: {repo} with {total_commits} commits")
 
     if repo_count == 0:
         print("No valid repos found.")
         return
 
+    # Compute average values
     avg_introduced = aggregated_introduced / repo_count
     avg_removed = aggregated_removed / repo_count
     avg_net = aggregated_net / repo_count
+    avg_cumulative_removed = aggregated_cumulative_removed / repo_count
     
-    # Plot
-    plt.figure(figsize=(12, 6))
-    plt.plot(normalized_T, avg_introduced, label='Introduced Smells', color='green')
-    plt.plot(normalized_T, avg_removed, label='Removed Smells', color='red')
-    plt.plot(normalized_T, avg_net, label='Net Alive Smells (Smells(T))', color='blue')
-    plt.xlabel("Normalized Commit Index (T ∈ [0, 1])")
-    plt.ylabel("Smell Count")
-    plt.title(f"Smell Evolution Over Normalized Time - {unique_repo_name}")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt_save_dir = os.path.join(config.PLOTS_PATH)
-    os.makedirs(plt_save_dir, exist_ok=True)
-    plot_path = os.path.join(plt_save_dir, f"time_series_{unique_repo_name}.png")
-    plt.savefig(plot_path)
-    plt.close()
-    print(f"Time series plot saved to {plot_path}")
-        
-def time_series_plot_OLD():
-    corpus_path = os.path.join(config.SMELL_REF_MAP_PATH, 'corpus.csv')
-    df = pd.read_csv(corpus_path, low_memory=False)
-    
-    IDX = 6
-    (username, repo_name, repo_path) = prepare_repo(IDX, clone=True)
-    branch = GitManager.get_default_branch(repo_path)
-    analyzer = RepoDataAnalyzer(username, repo_name, repo_path, branch)
-    repo_all_commits = analyzer.all_commits
-    unique_repo_name = f"{repo_name}@{username}"
-    
-    # Filter only rows for this repo
-    repo_df = df[df['repo_name'] == unique_repo_name]
-    
-    # Map from commit hash to index
-    commit_hash_to_index = {commit_hash: idx for idx, (commit_hash, _) in enumerate(repo_all_commits)}
-    total_commits = len(repo_all_commits)
+    # Ensure no division by zero or negative values
+    epsilon = 1e-1
+    avg_introduced = np.clip(avg_introduced, epsilon, None)
+    avg_removed = np.clip(avg_removed, epsilon, None)
+    avg_net = np.clip(avg_net, epsilon, None)
+    avg_cumulative_removed = np.clip(avg_cumulative_removed, epsilon, None)
 
-    # Initialize counters
-    introduced_smells = defaultdict(int)
-    removed_smells = defaultdict(int)
-    
-    # Fill the introduced and removed smells
-    for _, row in repo_df.iterrows():
-        intro_hash = row['introduced_commit_hash']
-        remove_hash = row['removed_commit_hash']
-        
-        if intro_hash in commit_hash_to_index:
-            introduced_smells[commit_hash_to_index[intro_hash]] += 1
-        if pd.notna(remove_hash) and remove_hash in commit_hash_to_index:
-            removed_smells[commit_hash_to_index[remove_hash]] += 1
-    
-    # Time series data
-    introduced = []
-    removed = []
-    net_smells = []
-    T_normalized = []
-    
-    alive_count = 0
-    # current_smells = 0
-    
-    for i in range(total_commits):
-        intro = introduced_smells[i]
-        rem = removed_smells[i]
-        # current_smells += (intro - rem)
-        
-        # Prevent negative alive smells
-        valid_removal = min(rem, alive_count)
-        alive_count += intro - valid_removal
-        
-        
-        introduced.append(intro)
-        removed.append(valid_removal)
-        net_smells.append(alive_count)
-        T_normalized.append(i / (total_commits - 1))  # Normalize T from 0 to 1
-    
     # Plot
     plt.figure(figsize=(12, 6))
-    plt.plot(T_normalized, introduced, label='Introduced Smells', color='green')
-    plt.plot(T_normalized, removed, label='Removed Smells', color='red')
-    plt.plot(T_normalized, net_smells, label='Net Alive Smells (Smells(T))', color='blue')
-    plt.xlabel("Normalized Commit Index (T ∈ [0, 1])")
-    plt.ylabel("Smell Count")
-    plt.title(f"Smell Evolution Over Normalized Time - {unique_repo_name}")
+    plt.plot(normalized_T, avg_introduced, label='Smells Introduced per Commit', color='green')
+    plt.plot(normalized_T, avg_removed, label='Smells Removed per Commit', color='red')
+    plt.plot(normalized_T, avg_net, label='Net Alive Smells', color='blue')
+    plt.plot(normalized_T, avg_cumulative_removed, label='Cumulative Smells Removed', color='orange', linestyle='--')
+
+    # Mark the value of net alive smells at x=1
+    x1_idx = -1  # last point
+    x1 = normalized_T[x1_idx]
+    y1 = avg_net[x1_idx]
+    plt.scatter([x1], [y1], color='blue')
+    plt.annotate(
+        f"{int(y1)}",
+        (x1, y1),
+        fontsize=11, color='blue', fontweight='bold',
+        va='bottom', ha='right',
+        xytext=(0, 5), textcoords='offset points'
+    )
+
+    plt.xlabel("Normalized Commit Index (0 = first commit, 1 = last commit)")
+    plt.ylabel("Average Smell Count per Repository (Log Scale)")
+    plt.yscale('log')
+
+    # Set y-axis ticks to 10, 100, 1000, ...
+    y_ticks = [10, 100, 1000, 10000, 100000]
+    ax = plt.gca()
+    ax.yaxis.set_major_locator(FixedLocator(y_ticks))
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda y, _: f"{int(y)}"))
+    ax.set_yticks(y_ticks)
+    ax.set_yticklabels([str(y) for y in y_ticks])
+    ax.tick_params(axis='y', which='both', length=5)
+    ax.yaxis.set_minor_locator(FixedLocator([]))  # Remove minor ticks
+
+    # Set x-axis ticks to 0, 0.25, 0.5, 0.75, 1
+    x_ticks = [0, 0.25, 0.5, 0.75, 1]
+    ax.set_xticks(x_ticks)
+    ax.set_xticklabels([str(x) for x in x_ticks])
+    ax.grid(axis='x', which='major', linestyle='--', color='gray', alpha=0.7)  # Add vertical grid lines at x-ticks
+
+    plt.title("Code Smell Evolution Across Repositories (Normalized Time)")
     plt.legend()
-    plt.grid(True)
+    plt.grid(True, which='both', axis='y')
     plt.tight_layout()
+
+    # Save plot
     plt_save_dir = os.path.join(config.PLOTS_PATH)
     os.makedirs(plt_save_dir, exist_ok=True)
-    plot_path = os.path.join(plt_save_dir, f"time_series_{unique_repo_name}.png")
+    plot_path = os.path.join(plt_save_dir, "time_series_normalized.png")
     plt.savefig(plot_path)
     plt.close()
+
     print(f"Time series plot saved to {plot_path}")
 
 if __name__ == "__main__":
@@ -456,4 +511,6 @@ if __name__ == "__main__":
     # no_removal_refs()
     # unmapped_refactorings()
     # survival_analysis()
-    time_series_plot_aggregated()
+    # sankey_plot_input()
+    sankey_plot__manual_analysis()
+    # time_series_plot_aggregated()
