@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+title: Code Smell Evolution
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Gautam
+    family-names: Shetty
+    email: gautam.shetty@dal.ca
+    affiliation: Dalhousie University
+  - given-names: Tushar
+    family-names: Sharma
+    email: tushar@dal.ca
+    affiliation: Dalhousie University
+repository-code: "https://github.com/SMART-Dal/code_smell_evolution"
+license: Apache-2.0
